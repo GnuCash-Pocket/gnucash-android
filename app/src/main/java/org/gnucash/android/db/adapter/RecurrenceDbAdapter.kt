@@ -42,7 +42,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
         val periodEnd = cursor.getTimestamp(INDEX_COLUMN_PERIOD_END)
         val byDays = cursor.getString(INDEX_COLUMN_BYDAY)
 
-        val periodType = PeriodType.valueOf(type)
+        val periodType = PeriodType.of(type)
         val recurrence = Recurrence(periodType)
         populateBaseModelAttributes(cursor, recurrence)
         recurrence.multiplier = multiplier
@@ -56,7 +56,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
     override fun bind(stmt: SQLiteStatement, recurrence: Recurrence): SQLiteStatement {
         bindBaseModel(stmt, recurrence)
         stmt.bindInt(1 + INDEX_COLUMN_MULTIPLIER, recurrence.multiplier)
-        stmt.bindString(1 + INDEX_COLUMN_PERIOD_TYPE, recurrence.periodType.name)
+        stmt.bindString(1 + INDEX_COLUMN_PERIOD_TYPE, recurrence.periodType.value)
         if (!recurrence.byDays.isEmpty()) {
             stmt.bindString(1 + INDEX_COLUMN_BYDAY, byDaysToString(recurrence.byDays))
         }

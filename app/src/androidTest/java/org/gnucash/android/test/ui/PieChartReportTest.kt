@@ -44,6 +44,7 @@ import org.gnucash.android.ui.get
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.util.BookUtils
+import org.gnucash.android.util.toMillis
 import org.hamcrest.Matchers.not
 import org.joda.time.LocalDateTime
 import org.junit.After
@@ -97,7 +98,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForPreviousMonth(minusMonths: Int) {
         val transaction = Transaction(TRANSACTION2_NAME)
-        transaction.datePosted = LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis
+        transaction.datePosted = LocalDateTime.now().minusMonths(minusMonths).toMillis()
 
         val split = Split(
             Money(TRANSACTION2_AMOUNT, commodity), BOOKS_EXPENSE_ACCOUNT_UID

@@ -156,8 +156,8 @@ class GncXmlHelperTest : GnuCashTest() {
 
         override fun run() {
             try {
-                for (i in 0..999) {
-                    assertThat(GncXmlHelper.formatDateTime(calendar)).isEqualTo(expected)
+                repeat(1000) {
+                    assertThat(formatDateTime(calendar)).isEqualTo(expected)
                     try {
                         Thread.sleep(1)
                     } catch (_: InterruptedException) {

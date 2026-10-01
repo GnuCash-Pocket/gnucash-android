@@ -94,7 +94,7 @@ class SearchResultsFragment : Fragment(), SearchResultCallback, FragmentResultLi
     private fun delete(transaction: Transaction) {
         val context: Context = requireContext()
         if (shouldBackupTransactions(context)) {
-            backupActiveBookAsync(activity) { result ->
+            backupActiveBookAsync(activity) { _ ->
                 deleteImpl(context, transaction)
             }
         } else {

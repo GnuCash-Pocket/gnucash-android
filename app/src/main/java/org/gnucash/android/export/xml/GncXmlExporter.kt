@@ -1119,7 +1119,7 @@ class GncXmlExporter(
             for (period in 0 until periodCount) {
                 val budgetAmount = budget.getBudgetAmount(accountID, period) ?: continue
                 val amount = budgetAmount.amount
-                if (amount.isAmountZero) continue
+                if (amount.isZero) continue
                 slots.add(Slot.numeric(period.toString(), amount))
             }
 

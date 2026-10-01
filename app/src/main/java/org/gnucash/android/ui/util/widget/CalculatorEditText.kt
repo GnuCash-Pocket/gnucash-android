@@ -69,6 +69,7 @@ class CalculatorEditText @JvmOverloads constructor(
     }
     private var onBackPressedCallback: OnBackPressedCallback? = null
     private val onValueChangedListeners = CopyOnWriteArrayList<OnValueChangedListener>()
+    private var _value: BigDecimal? = null
 
     /**
      * Returns the currency used for computations
@@ -263,8 +264,10 @@ class CalculatorEditText @JvmOverloads constructor(
         val formatted = if (amount != null) formatter.format(amount) else ""
 
         if (isOriginal) {
+            _value = amount
             originalText = formatted
-        } else {
+        } else if (_value != amount) {
+            _value = amount
             notifyEvaluate(amount)
         }
 
@@ -313,12 +316,14 @@ class CalculatorEditText @JvmOverloads constructor(
         return false
     }
 
-    interface OnValueChangedListener {
+    fun interface OnValueChangedListener {
         fun onValueChanged(value: BigDecimal?)
     }
 
     fun addValueChangedListener(listener: OnValueChangedListener) {
-        onValueChangedListeners.add(listener)
+        if (listener !in onValueChangedListeners) {
+            onValueChangedListeners.add(listener)
+        }
     }
 
     private fun notifyEvaluate(value: BigDecimal?) {

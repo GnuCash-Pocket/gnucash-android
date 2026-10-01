@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Spørge"</string>
     <string name="gnucash_po_bid">"Bud"</string>
     <string name="gnucash_po_commodity_currency">"Vare/valuta"</string>
+    <string name="gnucash_po_create_automatically">"Opret automatisk"</string>
     <string name="gnucash_po_currencies">"Valutaer"</string>
     <string name="gnucash_po_date">"Dato"</string>
     <string name="gnucash_po_description">"Beskrivelse"</string>

@@ -393,8 +393,6 @@
     <string name="label_export_transactions_since_date">З</string>
     <string name="switch_export_transactions_from_all_time">За весь час</string>
     <string name="label_recommend_app">Напишіть відгук у Play Маркеті</string>
-    <string name="repeat_until_date">до %1$s</string>
-    <string name="repeat_x_times">разів: %1$d</string>
     <string name="menu_show_compact_view">Компактне подання</string>
     <string name="book_default_name">Книга %1$d</string>
     <string name="last_export_time_never">ніколи</string>
@@ -438,4 +436,5 @@
     <string name="title_progress_processing_schedules">Обробка графіків</string>
     <string name="title_progress_processing_transactions">Обробка транзакцій</string>
     <string name="title_tab_labels">Показувати вкладки з підписами</string>
+    <string name="execute">Виконати</string>
 </resources>

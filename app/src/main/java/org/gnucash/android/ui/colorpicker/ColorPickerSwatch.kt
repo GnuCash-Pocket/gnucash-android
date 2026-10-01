@@ -41,7 +41,7 @@ class ColorPickerSwatch(
     /**
      * Interface for a callback when a color square is selected.
      */
-    interface OnColorSelectedListener {
+    fun interface OnColorSelectedListener {
         /**
          * Called when a specific color square has been selected.
          */

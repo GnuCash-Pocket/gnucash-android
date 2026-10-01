@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
 import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.BaseModel.Companion.markNew
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.PriceSource
 
@@ -81,7 +82,7 @@ class PriceListViewModel : ViewModel() {
     fun onDuplicatePriceClick(price: Price) {
         viewModelScope.launch(Dispatchers.IO) {
             val priceNew = price.copy().apply {
-                setUID(null)
+                markNew()
                 date = System.currentTimeMillis()
                 source = PriceSource.PRICE_SOURCE_EDIT_DLG
             }

@@ -21,6 +21,7 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
@@ -51,7 +52,12 @@ class DeleteAllTransactionsConfirmationDialog : DoubleConfirmationDialog() {
     }
 
     private fun deleteTransactions(activity: Activity) {
-        backupActiveBookAsync(activity) {
+        val context: Context = activity
+        if (shouldBackupTransactions(context)) {
+            backupActiveBookAsync(activity) {
+                deleteAll(activity)
+            }
+        } else {
             deleteAll(activity)
         }
     }

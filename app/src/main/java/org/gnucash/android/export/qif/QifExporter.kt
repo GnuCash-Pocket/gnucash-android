@@ -148,9 +148,7 @@ class QifExporter(
                 " AND (t_" + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?)" +
                 if (isModifiedOnly) " AND (t_" + TransactionEntry.COLUMN_EXPORTED + " = 0)" else ""
         // no recurrence transactions
-        val whereArgs = arrayOf<String?>(
-            getUtcStringFromTimestamp(exportStartTime)
-        )
+        val whereArgs = arrayOf<String?>(getUtcStringFromTimestamp(exportStartTime))
         // trans_uid ASC  : put splits from the same transaction together
         // trans_date_posted ASC : put transactions in time order
         val orderBy = "account1." + AccountEntry.COLUMN_COMMODITY_UID + " ASC," +

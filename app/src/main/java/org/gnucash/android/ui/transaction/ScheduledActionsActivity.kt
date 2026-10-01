@@ -25,6 +25,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivityScheduledEventsBinding
 import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.UxArgument.EXTRA_TAB_INDEX
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 
 /**
@@ -50,7 +51,7 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
         super.onCreate(savedInstanceState)
 
         val tabLayout = binding.tabLayout
-        for (i in 0 until NUM_PAGES) {
+        repeat(NUM_PAGES) {
             tabLayout.addTab(tabLayout.newTab())
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
@@ -58,10 +59,30 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
         binding.pager.adapter = ScheduledActionsViewPager(this)
         TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
             when (position) {
-                INDEX_SCHEDULED_TRANSACTIONS -> tab.setText(R.string.title_scheduled_transactions)
-                INDEX_SCHEDULED_EXPORTS -> tab.setText(R.string.title_scheduled_exports)
+                TAB_TRANSACTIONS -> tab.setText(R.string.title_scheduled_transactions)
+                TAB_EXPORTS -> tab.setText(R.string.title_scheduled_exports)
             }
         }.attach()
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        setCurrentTab(intent)
+    }
+
+    /**
+     * Sets the current tab in the ViewPager
+     */
+    private fun setCurrentTab(intent: Intent) {
+        val index = intent.getIntExtra(EXTRA_TAB_INDEX, TAB_TRANSACTIONS)
+        binding.pager.currentItem = index
     }
 
     /**
@@ -71,8 +92,8 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
         FragmentStateAdapter(activity) {
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                INDEX_SCHEDULED_TRANSACTIONS -> ScheduledTransactionsListFragment()
-                INDEX_SCHEDULED_EXPORTS -> ScheduledExportsListFragment()
+                TAB_TRANSACTIONS -> ScheduledTransactionsListFragment()
+                TAB_EXPORTS -> ScheduledExportsListFragment()
                 else -> throw IndexOutOfBoundsException()
             }
         }
@@ -87,8 +108,8 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
          * Number of pages to show
          */
         private const val NUM_PAGES = 2
-        private const val INDEX_SCHEDULED_TRANSACTIONS = 0
-        private const val INDEX_SCHEDULED_EXPORTS = 1
+        const val TAB_TRANSACTIONS = 0
+        const val TAB_EXPORTS = 1
 
         //show scheduled transactions
         fun show(context: Context) {

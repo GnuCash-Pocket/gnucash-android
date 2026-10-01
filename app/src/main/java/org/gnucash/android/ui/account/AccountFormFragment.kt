@@ -463,17 +463,19 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         binding: FragmentAccountFormBinding,
         account: Account?
     ) {
-        val condition = (AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
-
         val context = binding.root.context
         val accountUID = account?.uid.orEmpty()
+        val where = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val whereArgs = arrayOf<String?>(accountUID, account?.type?.name ?: AccountType.ROOT.name, AccountType.ROOT.name)
+
         defaultAccountNameAdapter = QualifiedAccountNameAdapter(
             context,
-            condition,
-            arrayOf(accountUID, AccountType.ROOT.name),
+            where,
+            whereArgs,
             accountsDbAdapter,
             viewLifecycleOwner
         ).load { adapter ->

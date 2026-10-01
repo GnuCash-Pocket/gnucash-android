@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"ಕೋರು"</string>
     <string name="gnucash_po_bid">"ಬಿಡ್"</string>
     <string name="gnucash_po_commodity_currency">"ಸಾಮಾನ್ಯ ಕರೆನ್ಸಿ"</string>
+    <string name="gnucash_po_create_automatically">"ಸ್ವಯಂಚಾಲಿತವಾಗಿ ರಚಿಸಿ"</string>
     <string name="gnucash_po_currencies">"ಕರೆನ್ಸಿಗಳು"</string>
     <string name="gnucash_po_date">"ದಿನಾಂಕ"</string>
     <string name="gnucash_po_description">"ವಿವರಣೆ"</string>

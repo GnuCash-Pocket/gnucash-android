@@ -273,8 +273,16 @@ class SplitsDbAdapter(
         transactionUID: String,
         accountUID: String
     ): List<Split> {
-        val cursor = fetchSplitsForTransactionAndAccount(transactionUID, accountUID)
-        return getRecords(cursor)
+        if (transactionUID.isEmpty() || accountUID.isEmpty()) return emptyList()
+
+        Timber.v(
+            "Fetching all splits for transaction ID %s and account ID %s",
+            transactionUID, accountUID
+        )
+        val where = SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND " + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+        val whereArgs = arrayOf<String?>(transactionUID, accountUID)
+        val orderBy = SplitEntry.COLUMN_VALUE_NUM + " ASC"
+        return getAllRecords(where, whereArgs, orderBy)
     }
 
     /**
@@ -313,27 +321,6 @@ class SplitsDbAdapter(
         val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC"
 
         return db.query(true, table, projectionIn, where, whereArgs, null, null, sortOrder, null)
-    }
-
-    /**
-     * Returns a cursor to splits for a given transaction and account
-     *
-     * @param transactionUID Unique identifier of the transaction
-     * @param accountUID     String unique ID of account
-     * @return Cursor to splits data set
-     */
-    fun fetchSplitsForTransactionAndAccount(transactionUID: String?, accountUID: String?): Cursor? {
-        if (transactionUID.isNullOrEmpty() || accountUID.isNullOrEmpty()) return null
-
-        Timber.v(
-            "Fetching all splits for transaction ID %s and account ID %s",
-            transactionUID, accountUID
-        )
-        val where =
-            SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND " + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-        val whereArgs = arrayOf<String?>(transactionUID, accountUID)
-        val orderBy = SplitEntry.COLUMN_VALUE_NUM + " ASC"
-        return db.query(tableName, allColumns, where, whereArgs, null, null, orderBy)
     }
 
     /**

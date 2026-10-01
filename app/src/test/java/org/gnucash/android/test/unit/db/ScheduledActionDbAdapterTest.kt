@@ -1,5 +1,6 @@
 package org.gnucash.android.test.unit.db
 
+import android.text.format.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
@@ -23,14 +24,16 @@ class ScheduledActionDbAdapterTest : GnuCashTest() {
     }
 
     fun shouldFetchOnlyEnabledScheduledActions() {
-        var scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
-        scheduledAction.setRecurrence(Recurrence(PeriodType.MONTH))
-        scheduledAction.isEnabled = false
+        var scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION) {
+            setRecurrence(Recurrence(PeriodType.MONTH))
+            isEnabled = false
+        }
 
         scheduledActionDbAdapter.addRecord(scheduledAction)
 
-        scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
-        scheduledAction.setRecurrence(Recurrence(PeriodType.WEEK))
+        scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION) {
+            setRecurrence(Recurrence(PeriodType.WEEK))
+        }
         scheduledActionDbAdapter.addRecord(scheduledAction)
 
         assertThat(scheduledActionDbAdapter.allRecords).hasSize(2)
@@ -43,45 +46,63 @@ class ScheduledActionDbAdapterTest : GnuCashTest() {
     //no recurrence is set
     @Test
     fun everyScheduledActionShouldHaveRecurrence() {
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
-        scheduledAction.actionUID = generateUID()
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION) {
+            actionUID = generateUID()
+        }
         val sx = scheduledActionDbAdapter.addRecord(scheduledAction)
         assertThat(sx.recurrence).isNotNull()
         assertThat(sx.recurrence.periodType).isEqualTo(PeriodType.ONCE)
     }
 
     @Test
-    fun testGenerateRepeatString() {
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
-        val periodType = PeriodType.MONTH
-        val recurrence = Recurrence(periodType)
-        recurrence.multiplier = 2
-        scheduledAction.setRecurrence(recurrence)
-        scheduledAction.totalPlannedExecutionCount = 4
-        val res = context.resources
-        val repeatString = recurrence.frequencyRepeatString(context) + ", " +
-                res.getString(R.string.repeat_x_times, 4)
+    fun generate_repeat_string_count() {
+        val recurrence = Recurrence(PeriodType.MONTH, 2)
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION) {
+            setRecurrence(recurrence)
+            totalPlannedExecutionCount = 4
+        }
+        val repeatString = recurrence.formatRepeatString(context)
 
-        assertThat(scheduledAction.getRepeatString(context).trim())
+        assertThat(repeatString)
+            .isEqualTo("Every 2 months ; for 4 times")
+        assertThat(scheduledAction.getRepeatString(context))
+            .isEqualTo(repeatString)
+    }
+
+    @Test
+    fun generate_repeat_string_until() {
+        val until = System.currentTimeMillis() + DateUtils.DAY_IN_MILLIS
+        val untilFormat = DateUtils.formatDateTime(context, until, DateUtils.FORMAT_NUMERIC_DATE)
+        val recurrence = Recurrence(PeriodType.MONTH, 2)
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION) {
+            setRecurrence(recurrence)
+            endDate = until
+        }
+        val repeatString = recurrence.formatRepeatString(context)
+
+        assertThat(repeatString)
+            .isEqualTo("Every 2 months ; until $untilFormat")
+        assertThat(scheduledAction.getRepeatString(context))
             .isEqualTo(repeatString)
     }
 
     @Test
     fun testAddGetRecord() {
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
-        scheduledAction.name = "Some Name"
-        scheduledAction.actionUID = "Some TX UID"
-        scheduledAction.advanceCreateDays = 1
-        scheduledAction.advanceRemindDays = 2
-        scheduledAction.isAutoCreate = true
-        scheduledAction.isAutoCreateNotify = true
-        scheduledAction.isEnabled = true
-        scheduledAction.startDate = 11111
-        scheduledAction.endDate = 33333
-        scheduledAction.lastRunTime = 22222
-        scheduledAction.instanceCount = 3
-        scheduledAction.setRecurrence(Recurrence(PeriodType.MONTH))
-        scheduledAction.tag = "QIF;SD_CARD;2016-06-25 12:56:07.175;false"
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT) {
+            name = "Some Name"
+            actionUID = "Some TX UID"
+            advanceCreateDays = 1
+            advanceRemindDays = 2
+            isAutoCreate = true
+            isAutoCreateNotify = true
+            isEnabled = true
+            startDate = 11111
+            endDate = 33333
+            lastRunTime = 22222
+            instanceCount = 3
+            setRecurrence(Recurrence(PeriodType.MONTH))
+            tag = "QIF;SD_CARD;2016-06-25 12:56:07.175;false"
+        }
         scheduledActionDbAdapter.addRecord(scheduledAction)
 
         val scheduledActionFromDb = scheduledActionDbAdapter.getRecord(scheduledAction.uid)

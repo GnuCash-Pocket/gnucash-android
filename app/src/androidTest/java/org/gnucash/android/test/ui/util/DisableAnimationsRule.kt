@@ -7,7 +7,6 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import timber.log.Timber
-import java.io.BufferedInputStream
 import java.io.FileInputStream
 
 /**
@@ -17,7 +16,6 @@ import java.io.FileInputStream
 class DisableAnimationsRule : TestRule {
     private fun setAnimationState(state: AnimationState) {
         val commands = listOf(
-            "settings get global animator_duration_scale",
             "settings put global animator_duration_scale " + state.statusCode,
             "settings put global transition_animation_scale " + state.statusCode,
             "settings put global window_animation_scale " + state.statusCode
@@ -30,7 +28,7 @@ class DisableAnimationsRule : TestRule {
 
         for (command in commands) {
             uiAutomation.executeShellCommand(command).use { fd ->
-                BufferedInputStream(FileInputStream(fd.fileDescriptor)).use { input ->
+                FileInputStream(fd.fileDescriptor).use { input ->
                     fd.use {
                         input.use {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // https://stackoverflow.com/a/75837274/2249464
@@ -54,14 +52,22 @@ class DisableAnimationsRule : TestRule {
     override fun apply(statement: Statement, description: Description): Statement {
         return object : Statement() {
             override fun evaluate() {
-                setAnimationState(AnimationState.DISABLED)
+                disable()
                 try {
                     statement.evaluate()
                 } finally {
-                    setAnimationState(AnimationState.DEFAULT)
+                    enable()
                 }
             }
         }
+    }
+
+    fun disable() {
+        setAnimationState(AnimationState.DISABLED)
+    }
+
+    fun enable() {
+        setAnimationState(AnimationState.DEFAULT)
     }
 
     private enum class AnimationState(val statusCode: Float) {

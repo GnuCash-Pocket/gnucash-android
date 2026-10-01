@@ -136,6 +136,10 @@ class Price : BaseModel {
         return "$security/$currency=$amount"
     }
 
+    override fun hashCode(): Int {
+        return (((((security.hashCode() * 31) + currency.hashCode()) * 31) + valueNum.hashCode()) * 31) + valueDenom.hashCode()
+    }
+
     fun toBigDecimal(): BigDecimal {
         val denominator = BigDecimal.valueOf(valueDenom)
         val scale = max(denominator.numberOfTrailingZeros, security.smallestFractionDigits)
@@ -194,8 +198,10 @@ class Price : BaseModel {
         }
     }
 
+    operator fun not(): Price = invert()
+
     fun copy(
-        id: Long = this.id,
+        id: Long? = null,
         uid: String? = null,
         security: Commodity? = null,
         currency: Commodity? = null,
@@ -204,19 +210,19 @@ class Price : BaseModel {
         date: Long? = null,
         rate: BigDecimal? = null
     ): Price {
-        val priceOld = this
-        val clone = Price(security ?: priceOld.security, currency ?: priceOld.currency)
-        clone.id = id
-        clone.setUID(uid ?: priceOld.uid)
-        clone.date = date ?: priceOld.date
-        clone.source = source ?: priceOld.source
-        clone.type = type ?: priceOld.type
-        clone._valueNum = priceOld._valueNum
-        clone._valueDenom = priceOld._valueDenom
-        if (rate != null) {
-            clone.setExchangeRate(rate)
+        val original = this
+        return Price(security ?: original.security, currency ?: original.currency).apply {
+            this.id = id ?: original.id
+            setUID(uid ?: original.uid)
+            this.date = date ?: original.date
+            this.source = source ?: original.source
+            this.type = type ?: original.type
+            this._valueNum = original._valueNum
+            this._valueDenom = original._valueDenom
+            if (rate != null) {
+                setExchangeRate(rate)
+            }
         }
-        return clone
     }
 
     /**

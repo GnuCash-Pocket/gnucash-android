@@ -27,7 +27,8 @@ enum class TransactionType(
     DEBIT("DEBIT"),
     CREDIT("CREDIT");
 
-    private lateinit var opposite: TransactionType
+    lateinit var opposite: TransactionType
+        private set
 
     /**
      * Inverts the transaction type.
@@ -36,7 +37,9 @@ enum class TransactionType(
      *
      * @return Inverted transaction type
      */
-    fun invert(): TransactionType {
+    fun invert(): TransactionType = !this
+
+    operator fun not(): TransactionType {
         return opposite
     }
 

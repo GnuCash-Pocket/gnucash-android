@@ -783,7 +783,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         if (value.isEmpty()) return
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 split.value = Money(value, account.commodity)
                 split.type = splitType
             }
@@ -805,7 +805,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
     ) {
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 split.value = Money(value, account.commodity)
                 split.type = splitType
             }

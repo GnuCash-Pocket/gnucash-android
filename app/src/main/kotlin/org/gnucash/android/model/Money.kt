@@ -48,7 +48,7 @@ class Money(
     /**
      * Amount value held by this object
      */
-    private var amount: BigDecimal = BigDecimal.ZERO,
+    private val amount: BigDecimal = BigDecimal.ZERO,
     /**
      * Currency of the account
      */
@@ -253,6 +253,10 @@ class Money(
         return amount.toByte()
     }
 
+    @Deprecated(
+        "Direct conversion to Char is deprecated. Use toInt().toChar() or Char constructor instead.\nIf you override toChar() function in your Number inheritor, it's recommended to gradually deprecate the overriding function and then remove it.\nSee https://youtrack.jetbrains.com/issue/KT-46465 for details about the migration",
+        replaceWith = ReplaceWith("this.toInt().toChar()")
+    )
     override fun toChar(): Char {
         return amount.toInt().toChar()
     }
@@ -349,12 +353,10 @@ class Money(
     @Throws(CurrencyMismatchException::class)
     operator fun plus(addend: Money?): Money {
         if (addend == null) return this
-        if (isAmountZero) return addend
-        if (addend.isAmountZero) return this
-        if (commodity != addend.commodity) throw CurrencyMismatchException(
-            commodity,
-            addend.commodity
-        )
+        if (isZero) return addend
+        if (addend.isZero) return this
+        if (commodity != addend.commodity)
+            throw CurrencyMismatchException(commodity, addend.commodity)
         val amount = amount.add(addend.amount)
         return Money(amount, commodity)
     }
@@ -387,8 +389,8 @@ class Money(
     @Throws(CurrencyMismatchException::class)
     operator fun minus(subtrahend: Money?): Money {
         if (subtrahend == null) return this
-        if (isAmountZero) return -subtrahend
-        if (subtrahend.isAmountZero) return this
+        if (isZero) return -subtrahend
+        if (subtrahend.isZero) return this
         if (commodity != subtrahend.commodity) throw CurrencyMismatchException(
             commodity,
             subtrahend.commodity
@@ -426,7 +428,7 @@ class Money(
      */
     @Throws(CurrencyMismatchException::class)
     operator fun div(divisor: Money): Money {
-        if (isAmountZero) return createZeroInstance(divisor.commodity)
+        if (isZero) return createZeroInstance(divisor.commodity)
         if (commodity != divisor.commodity) throw CurrencyMismatchException(
             commodity,
             divisor.commodity
@@ -469,8 +471,8 @@ class Money(
      */
     @Throws(CurrencyMismatchException::class)
     operator fun times(factor: Money): Money {
-        if (isAmountZero) return this
-        if (factor.isAmountZero) return factor
+        if (isZero) return this
+        if (factor.isZero) return factor
         if (commodity != factor.commodity) throw CurrencyMismatchException(
             commodity,
             factor.commodity
@@ -510,8 +512,8 @@ class Money(
         return times(BigDecimal(factor))
     }
 
-    operator fun times(price: Price): Money {
-        return withCommodity(price.currency) * price.toBigDecimal()
+    operator fun times(price: Price?): Money {
+        return if (price != null) withCommodity(price.currency) * price.toBigDecimal() else this
     }
 
     /**
@@ -596,7 +598,7 @@ class Money(
      *
      * @return `true` if this money amount is zero, `false` otherwise
      */
-    val isAmountZero: Boolean
+    val isZero: Boolean
         get() = amount.isZero
 
     constructor(parcel: Parcel) : this(
@@ -673,5 +675,5 @@ fun Money?.isNullOrZero(): Boolean {
         returns(false) implies (this@isNullOrZero != null)
     }
 
-    return this == null || this.isAmountZero
+    return this == null || this.isZero
 }

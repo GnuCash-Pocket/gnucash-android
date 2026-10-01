@@ -3,12 +3,13 @@
     <string name="gnucash_po_account_color">"Sąskaitos spalva"</string>
     <string name="gnucash_po_account_name">"Sąskaitos pavadinimas"</string>
     <string name="gnucash_po_action">"Veiksmas"</string>
-    <string name="gnucash_po_add">"_Adresas"</string>
+    <string name="gnucash_po_add">"Adresas"</string>
     <string name="gnucash_po_all_non_currency">"Pasirinkite valiutą"</string>
     <string name="gnucash_po_amount_num">"Priklausanti suma"</string>
     <string name="gnucash_po_ask">"Pardavimo"</string>
     <string name="gnucash_po_bid">"Pirkimo"</string>
     <string name="gnucash_po_commodity_currency">"Bendra valiuta"</string>
+    <string name="gnucash_po_create_automatically">"Sukurti automatiškai"</string>
     <string name="gnucash_po_currencies">"Valiutos"</string>
     <string name="gnucash_po_date">"Data"</string>
     <string name="gnucash_po_description">"Aprašas"</string>

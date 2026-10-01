@@ -178,7 +178,7 @@ class PriceFormFragment : MenuFragment() {
         binding.inputDate.setOnClickListener {
             val price = viewModel.price.value
             val dateMillis = price.date
-            DatePickerDialogFragment.newInstance(dateListener, dateMillis)
+            DatePickerDialogFragment.newInstance(dateMillis, dateListener)
                 .show(parentFragmentManager, "date_picker_dialog")
         }
 
@@ -188,16 +188,13 @@ class PriceFormFragment : MenuFragment() {
         binding.inputTime.setOnClickListener {
             val price = viewModel.price.value
             val timeMillis = price.date
-            TimePickerDialogFragment.newInstance(timeListener, timeMillis)
+            TimePickerDialogFragment.newInstance(timeMillis, timeListener)
                 .show(parentFragmentManager, "time_picker_dialog")
         }
 
-        binding.inputExchangeRate.addValueChangedListener(object :
-            CalculatorEditText.OnValueChangedListener {
-            override fun onValueChanged(value: BigDecimal?) {
-                viewModel.onPriceChanged(value)
-            }
-        })
+        binding.inputExchangeRate.addValueChangedListener {
+            viewModel.onPriceChanged(it)
+        }
 
         binding.fetchExchangeRate.setOnClickListener {
             binding.fetchExchangeRate.isEnabled = false

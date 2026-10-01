@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"卖方报价"</string>
     <string name="gnucash_po_bid">"买方报价"</string>
     <string name="gnucash_po_commodity_currency">"统一货币单位"</string>
+    <string name="gnucash_po_create_automatically">"自动创建"</string>
     <string name="gnucash_po_currencies">"现金"</string>
     <string name="gnucash_po_date">"日期"</string>
     <string name="gnucash_po_description">"描述"</string>

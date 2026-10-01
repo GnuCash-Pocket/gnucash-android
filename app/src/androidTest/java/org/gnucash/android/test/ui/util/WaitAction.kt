@@ -11,13 +11,17 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.util.HumanReadables
 import androidx.test.espresso.util.TreeIterables
+import org.gnucash.android.R
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.any
 import java.util.concurrent.TimeoutException
 
-class WaitAction(@field:IdRes private val viewId: Int, private val timeout: Long = TIMEOUT) :
+class WaitAction(private val viewToWaitFor: Matcher<View>, private val timeout: Long = TIMEOUT) :
     ViewAction {
+
+    constructor(@IdRes viewId: Int) : this(withId(viewId))
+
     override fun getConstraints(): Matcher<View> {
         return any(View::class.java)
     }
@@ -29,7 +33,7 @@ class WaitAction(@field:IdRes private val viewId: Int, private val timeout: Long
     override fun perform(uiController: UiController, view: View) {
         uiController.loopMainThreadUntilIdle()
         val endTime = SystemClock.elapsedRealtime() + timeout
-        val viewMatcher: Matcher<View> = allOf(withId(viewId), isDisplayed())
+        val viewMatcher = allOf(viewToWaitFor, isDisplayed())
 
         do {
             for (child in TreeIterables.breadthFirstViewTraversal(view)) {
@@ -40,10 +44,10 @@ class WaitAction(@field:IdRes private val viewId: Int, private val timeout: Long
             }
 
             uiController.loopMainThreadForAtLeast(WAIT)
-        } while (SystemClock.elapsedRealtime() < endTime)
+        } while (SystemClock.elapsedRealtime() <= endTime)
 
         throw PerformException.Builder()
-            .withActionDescription(this.description)
+            .withActionDescription(description)
             .withViewDescription(HumanReadables.describe(view))
             .withCause(TimeoutException())
             .build()
@@ -51,10 +55,14 @@ class WaitAction(@field:IdRes private val viewId: Int, private val timeout: Long
 
     companion object {
         private const val WAIT = 50L
-        private const val TIMEOUT = 1500L
+        private const val TIMEOUT = 2000L
 
         fun waitForView(@IdRes viewId: Int): ViewAction {
             return actionWithAssertions(WaitAction(viewId))
+        }
+
+        fun waitForView(viewMatcher: Matcher<View>): ViewAction {
+            return actionWithAssertions(WaitAction(viewMatcher))
         }
     }
 }

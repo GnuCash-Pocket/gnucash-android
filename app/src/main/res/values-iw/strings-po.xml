@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"לשאול"</string>
     <string name="gnucash_po_bid">"הצעה"</string>
     <string name="gnucash_po_commodity_currency">"סחורה/מטבע"</string>
+    <string name="gnucash_po_create_automatically">"יצירה אוטומטית"</string>
     <string name="gnucash_po_currencies">"מטבעות"</string>
     <string name="gnucash_po_date">"תאריך"</string>
     <string name="gnucash_po_description">"תיאור"</string>
