@@ -36,11 +36,15 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
 import org.gnucash.android.app.GnuCashApplication.Companion.isAbsoluteDate
@@ -381,24 +385,29 @@ class TransactionsListFragment : MenuFragment(),
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
 
-            var accountBalance = accountsDbAdapter.getAccountBalance(
-                account,
-                ALWAYS,
-                transaction.datePosted,
-                true
-            )
+            viewLifecycleOwner.lifecycleScope.launch {
+                var accountBalance = withContext(Dispatchers.IO) {
+                    accountsDbAdapter.getAccountBalance(
+                        account,
+                        ALWAYS,
+                        transaction.datePosted,
+                        true
+                    )
+                }
 
-            // Sometimes the running account balance does not change from one transaction to the next, most likely because it
-            // returns the running balance based on as of a given date. This fixes that by keeping a true running balance for
-            // each transaction
-            if (previousAccountBalance == BigDecimal.ZERO || previousAccountBalance != accountBalance.toBigDecimal() ) {
-                previousAccountBalance = accountBalance.toBigDecimal();
-            } else if (accountBalance.toBigDecimal() == previousAccountBalance) {
-                accountBalance += amount;
-                previousAccountBalance = accountBalance.toBigDecimal();
+                // Sometimes the running account balance does not change from one transaction to the next, most likely because it
+                // returns the running balance based on as of a given date. This fixes that by keeping a true running balance for
+                // each transaction
+                if (previousAccountBalance == BigDecimal.ZERO || previousAccountBalance != accountBalance.toBigDecimal() ) {
+                    previousAccountBalance = accountBalance.toBigDecimal();
+                } else if (accountBalance.toBigDecimal() == previousAccountBalance) {
+                    accountBalance += amount;
+                    previousAccountBalance = accountBalance.toBigDecimal();
+                }
+
+                // Safe to update UI here
+                accountBalanceView.text = accountBalance.toString()
             }
-
-            accountBalanceView.text = accountBalance.toString()
 
             val dateText = if (useAbsoluteDate) {
                 formatMediumDate(transaction.datePosted)
