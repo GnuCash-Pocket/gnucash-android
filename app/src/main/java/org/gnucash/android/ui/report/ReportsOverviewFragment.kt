@@ -35,6 +35,8 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.piechart.PieChartFragment
 import org.gnucash.android.ui.util.displayBalance
+import org.gnucash.android.util.firstDayOfMonth
+import org.gnucash.android.util.startOfDay
 import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDateTime
 
@@ -105,7 +107,8 @@ class ReportsOverviewFragment : BaseReportFragment<PieData>() {
         val dataSet = PieDataSet(null, "")
         val colors = mutableListOf<Int>()
         val now = LocalDateTime.now()
-        val startTime = now.minusMonths(3).toMillis()
+        val startDate = now.firstDayOfMonth().minusMonths(2).startOfDay()
+        val startTime = startDate.toMillis()
         val endTime = now.toMillis()
         val commodity = this.commodity
 
@@ -141,7 +144,7 @@ class ReportsOverviewFragment : BaseReportFragment<PieData>() {
         @ColorInt val textColorPrimary = getTextColor(context)
 
         val chart = PieChart(context).apply {
-            setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE.toFloat())
+            setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE)
             setDrawSliceText(false)
             setCenterTextColor(textColorPrimary)
             setHoleColor(Color.TRANSPARENT)
@@ -149,6 +152,7 @@ class ReportsOverviewFragment : BaseReportFragment<PieData>() {
                 isWordWrapEnabled = true
                 textColor = textColorPrimary
             }
+            description.isEnabled = false
             this.data = data
 
             if (isEmpty(data)) {

@@ -134,7 +134,8 @@ class PieChartReportTest : GnuAndroidTest() {
             DINING_EXPENSE_ACCOUNT_NAME,
             TRANSACTION_AMOUNT.toFloat(),
             commodity,
-            percent
+            percent,
+            null
         )
         onView(withId(R.id.selected_chart_slice))
             .check(matches(withText(selectedText)))
@@ -166,7 +167,8 @@ class PieChartReportTest : GnuAndroidTest() {
             GIFTS_RECEIVED_INCOME_ACCOUNT_NAME,
             TRANSACTION3_AMOUNT.toFloat(),
             commodity,
-            100f
+            100f,
+            null
         )
         onView(withId(R.id.selected_chart_slice))
             .check(matches(withText(selectedText)))

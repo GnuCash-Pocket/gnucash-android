@@ -9,15 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="8dp"
-        android:textAppearance="?android:textAppearanceMedium"
-        tools:text="Nothing selected" />
+        android:padding="4dp"
+        android:textAppearance="?android:textAppearanceSmall"
+        tools:text="Cash In Wallet — 100 $ (100%)" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/chart_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="4dp"
+        android:layout_margin="@dimen/cardview_default_elevation"
         android:layout_weight="1"
         android:padding="8dp" />
 

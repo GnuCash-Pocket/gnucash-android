@@ -13,15 +13,25 @@ import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
 
+fun DateTime.firstDayOfMonth() = dayOfMonth().withMinimumValue()
+fun DateTime.firstDayOfWeek() = dayOfWeek().withMinimumValue()
+fun DateTime.firstDayOfYear() = dayOfYear().withMinimumValue()
+fun DateTime.firstHourOfDay() = hourOfDay().withMinimumValue()
+fun DateTime.firstMonthOfYear() = monthOfYear().withMinimumValue()
+
 /**
  * Get the last weekday of the month.
  */
-fun DateTime.lastDayOfWeek() = dayOfMonth().withMaximumValue().dayOfWeek().withMaximumValue()
+fun DateTime.lastDayOfWeek() = dayOfWeek().withMaximumValue()
 
 /**
  * Get the last day of the month.
  */
 fun DateTime.lastDayOfMonth() = dayOfMonth().withMaximumValue()
+
+fun DateTime.lastDayOfYear() = dayOfYear().withMaximumValue()
+fun DateTime.lastHourOfDay() = hourOfDay().withMaximumValue()
+fun DateTime.lastMonthOfYear() = monthOfYear().withMaximumValue()
 
 /**
  * Get the `n`th week of the month.
@@ -44,6 +54,16 @@ fun DateTime.dayOfWeek(/*@Range(1..5)*/ n: Int): DateTime {
 
 /**
  * Get the `n`th weekday of the month.
+ */
+fun LocalDateTime.dayOfWeek(/*@Range(1..5)*/ n: Int): LocalDateTime {
+    val dayOfWeekOld = dayOfWeek
+    val firstDayOfMonth = dayOfMonth().withMinimumValue()
+    val firstDayOfWeek = firstDayOfMonth.dayOfWeek().setCopy(dayOfWeekOld)
+    return firstDayOfWeek.plusWeeks(n - 1)
+}
+
+/**
+ * Get the `n`th weekday of the month.
  * @param date the date with the original day-of-week.
  */
 fun DateTime.dayOfWeek(date: DateTime): DateTime {
@@ -54,10 +74,20 @@ fun DateTime.dayOfWeek(date: DateTime): DateTime {
     return firstDayOfWeek.plusWeeks(weekOfMonth - 1)
 }
 
+fun LocalDateTime.firstDayOfMonth() = dayOfMonth().withMinimumValue()
+fun LocalDateTime.firstDayOfWeek() = dayOfWeek().withMinimumValue()
+fun LocalDateTime.firstDayOfYear() = dayOfYear().withMinimumValue()
+fun LocalDateTime.firstHourOfDay() = hourOfDay().withMinimumValue()
+fun LocalDateTime.firstMonthOfYear() = monthOfYear().withMinimumValue()
+
 /**
- * Get the last weekday of the month.
+ * Get the last weekday of the week.
  */
-fun LocalDateTime.lastDayOfWeek() = dayOfMonth().withMaximumValue().dayOfWeek().withMaximumValue()
+fun LocalDateTime.lastDayOfWeek() = dayOfWeek().withMaximumValue()
+
+fun LocalDateTime.lastDayOfYear() = dayOfYear().withMaximumValue()
+fun LocalDateTime.lastHourOfDay() = hourOfDay().withMaximumValue()
+fun LocalDateTime.lastMonthOfYear() = monthOfYear().withMaximumValue()
 
 /**
  * Get the last weekday of the month.
@@ -198,8 +228,8 @@ fun LocalDateTime.getFirstQuarterMonth(): Int {
 
 const val NEVER = Long.MIN_VALUE
 
-fun LocalDateTime?.toMillis(): Long {
-    return this?.toDateTime()?.millis ?: NEVER
+fun LocalDateTime?.toMillis(zone: DateTimeZone = DateTimeZone.getDefault()): Long {
+    return this?.toDateTime(zone)?.millis ?: NEVER
 }
 
 fun LocalDate?.toMillis(): Long {
@@ -233,3 +263,24 @@ fun LocalDate.toDateTimeAtEndOfDay(zone: DateTimeZone?): DateTime {
     }
     return DateTime(calendar.timeInMillis, zone)
 }
+
+fun Calendar.toLocalDateTime(): LocalDateTime = LocalDateTime.fromCalendarFields(this)
+
+val toLocalDayOfWeek = mapOf(
+    Calendar.SUNDAY to DateTimeConstants.SUNDAY,
+    Calendar.MONDAY to DateTimeConstants.MONDAY,
+    Calendar.TUESDAY to DateTimeConstants.TUESDAY,
+    Calendar.WEDNESDAY to DateTimeConstants.WEDNESDAY,
+    Calendar.THURSDAY to DateTimeConstants.THURSDAY,
+    Calendar.FRIDAY to DateTimeConstants.FRIDAY,
+    Calendar.SATURDAY to DateTimeConstants.SATURDAY,
+)
+
+
+fun DateTime.startOfDay() = withTimeAtStartOfDay()
+fun LocalDateTime.startOfDay() = millisOfDay().withMinimumValue()
+
+fun DateTime.endOfDay() = millisOfDay().withMaximumValue()
+fun LocalDateTime.endOfDay() = millisOfDay().withMaximumValue()
+
+fun DateTime.withZoneUTC()  = withZone(DateTimeZone.UTC)

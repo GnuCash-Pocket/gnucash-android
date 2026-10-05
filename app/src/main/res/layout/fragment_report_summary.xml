@@ -73,19 +73,19 @@ limitations under the License.
         layout="@layout/fragment_chart"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/edge_padding"
         android:layout_weight="1" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_total"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/cardview_default_elevation"
         android:layout_marginTop="@dimen/edge_padding">
 
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/dialog_padding">
+            android:padding="8dp">
 
             <TableRow>
 

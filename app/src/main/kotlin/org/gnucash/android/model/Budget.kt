@@ -17,8 +17,15 @@ package org.gnucash.android.model
 
 import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.gnucash.android.util.dayOfWeek
+import org.gnucash.android.util.endOfDay
+import org.gnucash.android.util.firstDayOfMonth
+import org.gnucash.android.util.firstDayOfWeek
+import org.gnucash.android.util.firstDayOfYear
 import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
+import org.gnucash.android.util.lastDayOfYear
+import org.gnucash.android.util.startOfDay
+import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDateTime
 import timber.log.Timber
 import java.math.BigDecimal
@@ -176,23 +183,23 @@ class Budget() : BaseModel() {
             var localDate = LocalDateTime()
             localDate = when (recurrence.periodType) {
                 PeriodType.ONCE -> localDate
-                PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
+                PeriodType.HOUR -> localDate.startOfDay()
                     .minusHours(interval)
 
-                PeriodType.DAY -> localDate.minusDays(interval).millisOfDay().withMinimumValue()
-                PeriodType.WEEK -> localDate.minusWeeks(interval).dayOfWeek().withMinimumValue()
-                PeriodType.MONTH -> localDate.minusMonths(interval)
-                    .dayOfMonth().withMinimumValue()
+                PeriodType.DAY -> localDate.minusDays(interval).startOfDay()
+                PeriodType.WEEK -> localDate.minusWeeks(interval).firstDayOfWeek()
+                PeriodType.MONTH -> localDate.minusMonths(interval).firstDayOfMonth()
 
-                PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
+                PeriodType.YEAR -> localDate.minusYears(interval).firstDayOfYear()
                 PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval)
                     .lastDayOfWeek(localDate)
 
-                PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
+                PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval)
+                    .dayOfWeek(localDate)
                 PeriodType.END_OF_MONTH -> localDate.minusMonths(interval)
-                    .dayOfMonth().withMaximumValue()
+                    .lastDayOfMonth()
             }
-            return localDate.toDateTime().millis
+            return localDate.toMillis()
         }
 
     /**
@@ -206,22 +213,20 @@ class Budget() : BaseModel() {
             var localDate = LocalDateTime()
             localDate = when (recurrence.periodType) {
                 PeriodType.ONCE -> localDate
-                PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay()
-                    .withMaximumValue()
+                PeriodType.HOUR -> localDate.plusHours(interval).endOfDay()
 
-                PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
-                PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
-                PeriodType.MONTH -> localDate.plusMonths(interval)
-                    .dayOfMonth().withMaximumValue()
+                PeriodType.DAY -> localDate.plusDays(interval).endOfDay()
+                PeriodType.WEEK -> localDate.plusWeeks(interval).lastDayOfWeek()
+                PeriodType.MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
 
-                PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
+                PeriodType.YEAR -> localDate.plusYears(interval).lastDayOfYear()
                 PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval)
                     .lastDayOfWeek(localDate)
 
                 PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
                 PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
             }
-            return localDate.toDateTime().millis
+            return localDate.toMillis()
         }
 
     fun getStartOfPeriod(periodNum: Int): Long {
@@ -229,16 +234,16 @@ class Budget() : BaseModel() {
         var localDate = LocalDateTime(recurrence.periodStart)
         localDate = when (recurrence.periodType) {
             PeriodType.ONCE -> localDate
-            PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay().withMinimumValue()
-            PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMinimumValue()
-            PeriodType.WEEK -> localDate.minusDays(interval).dayOfWeek().withMinimumValue()
-            PeriodType.MONTH -> localDate.minusMonths(interval).dayOfMonth().withMinimumValue()
-            PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
+            PeriodType.HOUR -> localDate.plusHours(interval).startOfDay()
+            PeriodType.DAY -> localDate.plusDays(interval).startOfDay()
+            PeriodType.WEEK -> localDate.minusDays(interval).firstDayOfWeek()
+            PeriodType.MONTH -> localDate.minusMonths(interval).firstDayOfMonth()
+            PeriodType.YEAR -> localDate.minusYears(interval).firstDayOfYear()
             PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval).lastDayOfMonth()
             PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
             PeriodType.END_OF_MONTH -> localDate.minusMonths(interval).lastDayOfMonth()
         }
-        return localDate.toDateTime().millis
+        return localDate.toMillis()
     }
 
     /**
@@ -253,15 +258,15 @@ class Budget() : BaseModel() {
         localDate = when (recurrence.periodType) {
             PeriodType.ONCE -> localDate
             PeriodType.HOUR -> localDate.plusHours(interval)
-            PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
-            PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
-            PeriodType.MONTH -> localDate.plusMonths(interval).dayOfMonth().withMaximumValue()
-            PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
+            PeriodType.DAY -> localDate.plusDays(interval).endOfDay()
+            PeriodType.WEEK -> localDate.plusWeeks(interval).lastDayOfWeek()
+            PeriodType.MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
+            PeriodType.YEAR -> localDate.plusYears(interval).lastDayOfYear()
             PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval).lastDayOfWeek(localDate)
             PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
             PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
         }
-        return localDate.toDateTime().millis
+        return localDate.toMillis()
     }
 
     fun getBudgetAmount(account: Account, period: Int): BudgetAmount? {

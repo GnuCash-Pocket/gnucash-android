@@ -26,7 +26,7 @@
     <item
         android:id="@+id/menu_toggle_legend"
         android:checkable="true"
-        android:checked="true"
+        android:checked="false"
         android:title="@string/menu_toggle_legend"
         app:showAsAction="never" />
 

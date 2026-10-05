@@ -35,7 +35,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import org.gnucash.android.R
 import org.gnucash.android.databinding.FragmentChartBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportType
@@ -74,8 +74,8 @@ class PieChartFragment : BaseReportFragment<PieData>() {
     private fun getData(context: Context): PieData {
         val dataSet = PieDataSet(null, "")
         val colors = mutableListOf<Int>()
-        val startTime = reportPeriodStart?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
-        val endTime = reportPeriodEnd?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
+        val startTime = reportPeriodStart?.toMillis() ?: ALWAYS
+        val endTime = reportPeriodEnd?.toMillis() ?: ALWAYS
         val commodity = this.commodity
 
         val where = (AccountEntry.COLUMN_TYPE + "=?"
@@ -118,14 +118,16 @@ class PieChartFragment : BaseReportFragment<PieData>() {
 
         val chart = PieChart(context).apply {
             id = R.id.chart
-            setCenterTextSize(CENTER_TEXT_SIZE.toFloat())
+            setCenterTextSize(CENTER_TEXT_SIZE)
             setCenterTextColor(textColorPrimary)
             setOnChartValueSelectedListener(this@PieChartFragment)
             isDrawHoleEnabled = false
             legend.apply {
                 isWordWrapEnabled = true
                 textColor = textColorPrimary
+                isEnabled = isLegendVisible
             }
+            description.isEnabled = false
             this.data = data
 
             if (isEmpty(data)) {
@@ -208,10 +210,10 @@ class PieChartFragment : BaseReportFragment<PieData>() {
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
 
-        val pieChart = chart
-        val chartDataPresent = (pieChart != null) &&
-                (pieChart.data.dataSetCount > 0) &&
-                (pieChart.data.dataSet.entryCount > 0)
+        val chart = chart
+        val chartDataPresent = (chart != null) &&
+                (chart.data.dataSetCount > 0) &&
+                (chart.data.dataSet.entryCount > 0)
         menu.findItem(R.id.menu_order_by_size).isVisible = chartDataPresent
         menu.findItem(R.id.menu_toggle_labels).isVisible = chartDataPresent
         menu.findItem(R.id.menu_group_other_slice).isVisible = chartDataPresent
@@ -220,10 +222,13 @@ class PieChartFragment : BaseReportFragment<PieData>() {
         menu.findItem(R.id.menu_percentage_mode).isVisible = false
         menu.findItem(R.id.menu_toggle_average_lines).isVisible = false
         menu.findItem(R.id.menu_group_reports_by).isVisible = false
+
+        menu.findItem(R.id.menu_toggle_legend).isChecked = isLegendVisible
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.isCheckable) item.isChecked = !item.isChecked
+
         return when (item.itemId) {
             R.id.menu_order_by_size -> {
                 sort()
@@ -231,19 +236,17 @@ class PieChartFragment : BaseReportFragment<PieData>() {
             }
 
             R.id.menu_toggle_legend -> {
-                val pieChart = chart ?: return false
-                pieChart.legend.isEnabled = !pieChart.legend.isEnabled
-                pieChart.notifyDataSetChanged()
-                pieChart.invalidate()
+                val chart = chart ?: return false
+                showLegend(chart, item.isChecked)
                 true
             }
 
             R.id.menu_toggle_labels -> {
-                val pieChart = chart ?: return false
-                val draw = !pieChart.isDrawEntryLabelsEnabled
-                pieChart.data.setDrawValues(draw)
-                pieChart.setDrawEntryLabels(draw)
-                pieChart.invalidate()
+                val chart = chart ?: return false
+                val draw = !chart.isDrawEntryLabelsEnabled
+                chart.data.setDrawValues(draw)
+                chart.setDrawEntryLabels(draw)
+                chart.invalidate()
                 true
             }
 
@@ -266,12 +269,12 @@ class PieChartFragment : BaseReportFragment<PieData>() {
         val data = chart.data
         val total = data.getYValueSum()
         val percent = if (total != 0f) ((value * 100) / total) else 0f
-        selectedValueTextView?.text = formatSelectedValue(label, value, percent)
+        selectedValueTextView?.text = formatSelectedValue(label, value, percent, null)
     }
 
     companion object {
         private const val ANIMATION_DURATION = 1800
-        const val CENTER_TEXT_SIZE: Int = 18
+        const val CENTER_TEXT_SIZE = 18f
 
         /**
          * The space in degrees between the chart slices
