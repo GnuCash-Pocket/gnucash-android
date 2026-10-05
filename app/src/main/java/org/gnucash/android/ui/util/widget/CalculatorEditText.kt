@@ -78,6 +78,7 @@ class CalculatorEditText @JvmOverloads constructor(
     var commodity: Commodity = Commodity.DEFAULT_COMMODITY
 
     val isInputModified: Boolean get() = isContentModified
+    val isKeyboardVisible: Boolean get() = keyboard?.isVisible == true
 
     /**
      * Initialize.
@@ -119,13 +120,6 @@ class CalculatorEditText @JvmOverloads constructor(
                     evaluate()
                 }
             }
-        }
-
-        // NOTE By setting the on click listener we can show the custom keyboard again,
-        // by tapping on an edit box that already had focus (but that had the keyboard hidden).
-        setOnClickListener { v ->
-            if (v !== this@CalculatorEditText) return@setOnClickListener
-            showKeyboard()
         }
 
         registerBackPressed()
@@ -284,9 +278,8 @@ class CalculatorEditText @JvmOverloads constructor(
             val activity = (getActivity() as? ComponentActivity) ?: return
             callback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (!hideKeyboard()) {
-                        isEnabled = false
-                        activity.onBackPressed()
+                    if (isKeyboardVisible) {
+                        clearFocus() // also hides the keyboard
                     }
                 }
             }

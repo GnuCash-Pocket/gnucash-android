@@ -19,10 +19,11 @@ import android.content.ContentValues
 import android.content.Intent
 import androidx.core.content.edit
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.action.ViewActions.swipeDown
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
@@ -156,6 +157,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val beforeCount = transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)
         clickViewId(R.id.fab_add)
 
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .check(matches(isDisplayed()))
             .perform(typeText("Lunch"))
@@ -173,7 +175,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     }
 
     private fun validateEditTransactionFields(transaction: Transaction) {
-        waitForView(R.id.input_transaction_name)
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .check(matches(withText(transaction.description)))
 
@@ -202,7 +204,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         waitForView(R.id.fab_add)
         clickViewId(R.id.fab_add)
 
-        waitForView(R.id.input_transaction_name)
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText("Lunch"))
         closeSoftKeyboard()
@@ -253,6 +255,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         clickViewId(R.id.fab_add)
 
         val transactionName = "Multicurrency lunch"
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText(transactionName))
         onView(withId(R.id.input_transaction_amount))
@@ -301,6 +304,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         validateEditTransactionFields(transaction)
 
         val trnName = "Pasta"
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(clearText(), typeText(trnName))
         clickViewId(R.id.menu_save)
@@ -326,15 +330,14 @@ class TransactionsActivityTest : GnuAndroidTest() {
         setDoubleEntryEnabled(false)
         transactionsDbAdapter.deleteAllRecords()
 
-        assertThat(transactionsDbAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero
         var imbalanceAcctUID = accountsDbAdapter.getImbalanceAccountUID(context, COMMODITY)
         assertThat(imbalanceAcctUID).isNull()
 
         validateTransactionListDisplayed()
         clickViewId(R.id.fab_add)
-        onView(withId(R.id.fragment_transaction_form))
-            .check(matches(isDisplayed()))
 
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText("Autobalance"))
         onView(withId(R.id.input_transaction_amount))
@@ -375,7 +378,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         validateTransactionListDisplayed()
         clickViewId(R.id.fab_add)
 
-        waitForView(R.id.input_transaction_name)
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText("Autobalance"))
         onView(withId(R.id.input_transaction_amount))
@@ -448,7 +451,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         waitForView(R.id.fab_add)
         clickViewId(R.id.fab_add)
 
-        waitForView(R.id.input_transaction_type)
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_type))
             .check(
                 matches(
@@ -606,7 +609,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
         //create new transaction "Transaction Acct" --> "Transfer Account"
         clickViewId(R.id.fab_add)
-        waitForView(R.id.input_transaction_name)
+
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText("Test Split"))
         onView(withId(R.id.input_transaction_amount))
@@ -619,13 +623,18 @@ class TransactionsActivityTest : GnuAndroidTest() {
         sleep(500)
         clickViewText("Test Split")
         clickViewId(R.id.fab_edit)
+        waitForView(R.id.fragment_transaction_form)
 
         clickViewId(R.id.btn_split_editor)
+        onView(withId(R.id.split_list_scroll))
+            .perform(swipeDown())
 
         clickViewText(TRANSACTIONS_ACCOUNT_NAME)
         clickViewText(account.fullName)
 
+        // Save the splits.
         clickViewId(R.id.menu_save)
+        // Save the transaction.
         clickViewId(R.id.menu_save)
 
         assertThat(
@@ -697,12 +706,13 @@ class TransactionsActivityTest : GnuAndroidTest() {
     fun openingAndSavingMultiCurrencyTransaction_shouldNotModifyTheSplits() {
         val bgnCommodity = commoditiesDbAdapter.getCurrency("BGN")!!
         val account = Account("Zen Account", bgnCommodity)
+        val trnDescription = "Multi-currency trn"
 
         accountsDbAdapter.addRecord(account)
 
         clickViewId(R.id.fab_add)
-        waitForView(R.id.input_transaction_name)
-        val trnDescription = "Multi-currency trn"
+
+        waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.input_transaction_name))
             .perform(typeText(trnDescription))
         onView(withId(R.id.input_transaction_name))
@@ -818,7 +828,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         //no splits should be in the euro account anymore
         val euroTransxns =
             transactionsDbAdapter.getTransactionsForAccount(euroAccount.uid)
-        assertThat(euroTransxns).hasSize(0)
+        assertThat(euroTransxns).isEmpty()
 
         val transferAcctTrns = transactionsDbAdapter.getTransactionsForAccount(transferAccount)
         assertThat(transferAcctTrns).hasSize(1)
@@ -937,10 +947,11 @@ class TransactionsActivityTest : GnuAndroidTest() {
     fun single_entry_transaction() {
         setDoubleEntryEnabled(false)
         transactionsDbAdapter.deleteAllRecords()
-        assertThat(transactionsDbAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero
 
         validateTransactionListDisplayed()
         clickViewId(R.id.fab_add)
+
         waitForView(R.id.fragment_transaction_form)
         onView(withId(R.id.fragment_transaction_form))
             .check(matches(isDisplayed()))
@@ -968,12 +979,12 @@ class TransactionsActivityTest : GnuAndroidTest() {
     }
 
     /**
-     * Refresh the account list fragment
+     * Refresh the transactions list fragment
      */
     private fun refreshTransactionsList() {
         try {
             activityRule.runOnUiThread { transactionsActivity.refresh() }
-            sleep(1000)
+            sleep(1000)  // for animations
         } catch (throwable: Throwable) {
             System.err.println("Failed to refresh transactions")
         }
