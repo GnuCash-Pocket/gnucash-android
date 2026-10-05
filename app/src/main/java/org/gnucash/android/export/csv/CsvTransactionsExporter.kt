@@ -92,9 +92,9 @@ class CsvTransactionsExporter(
             fields[13] = sign + value.formattedString()
             fields[14] = sign + value.formattedStringWithoutSymbol(withGrouping = false)
 
-            fields[15] = split.reconcileState.toString()
-            if (split.reconcileState == Split.FLAG_RECONCILED) {
-                fields[16] = dateFormat.print(split.reconcileDate)
+            fields[15] = split.reconciledState.toString()
+            if (split.reconciledState == Split.RECONCILED_YES && split.reconciledDate > 0L) {
+                fields[16] = dateFormat.print(split.reconciledDate)
             } else {
                 fields[16] = ""
             }

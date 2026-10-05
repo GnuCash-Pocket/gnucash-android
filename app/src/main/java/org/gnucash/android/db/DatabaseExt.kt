@@ -33,6 +33,14 @@ fun SQLiteStatement.bindBoolean(@IntRange(from = 1) index: Int, value: Boolean) 
     bindLong(index, if (value) 1L else 0L)
 }
 
+fun SQLiteStatement.bindChar(@IntRange(from = 1) index: Int, value: Char?) {
+    if (value != null) {
+        bindString(index, value.toString())
+    } else {
+        bindNull(index)
+    }
+}
+
 fun SQLiteStatement.bindInt(@IntRange(from = 1) index: Int, value: Int) {
     bindLong(index, value.toLong())
 }
@@ -93,6 +101,15 @@ fun Cursor.getBoolean(@IntRange(from = 0) columnIndex: Int): Boolean {
 
 fun Cursor.getBoolean(columnName: String, @IntRange(from = 0) offset: Int = 0): Boolean {
     return getBoolean(getColumnIndexOrThrow(columnName, offset))
+}
+
+fun Cursor.getChar(columnName: String, @IntRange(from = 0) offset: Int = 0): Char? {
+    return getString(getColumnIndexOrThrow(columnName, offset))?.get(0)
+}
+
+fun Cursor.getChar(@IntRange(from = 0) columnIndex: Int): Char? {
+    val value = getString(columnIndex) ?: return null
+    return value[0]
 }
 
 fun Cursor.getDouble(columnName: String, @IntRange(from = 0) offset: Int = 0): Double {
