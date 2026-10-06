@@ -120,7 +120,7 @@ class QualifiedAccountNameAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = super.getView(position, convertView, parent)
         val textView = (view as? TextView) ?: view.findViewById(android.R.id.text1)
-        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+        textView.ellipsize = TextUtils.TruncateAt.START
         return view
     }
 
@@ -129,7 +129,7 @@ class QualifiedAccountNameAdapter(
 
         val view = super.getDropDownView(position, convertView, parent)
         val textView = (view as? TextView) ?: view.findViewById(android.R.id.text1)
-        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+        textView.ellipsize = TextUtils.TruncateAt.START
 
         @DrawableRes val icon = if (account.isFavorite) R.drawable.ic_favorite else 0
         textView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, icon, 0)

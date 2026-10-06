@@ -16,6 +16,7 @@
 package org.gnucash.android.ui.transaction
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -29,6 +30,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.AdapterView.INVALID_POSITION
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
@@ -43,6 +45,7 @@ import org.gnucash.android.app.finish
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentSplitEditorBinding
 import org.gnucash.android.databinding.ItemSplitEntryBinding
+import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.BaseModel.Companion.generateUID
 import org.gnucash.android.model.Commodity
@@ -67,6 +70,7 @@ import java.math.BigDecimal
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class SplitEditorFragment : MenuFragment() {
+    private var accountsDbAdapter = AccountsDbAdapter.instance
     private var accountNameAdapter: QualifiedAccountNameAdapter? = null
     private val splitViewHolders = mutableListOf<SplitViewHolder>()
     private var account: Account? = null
@@ -92,6 +96,11 @@ class SplitEditorFragment : MenuFragment() {
 
     @ColorInt
     private var colorBalanceZero = Color.TRANSPARENT
+
+    override fun onStart() {
+        super.onStart()
+        accountsDbAdapter = AccountsDbAdapter.instance
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -312,34 +321,32 @@ class SplitEditorFragment : MenuFragment() {
                 val valueCommodity = split.value.commodity
                 splitAmountEditText.commodity = valueCommodity
                 val splitAccountUID = split.accountUID
-                val account = accountNameAdapter.getAccount(splitAccountUID)
-                if (account == null) {
+                val splitAccount = accountNameAdapter.getAccount(splitAccountUID)
+                if (splitAccount == null) {
                     Timber.e("Account for split not found")
                     bind(null)
                     return
                 }
                 splitAmountEditText.setValue(
-                    split.getFormattedValue(account).toBigDecimal(),
+                    split.getFormattedValue(splitAccount).toBigDecimal(),
                     true /* isOriginal */
                 )
                 splitCurrencyTextView.text = valueCommodity.symbol
                 splitMemoEditText.setText(split.memo)
                 splitUidTextView.text = split.uid
-                setSelectedTransferAccount(splitAccountUID, accountsSpinner)
-                splitTypeSwitch.accountType = account.type
+                setSelectedAccount(splitAccount, accountsSpinner)
+                splitTypeSwitch.accountType = splitAccount.type
                 splitTypeSwitch.setChecked(split.type)
             } else {
+                val context: Context = itemView.context
                 val account = this@SplitEditorFragment.account
                 val commodity = account!!.commodity
                 splitCurrencyTextView.text = commodity.symbol
                 splitUidTextView.text = generateUID()
 
-                val transferUID = account.defaultTransferAccountUID
-                val accountTransfer = transferUID?.let { accountNameAdapter.getAccountDb(it) }
-                if (accountTransfer != null) {
-                    setSelectedTransferAccount(transferUID, accountsSpinner)
-                    splitTypeSwitch.accountType = accountTransfer.type
-                }
+                val transferAccount = findTransferAccount(context, account)
+                setSelectedAccount(transferAccount, accountsSpinner)
+                splitTypeSwitch.accountType = transferAccount.type
                 splitTypeSwitch.isChecked = baseAmount.signum() > 0
             }
 
@@ -352,10 +359,10 @@ class SplitEditorFragment : MenuFragment() {
     /**
      * Updates the spinner to the selected transfer account
      *
-     * @param accountUID Database ID of the transfer account
+     * @param account the transfer account
      */
-    private fun setSelectedTransferAccount(accountUID: String?, inputAccountsSpinner: Spinner) {
-        val position = accountNameAdapter?.getPosition(accountUID) ?: Spinner.INVALID_POSITION
+    private fun setSelectedAccount(account: Account, inputAccountsSpinner: Spinner) {
+        val position = accountNameAdapter?.getValuePosition(account) ?: INVALID_POSITION
         inputAccountsSpinner.setSelection(position)
     }
 
@@ -579,4 +586,9 @@ class SplitEditorFragment : MenuFragment() {
 
             return false
         }
+
+    private fun findTransferAccount(context: Context, account: Account): Account {
+        return accountsDbAdapter.findDefaultTransferAccount(account)
+            ?: accountsDbAdapter.getOrCreateImbalanceAccount(context, account.commodity)
+    }
 }

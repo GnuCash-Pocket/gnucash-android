@@ -476,17 +476,24 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
         val account1 = Account("Test")
         val account2 = Account("Transfer Account")
+
+        assertThat(accountsDbAdapter.getDefaultTransferAccount(account1)).isNull()
+        assertThat(accountsDbAdapter.findDefaultTransferAccount(account1)).isNull()
         account1.defaultTransferAccountUID = account2.uid
 
         accountsDbAdapter.addRecord(account1)
         accountsDbAdapter.addRecord(account2)
-
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3L) //plus ROOT account
-        accountsDbAdapter.deleteRecord(account2.uid)
 
+        assertThat(accountsDbAdapter.getDefaultTransferAccount(account1)).isEqualTo(account2)
+        assertThat(accountsDbAdapter.findDefaultTransferAccount(account1)).isEqualTo(account2)
+
+        accountsDbAdapter.deleteRecord(account2.uid)
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
-        assertThat(accountsDbAdapter.getRecord(account1.uid).defaultTransferAccountUID)
-            .isNull()
+
+        assertThat(accountsDbAdapter.getRecord(account1.uid).defaultTransferAccountUID).isNull()
+        assertThat(accountsDbAdapter.getDefaultTransferAccount(account1)).isNull()
+        assertThat(accountsDbAdapter.findDefaultTransferAccount(account1)).isNull()
 
         val account3 = Account("Sub-test")
         account3.parentUID = account1.uid
