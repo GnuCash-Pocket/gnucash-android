@@ -558,7 +558,7 @@ abstract class Exporter protected constructor(
             if (isCompressed) {
                 if (format == ExportFormat.QIF) {
                     name.append(".zip")
-                } else if (format != ExportFormat.XML) {
+                } else if (format != ExportFormat.XML && format != ExportFormat.SQLITE) {
                     name.append(".gz")
                 }
             }
