@@ -449,7 +449,7 @@ class AccountsDbAdapter(
      * @param commodity Commodity for the imbalance account
      * @return The account
      */
-    fun getOrCreateImbalanceAccount(context: Context, commodity: Commodity): Account? {
+    fun getOrCreateImbalanceAccount(context: Context, commodity: Commodity): Account {
         val imbalanceAccountName = getImbalanceAccountName(context, commodity)
         val uid = findAccountUidByFullName(imbalanceAccountName)
         if (uid.isNullOrEmpty()) {
@@ -1180,12 +1180,44 @@ class AccountsDbAdapter(
     }
 
     /**
+     * Returns the default transfer account record ID for the account with UID `accountUID`
+     *
+     * @param account The main account
+     * @return Record of default transfer account
+     */
+    fun getDefaultTransferAccount(account: Account): Account? {
+        val accountUID = account.uid
+        val defaultTransferUid = account.defaultTransferAccountUID
+
+        if (defaultTransferUid.isNullOrEmpty()) {
+            val where = AccountEntry.COLUMN_UID + " != ?" +
+                    " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0" +
+                    " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0" +
+                    " AND " + AccountEntry.COLUMN_TYPE + " != ?" +
+                    " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+            val whereArgs = arrayOf<String?>(accountUID, account.type.name, AccountType.ROOT.name)
+            return getAllRecords(where, whereArgs, null).firstOrNull()
+        }
+
+        if (isCached) {
+            for (a in cache.values) {
+                if (defaultTransferUid == a.uid) {
+                    return a
+                }
+            }
+        }
+        val where = AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " = ?"
+        val whereArgs = arrayOf<String?>(defaultTransferUid)
+        return getAllRecords(where, whereArgs, null).firstOrNull()
+    }
+
+    /**
      * Returns the full account name including the account hierarchy (parent accounts)
      *
      * @param accountUID Unique ID of account
      * @return Fully qualified (with parent hierarchy) account name
      */
-    fun getFullyQualifiedAccountName(accountUID: String): String? {
+    fun getFullyQualifiedAccountName(accountUID: String): String {
         val accountName = getAccountName(accountUID)
         val parentAccountUID = getParentAccountUID(accountUID)
 
@@ -1196,6 +1228,25 @@ class AccountsDbAdapter(
         val parentAccountName = getFullyQualifiedAccountName(parentAccountUID)
 
         return parentAccountName + ACCOUNT_NAME_SEPARATOR + accountName
+    }
+
+    fun findDefaultTransferAccount(account: Account): Account? {
+        val transferAccountUID = account.defaultTransferAccountUID
+        if (!transferAccountUID.isNullOrEmpty()) {
+            val transferAccount = getRecordOrNull(transferAccountUID)
+            if (transferAccount != null) return transferAccount
+        }
+
+        val parentUID = account.parentUID
+        if (!parentUID.isNullOrEmpty()) {
+            val parentAccount = getRecordOrNull(parentUID)
+            if (parentAccount != null) {
+                val transferAccount = findDefaultTransferAccount(parentAccount)
+                if (transferAccount != null) return transferAccount
+            }
+        }
+
+        return getDefaultTransferAccount(account)
     }
 
     /**
