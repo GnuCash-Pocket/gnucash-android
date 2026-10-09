@@ -51,12 +51,12 @@ import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
+import org.gnucash.android.util.firstDayOfMonth
 import org.gnucash.android.util.getFirstQuarterMonth
-import org.gnucash.android.util.parseColor
 import org.gnucash.android.util.textColorPrimary
 import org.joda.time.LocalDateTime
-import org.joda.time.Months
-import org.joda.time.Years
+import org.joda.time.Period
+import org.joda.time.PeriodType
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.Locale
@@ -123,6 +123,8 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
      */
     abstract val reportType: ReportType
 
+    private var accountColors: List<Int> = emptyList()
+
     /**
      * Return the title of this report
      *
@@ -179,7 +181,7 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
         savedInstanceState: Bundle?
     ): View? {
         val view = inflateView(inflater, container)
-        selectedValueTextView = view.findViewById<TextView>(R.id.selected_chart_slice)
+        selectedValueTextView = view.findViewById(R.id.selected_chart_slice)
         return view
     }
 
@@ -191,9 +193,12 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val context = requireContext()
         accountsDbAdapter = AccountsDbAdapter.instance
-        useAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        useAccountColor = PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(getString(R.string.key_use_account_color), false)
+        // Ignore the first few colors as they look disabled.
+        accountColors = context.resources.getIntArray(R.array.colors_gtk).dropLast(10).shuffle(5)
     }
 
     override fun onStart() {
@@ -257,23 +262,30 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
         start: LocalDateTime,
         end: LocalDateTime
     ): Int {
-        var start = start
-        var end = end
-        start = start.withMillisOfDay(0)
-        end = end.withMillisOfDay(0)
         when (groupInterval) {
-            GroupInterval.MONTH -> return max(1, Months.monthsBetween(start, end).months)
+            GroupInterval.MONTH -> {
+                val period = Period(start, end, PeriodType.yearMonthDay())
+                var months = (period.years * 12) + period.months
+                if (period.days > 0) months++
+                return max(1, months)
+            }
 
             GroupInterval.QUARTER -> {
-                start = start.withMonthOfYear(start.getFirstQuarterMonth())
-                    .dayOfMonth().withMinimumValue()
-                val m = Months.monthsBetween(start, end).months
+                val start = start.withMonthOfYear(start.getFirstQuarterMonth())
+                    .firstDayOfMonth()
+                val period = Period(start, end, PeriodType.yearMonthDay())
+                val m = (period.years * 12) + period.months
                 var q = m / 3
                 if (m % 3 > 0) q++
                 return max(1, q)
             }
 
-            GroupInterval.YEAR -> return max(1, Years.yearsBetween(start, end).years)
+            GroupInterval.YEAR -> {
+                val period = Period(start, end, PeriodType.yearMonthDay())
+                var years = period.years
+                if (period.days > 0) years++
+                return max(1, years)
+            }
 
             else -> return -1
         }
@@ -356,12 +368,13 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
     @ColorInt
     protected fun getAccountColor(account: Account, count: Int): Int {
         @ColorInt val color: Int = if (useAccountColor) {
-            if (account.color != Account.DEFAULT_COLOR)
+            if (account.color != Account.DEFAULT_COLOR) {
                 account.color
-            else
-                COLORS[count % COLORS.size]
+            } else {
+                accountColors[count % accountColors.size]
+            }
         } else {
-            COLORS[count % COLORS.size]
+            accountColors[count % accountColors.size]
         }
         return color
     }
@@ -394,16 +407,6 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
          */
         const val NO_DATA_COLOR: Int = Color.LTGRAY
         protected const val DATA_EMPTY = 1e-5f
-
-        protected val COLORS: IntArray = intArrayOf(
-            parseColor("#17ee4e")!!, parseColor("#cc1f09")!!, parseColor("#3940f7")!!,
-            parseColor("#f9cd04")!!, parseColor("#5f33a8")!!, parseColor("#e005b6")!!,
-            parseColor("#17d6ed")!!, parseColor("#e4a9a2")!!, parseColor("#8fe6cd")!!,
-            parseColor("#8b48fb")!!, parseColor("#343a36")!!, parseColor("#6decb1")!!,
-            parseColor("#f0f8ff")!!, parseColor("#5c3378")!!, parseColor("#a6dcfd")!!,
-            parseColor("#ba037c")!!, parseColor("#708809")!!, parseColor("#32072c")!!,
-            parseColor("#fddef8")!!, parseColor("#fa0e6e")!!, parseColor("#d9e7b5")!!
-        )
 
         /**
          * Pattern to use to display selected chart values
@@ -454,12 +457,20 @@ abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
             )
         }
 
-        fun <E : Entry, T : IDataSet<E>> getYValueSum(data: ChartData<T>): Float {
-            return data.yMax - data.yMin
-        }
-
         fun <E : Entry> getYValueSum(dataSet: IDataSet<E>): Float {
             return dataSet.yMax - dataSet.yMin
         }
     }
+}
+
+private fun List<Int>.shuffle(step: Int): List<Int> {
+    val count = this.size
+    val result = ArrayList<Int>(count)
+
+    for (s in 0 until step) {
+        for (j in s until count step step) {
+            result.add(get(j))
+        }
+    }
+    return result
 }

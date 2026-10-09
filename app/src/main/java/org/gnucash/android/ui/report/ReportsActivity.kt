@@ -44,6 +44,7 @@ import org.gnucash.android.ui.get
 import org.gnucash.android.ui.report.ReportType.Companion.getReportNames
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment.OnDateRangeSetListener
+import org.gnucash.android.util.firstDayOfMonth
 import org.gnucash.android.util.toLocalDateTime
 import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDate
@@ -145,18 +146,22 @@ class ReportsActivity : BaseDrawerActivity(),
                 val now = LocalDateTime.now()
                 reportPeriodEnd = now
                 when (position) {
-                    0 -> reportPeriodStart = now.dayOfMonth().withMinimumValue()
-                    1 -> reportPeriodStart = now.minusMonths(3)
-                    2 -> reportPeriodStart = now.minusMonths(6)
-                    3 -> reportPeriodStart = now.minusYears(1)
-                    4 -> {
+                    PERIOD_CURRENT_MONTH -> reportPeriodStart = now.firstDayOfMonth()
+
+                    PERIOD_LAST_3_MONTHS -> reportPeriodStart = now.firstDayOfMonth().minusMonths(2)
+
+                    PERIOD_LAST_6_MONTHS -> reportPeriodStart = now.firstDayOfMonth().minusMonths(5)
+
+                    PERIOD_LAST_YEAR -> reportPeriodStart = now.firstDayOfMonth().minusMonths(11)
+
+                    PERIOD_ALL -> {
                         reportPeriodStart = null
                         reportPeriodEnd = null
                     }
 
-                    5 -> {
+                    PERIOD_CUSTOM -> {
                         val commodityUID = Commodity.DEFAULT_COMMODITY.uid
-                        val earliest = transactionsDbAdapter!!.getTimestampOfEarliestTransaction(
+                        val earliest = transactionsDbAdapter.getTimestampOfEarliestTransaction(
                             accountType,
                             commodityUID
                         )
@@ -364,6 +369,13 @@ class ReportsActivity : BaseDrawerActivity(),
         private const val STATE_REPORT_TYPE = "report_type"
         private const val STATE_REPORT_START = "report_start"
         private const val STATE_REPORT_END = "report_end"
+
+        private const val PERIOD_CURRENT_MONTH = 0
+        private const val PERIOD_LAST_3_MONTHS = 1
+        private const val PERIOD_LAST_6_MONTHS = 2
+        private const val PERIOD_LAST_YEAR = 3
+        private const val PERIOD_ALL = 4
+        private const val PERIOD_CUSTOM = 5
 
         fun show(context: Context) {
             val intent = Intent(context, ReportsActivity::class.java)

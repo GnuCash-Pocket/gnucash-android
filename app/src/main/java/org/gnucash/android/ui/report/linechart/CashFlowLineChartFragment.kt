@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.report.linechart
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -28,6 +29,7 @@ import com.github.mikephil.charting.components.LimitLine
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
@@ -35,15 +37,19 @@ import org.gnucash.android.R
 import org.gnucash.android.databinding.FragmentChartBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.ui.report.IntervalReportFragment
 import org.gnucash.android.ui.report.ReportType
 import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
-import org.gnucash.android.util.getFirstQuarterMonth
-import org.gnucash.android.util.parseColor
+import org.gnucash.android.util.endOfDay
+import org.gnucash.android.util.getQuarter
+import org.gnucash.android.util.lastDayOfMonth
+import org.gnucash.android.util.lastDayOfYear
 import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDateTime
 import timber.log.Timber
+import java.text.SimpleDateFormat
 
 /**
  * Fragment for line chart reports
@@ -54,6 +60,14 @@ import timber.log.Timber
 class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
     private var binding: FragmentChartBinding? = null
     private var chart: LineChart? = null
+    private val lineColors = mapOf(
+        AccountType.INCOME to Color.GREEN,
+        AccountType.EXPENSE to Color.RED
+    )
+    private val fillColors = mapOf(
+        AccountType.INCOME to Color.GREEN,
+        AccountType.EXPENSE to Color.RED
+    )
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
         val binding = FragmentChartBinding.inflate(inflater, container, false)
@@ -72,20 +86,26 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
      */
     private fun getData(context: Context, accountTypes: List<AccountType>): LineData {
         Timber.i("getData for %s", accountTypes)
-        calculateEarliestAndLatestTimestamps(accountTypes)
         val groupInterval = this.groupInterval
-        val startDate = reportPeriodStart
-        val endDate = reportPeriodEnd
+        val commodity = this.commodity
+
+        val dates = calculateDateRange(accountTypes, groupInterval)
+        if (dates == null) {
+            isChartDataPresent = false
+            return getEmptyData(context)
+        }
+        val startDate = dates.start
+        val endDate = dates.endInclusive
 
         val dataSets = mutableListOf<ILineDataSet>()
         for (accountType in accountTypes) {
-            val index = dataSets.size
-            val entries = getEntryList(accountType, groupInterval, startDate, endDate)
-            val dataSet = LineDataSet(entries, getLabel(context, accountType))
-            dataSet.setDrawFilled(true)
-            dataSet.lineWidth = 2f
-            dataSet.color = LINE_COLORS[index]
-            dataSet.fillColor = FILL_COLORS[index]
+            val entries = getEntryList(accountType, groupInterval, startDate, endDate, commodity)
+            val dataSet = LineDataSet(entries, getLabel(context, accountType)).apply {
+                setDrawFilled(true)
+                lineWidth = 2f
+                color = lineColors[accountType] ?: Color.BLUE
+                fillColor = fillColors[accountType] ?: Color.BLUE
+            }
             dataSets.add(dataSet)
         }
 
@@ -106,11 +126,12 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
             yValues.add(Entry(i.toFloat(), if (isEven) 5f else 4.5f))
             isEven = !isEven
         }
-        val dataSet = LineDataSet(yValues, context.getString(R.string.label_chart_no_data))
-        dataSet.setDrawFilled(true)
-        dataSet.setDrawValues(false)
-        dataSet.color = NO_DATA_COLOR
-        dataSet.fillColor = NO_DATA_COLOR
+        val dataSet = LineDataSet(yValues, context.getString(R.string.label_chart_no_data)).apply {
+            setDrawFilled(true)
+            setDrawValues(false)
+            color = NO_DATA_COLOR
+            fillColor = NO_DATA_COLOR
+        }
 
         return LineData(dataSet)
     }
@@ -131,47 +152,27 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
     private fun getEntryList(
         accountType: AccountType,
         groupInterval: GroupInterval,
-        startEntries: LocalDateTime?,
-        endEntries: LocalDateTime?
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+        commodity: Commodity
     ): List<Entry> {
-        val commodity = this.commodity
         val entries = mutableListOf<Entry>()
 
-        var startDate = startEntries
-        if (startDate == null) {
-            val startTime = earliestTimestamps[accountType]
-            if (startTime != null) {
-                startDate = LocalDateTime(startTime)
-            } else {
-                return entries
-            }
-        }
-        var endDate = endEntries
-        if (endDate == null) {
-            val endTime = latestTimestamps[accountType]
-            endDate = if (endTime != null) {
-                LocalDateTime(endTime)
-            } else {
-                LocalDateTime.now()
-            }
-        }
-        val earliestDate = earliestTransactionTimestamp!!
-        val xAxisOffset = getDateDiff(groupInterval, earliestDate, startDate)
-        val count = getDateDiff(groupInterval, startDate, endDate)
         var startPeriod: LocalDateTime = startDate
-        var endPeriod = endDate!!
+        var endPeriod: LocalDateTime = endDate
         when (groupInterval) {
-            GroupInterval.MONTH -> endPeriod = startPeriod.plusMonths(1)
-            GroupInterval.QUARTER -> {
-                startPeriod = startPeriod.withMonthOfYear(startPeriod.getFirstQuarterMonth())
-                    .dayOfMonth()
-                    .withMinimumValue()
-                endPeriod = startPeriod.plusMonths(3)
-            }
+            GroupInterval.MONTH -> endPeriod = startPeriod.lastDayOfMonth().endOfDay()
 
-            GroupInterval.YEAR -> endPeriod = startPeriod.plusYears(1)
+            GroupInterval.QUARTER -> endPeriod = startPeriod.plusMonths(2)
+                .lastDayOfMonth().endOfDay()
+
+            GroupInterval.YEAR -> endPeriod = startPeriod.lastDayOfYear().endOfDay()
+
             else -> Unit
         }
+
+        val pattern = getXAxisPattern(groupInterval)
+        val dateFormatter = SimpleDateFormat(pattern)
 
         val where = (AccountEntry.COLUMN_TYPE + "=?"
                 + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
@@ -179,17 +180,16 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
         val whereArgs = arrayOf<String?>(accountType.name)
         val accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
 
-        var i = 0
-        var x = xAxisOffset
-        while (i < count) {
+        var x = 0f
+        while (startPeriod <= endDate) {
             val startTime = startPeriod.toMillis()
             val endTime = endPeriod.toMillis()
             var balance = createZeroInstance(commodity)
             val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
             for (accountBalance in balances.values) {
                 var accountBalance = accountBalance
-                val price =
-                    pricesDbAdapter.getPrice(accountBalance.commodity, commodity) ?: continue
+                val price = pricesDbAdapter.getPrice(accountBalance.commodity, commodity)
+                    ?: continue
                 accountBalance *= price
                 balance += accountBalance
             }
@@ -202,22 +202,32 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
                 balance
             )
 
-            startPeriod = endPeriod
+            var datePretty = ""
             when (groupInterval) {
-                GroupInterval.MONTH -> endPeriod = endPeriod.plusMonths(1)
-                GroupInterval.QUARTER -> endPeriod = endPeriod.plusMonths(3)
-                GroupInterval.YEAR -> endPeriod = endPeriod.plusYears(1)
+                GroupInterval.MONTH -> {
+                    datePretty = dateFormatter.format(startTime)
+                    startPeriod = startPeriod.plusMonths(1)
+                    endPeriod = endPeriod.plusMonths(1)
+                }
+
+                GroupInterval.QUARTER -> {
+                    val quarter = startPeriod.getQuarter()
+                    datePretty = "Q" + quarter + " " + dateFormatter.format(startTime)
+                    startPeriod = startPeriod.plusMonths(3)
+                    endPeriod = endPeriod.plusMonths(3)
+                }
+
+                GroupInterval.YEAR -> {
+                    datePretty = dateFormatter.format(startTime)
+                    startPeriod = startPeriod.plusYears(1)
+                    endPeriod = endPeriod.plusYears(1)
+                }
+
                 else -> Unit
             }
 
-            if (balance.isAmountZero) {
-                i++
-                x++
-                continue
-            }
             val value = balance.toFloat()
-            entries.add(Entry(x.toFloat(), value))
-            i++
+            entries.add(Entry(x, value, datePretty))
             x++
         }
 
@@ -229,12 +239,8 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
     }
 
     override fun generateReport(context: Context): LineData {
-        isChartDataPresent = false
         val data = getData(context, accountTypes)
-        if (isEmpty(data)) {
-            return getEmptyData(context)
-        }
-        isChartDataPresent = true
+        isChartDataPresent = !isEmpty(data)
         return data
     }
 
@@ -250,11 +256,13 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
             setOnChartValueSelectedListener(this@CashFlowLineChartFragment)
             xAxis.setDrawGridLines(false)
             xAxis.textColor = textColorPrimary
+            xAxis.valueFormatter = IndexAxisValueFormatter(getXAxisLabels(data))
             axisRight.isEnabled = false
             axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
             axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
             axisLeft.textColor = textColorPrimary
             legend.textColor = textColorPrimary
+            description.isEnabled = false
 
             this.data = data
 
@@ -353,16 +361,23 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
         lineChart.invalidate()
     }
 
+    private fun getXAxisLabels(data: LineData): List<String> {
+        val labels = sortedMapOf<Int, String>()
+
+        for (i in 0 until data.dataSetCount) {
+            val dataSet = data.getDataSetByIndex(i)
+            for (e in 0 until dataSet.entryCount) {
+                val entry = dataSet.getEntryForIndex(e)
+                val entryData = entry.data as? String ?: continue
+                labels[e] = entryData
+            }
+        }
+
+        return labels.values.toList()
+    }
+
     companion object {
-        private const val ANIMATION_DURATION = 3000
+        private const val ANIMATION_DURATION = 1500
         private const val NO_DATA_BAR_COUNTS = 5
-        private val LINE_COLORS = intArrayOf(
-            parseColor("#68F1AF")!!, parseColor("#cc1f09")!!, parseColor("#EE8600")!!,
-            parseColor("#1469EB")!!, parseColor("#B304AD")!!,
-        )
-        private val FILL_COLORS = intArrayOf(
-            parseColor("#008000")!!, parseColor("#FF0000")!!, parseColor("#BE6B00")!!,
-            parseColor("#0065FF")!!, parseColor("#8F038A")!!,
-        )
     }
 }

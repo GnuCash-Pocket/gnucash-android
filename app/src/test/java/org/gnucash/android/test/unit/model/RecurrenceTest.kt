@@ -21,10 +21,21 @@ import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.util.dayOfWeek
+import org.gnucash.android.util.endOfDay
+import org.gnucash.android.util.firstDayOfMonth
+import org.gnucash.android.util.firstDayOfWeek
+import org.gnucash.android.util.firstHourOfDay
+import org.gnucash.android.util.firstMonthOfYear
+import org.gnucash.android.util.lastDayOfMonth
+import org.gnucash.android.util.lastDayOfWeek
+import org.gnucash.android.util.lastHourOfDay
+import org.gnucash.android.util.lastMonthOfYear
+import org.gnucash.android.util.startOfDay
+import org.gnucash.android.util.toMillis
 import org.gnucash.android.util.weekOfMonth
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
-import org.joda.time.LocalDateTime
+import org.joda.time.DateTimeZone
 import org.joda.time.Weeks
 import org.joda.time.format.DateTimeFormat
 import org.junit.Test
@@ -101,9 +112,10 @@ class RecurrenceTest : GnuCashTest() {
         days.add(Calendar.MONDAY)
         recurrence.periodStart = start.millis
         recurrence.byDays = days
+        recurrence.multiplier = 1
 
         assertThat(recurrence.periodType).isEqualTo(PeriodType.WEEK)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
         assertThat(recurrence.byDays).isEqualTo(days)
         val ruleString = recurrence.ruleString
         assertThat(ruleString).isEqualTo("FREQ=WEEKLY;INTERVAL=1;BYDAY=MO")
@@ -212,7 +224,7 @@ class RecurrenceTest : GnuCashTest() {
 
     @Test
     fun min_max() {
-        val date = LocalDateTime(2024, 2, 2, 12, 34, 56, 789)
+        val date = DateTime(2024, 2, 2, 12, 34, 56, 789, DateTimeZone.UTC)
         var hMin: String
         var hMax: String
         val df = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC()
@@ -220,10 +232,10 @@ class RecurrenceTest : GnuCashTest() {
         val h = df.print(date)
         assertThat(h).isEqualTo("2024-02-02 12:34:56")
 
-        var dateMin = date.millisOfDay().withMinimumValue()
+        var dateMin = date.startOfDay()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-02-02 00:00:00")
-        var dateMax = date.millisOfDay().withMaximumValue()
+        var dateMax = date.endOfDay()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-02 23:59:59")
 
@@ -241,44 +253,44 @@ class RecurrenceTest : GnuCashTest() {
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-02 12:59:56")
 
-        dateMin = date.hourOfDay().withMinimumValue()
+        dateMin = date.firstHourOfDay()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-02-02 00:34:56")
-        dateMax = date.hourOfDay().withMaximumValue()
+        dateMax = date.lastHourOfDay()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-02 23:34:56")
 
-        dateMin = date.hourOfDay().withMinimumValue()
+        dateMin = date.firstHourOfDay()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-02-02 00:34:56")
-        dateMax = date.hourOfDay().withMaximumValue()
+        dateMax = date.lastHourOfDay()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-02 23:34:56")
 
-        dateMin = date.dayOfMonth().withMinimumValue()
+        dateMin = date.firstDayOfMonth()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-02-01 12:34:56")
-        dateMax = date.dayOfMonth().withMaximumValue()
+        dateMax = date.lastDayOfMonth()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-29 12:34:56")
 
         // Monday is the first day of week.
-        dateMin = date.dayOfWeek().withMinimumValue()
+        dateMin = date.firstDayOfWeek()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-01-29 12:34:56")
         // Sunday is the last day of the week.
-        dateMax = date.dayOfWeek().withMaximumValue()
+        dateMax = date.lastDayOfWeek()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-02-04 12:34:56")
         // Sunday is the last day of the week.
-        dateMax = date.dayOfMonth().withMaximumValue().dayOfWeek().withMaximumValue()
+        dateMax = date.lastDayOfMonth().lastDayOfWeek()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-03-03 12:34:56")
 
-        dateMin = date.monthOfYear().withMinimumValue()
+        dateMin = date.firstMonthOfYear()
         hMin = df.print(dateMin)
         assertThat(hMin).isEqualTo("2024-01-02 12:34:56")
-        dateMax = date.monthOfYear().withMaximumValue()
+        dateMax = date.lastMonthOfYear()
         hMax = df.print(dateMax)
         assertThat(hMax).isEqualTo("2024-12-02 12:34:56")
     }
@@ -352,6 +364,7 @@ class RecurrenceTest : GnuCashTest() {
         val date = DateTime(now)
         assertThat(date.toDate().time).isEqualTo(now)
         assertThat(date.toDateTime().millis).isEqualTo(now)
+        assertThat(date.toMillis()).isEqualTo(now)
     }
 
     @Test
@@ -361,18 +374,18 @@ class RecurrenceTest : GnuCashTest() {
         assertThat(date.dayOfMonth).isEqualTo(18)
         assertThat(date.dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
         assertThat(date.weekOfMonth()).isEqualTo(3)
-        val firstDayOfMonth = date.dayOfMonth().withMinimumValue()
+        val firstDayOfMonth = date.firstDayOfMonth()
 
         val weeksDiff = Weeks.weeksBetween(firstDayOfMonth, date)
         // 18th of July is the 3rd week.
         assertThat(weeksDiff.weeks).isEqualTo(2)
 
         // Monday is the first day of the week.
-        val firstWeekday = firstDayOfMonth.dayOfWeek().withMinimumValue()
+        val firstWeekday = firstDayOfMonth.firstDayOfWeek()
         assertThat(firstWeekday.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
         val week1 = firstWeekday.plusWeeks(0)
         assertThat(week1.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
-        assertThat(week1.dayOfMonth).isOne()
+        assertThat(week1.dayOfMonth).isOne
         val week2 = firstWeekday.plusWeeks(1)
         assertThat(week2.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
         assertThat(week2.dayOfMonth).isEqualTo(8)
@@ -394,7 +407,7 @@ class RecurrenceTest : GnuCashTest() {
         assertThat(date.dayOfWeek(3).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
         assertThat(date.dayOfWeek(4).dayOfMonth).isEqualTo(25)
         assertThat(date.dayOfWeek(4).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
-        assertThat(date.dayOfWeek(5).dayOfMonth).isOne()
+        assertThat(date.dayOfWeek(5).dayOfMonth).isOne
         assertThat(date.dayOfWeek(5).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
 
         val nextMonth = date.plusMonths(1)
@@ -403,7 +416,7 @@ class RecurrenceTest : GnuCashTest() {
         val nextMonthSameWeekday = nextMonth.dayOfWeek(date)
         assertThat(nextMonthSameWeekday.dayOfMonth).isEqualTo(15)
         assertThat(nextMonthSameWeekday.dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
-        assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfMonth).isOne()
+        assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfMonth).isOne
         assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
         assertThat(nextMonthSameWeekday.dayOfWeek(2).dayOfMonth).isEqualTo(8)
         assertThat(nextMonthSameWeekday.dayOfWeek(2).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
@@ -420,7 +433,7 @@ class RecurrenceTest : GnuCashTest() {
         val recurrence = Recurrence(PeriodType.ONCE)
         assertThat(recurrence.ruleString).isEqualTo("FREQ=;INTERVAL=1")
         assertThat(recurrence.periodType).isEqualTo(PeriodType.ONCE)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
         assertThat(recurrence.byDays).isEmpty()
 
         // Monthly; week starts on Sunday; on 4th Wednesday of the month.
@@ -428,7 +441,7 @@ class RecurrenceTest : GnuCashTest() {
         recurrence.ruleString = rule
         assertThat(recurrence.ruleString).isEqualTo(rule)
         assertThat(recurrence.periodType).isEqualTo(PeriodType.MONTH)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
         assertThat(recurrence.byDays).isEqualTo(listOf(Calendar.WEDNESDAY))
     }
 }

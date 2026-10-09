@@ -35,7 +35,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import org.gnucash.android.R
 import org.gnucash.android.databinding.FragmentChartBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportType
@@ -74,8 +74,8 @@ class PieChartFragment : BaseReportFragment<PieData>() {
     private fun getData(context: Context): PieData {
         val dataSet = PieDataSet(null, "")
         val colors = mutableListOf<Int>()
-        val startTime = reportPeriodStart?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
-        val endTime = reportPeriodEnd?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
+        val startTime = reportPeriodStart?.toMillis() ?: ALWAYS
+        val endTime = reportPeriodEnd?.toMillis() ?: ALWAYS
         val commodity = this.commodity
 
         val where = (AccountEntry.COLUMN_TYPE + "=?"
@@ -126,6 +126,7 @@ class PieChartFragment : BaseReportFragment<PieData>() {
                 isWordWrapEnabled = true
                 textColor = textColorPrimary
             }
+            description.isEnabled = false
             this.data = data
 
             if (isEmpty(data)) {
