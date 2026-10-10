@@ -257,7 +257,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
             accountName.text = accountString
 
             val recurrence = budget.recurrence
-            budgetRecurrence.text = recurrence.getRepeatString(context) + " — " + context.getString(
+            budgetRecurrence.text = recurrence.formatRepeatString(context) + " — " + context.getString(
                 R.string.repeat_remaining,
                 recurrence.daysLeftInCurrentPeriod
             )
@@ -278,7 +278,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
                 (commodity.symbol + spentAmountValue + " / " + budgetTotal.formattedString())
             budgetAmount.text = usedAmount
 
-            val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
+            val budgetProgress = if (budgetTotal.isZero) 0f else spentAmountValue.divide(
                 budgetTotal.toBigDecimal(),
                 commodity.smallestFractionDigits,
                 RoundingMode.HALF_UP

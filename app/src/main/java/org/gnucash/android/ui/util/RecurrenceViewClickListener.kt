@@ -41,7 +41,7 @@ class RecurrenceViewClickListener(
         // may be more efficient to serialize and pass in EventRecurrence
         args.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, recurrenceRule)
 
-        var fragmentOld = fragmentManager.findFragmentByTag(TAG_RECURRENCE_PICKER) as? RecurrencePickerDialogFragment
+        val fragmentOld = fragmentManager.findFragmentByTag(TAG_RECURRENCE_PICKER) as? RecurrencePickerDialogFragment
         fragmentOld?.dismiss()
         val fragment = RecurrencePickerDialogFragment()
         fragment.arguments = args

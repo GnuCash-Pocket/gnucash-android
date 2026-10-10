@@ -63,7 +63,7 @@ class TransactionsTest : BookHelperTest() {
         assertThat(txCountAfterDelete).isEqualTo(6) // each account has its own opening balance now.
 
         val txsAfter = transactionsDbAdapter.allRecords
-        assertThat(txsAfter.size).isEqualTo(7)
+        assertThat(txsAfter).hasSize(7)
 
         val tx0After = txsAfter[0]
         assertThat(tx0After.uid).isEqualTo("9b42fbb885db4918819a05fc42dd63e0")

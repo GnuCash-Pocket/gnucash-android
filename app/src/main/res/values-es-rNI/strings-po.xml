@@ -29,7 +29,7 @@
     <string name="gnucash_po_security">"Seguridad"</string>
     <string name="gnucash_po_symbol">"Símbolo"</string>
     <string name="gnucash_po_tax_info">"Información de Impuesto"</string>
-    <string name="gnucash_po_transaction_id">"_Transacción"</string>
+    <string name="gnucash_po_transaction_id">"Transacción"</string>
     <string name="gnucash_po_type">"Tipo"</string>
     <string name="gnucash_po_unknown">"Desconocido"</string>
     <string name="gnucash_po_value_num">"Valor"</string>

@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Spør"</string>
     <string name="gnucash_po_bid">"Bud"</string>
     <string name="gnucash_po_commodity_currency">"Felles valuta"</string>
+    <string name="gnucash_po_create_automatically">"Opprett automatisk"</string>
     <string name="gnucash_po_currencies">"Valuta"</string>
     <string name="gnucash_po_date">"Dato"</string>
     <string name="gnucash_po_description">"Beskrivelse"</string>
@@ -33,7 +34,7 @@
     <string name="gnucash_po_security">"Verdipapir"</string>
     <string name="gnucash_po_symbol">"Symbol"</string>
     <string name="gnucash_po_tax_info">"Skatteinformasjon"</string>
-    <string name="gnucash_po_transaction_id">"_Transaksjon"</string>
+    <string name="gnucash_po_transaction_id">"Transaksjon"</string>
     <string name="gnucash_po_type">"Type"</string>
     <string name="gnucash_po_unknown">"Ukjent"</string>
     <string name="gnucash_po_value_num">"Verdi Num."</string>

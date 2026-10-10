@@ -43,12 +43,15 @@ import org.gnucash.android.app.finish
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentSplitEditorBinding
 import org.gnucash.android.databinding.ItemSplitEntryBinding
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.BaseModel.Companion.generateUID
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction.Companion.getTypeForBalance
+import org.gnucash.android.model.TransactionType
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.snackLong
@@ -97,7 +100,7 @@ class SplitEditorFragment : MenuFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentSplitEditorBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -155,7 +158,7 @@ class SplitEditorFragment : MenuFragment() {
             val accountType = account.type
             val transactionType = getTypeForBalance(accountType, baseAmount.signum() < 0)
             split.type = transactionType
-            val splitViewHolder = addSplitView(split)
+            val splitViewHolder = addSplitView(binding, split)
             val splitViewBinding = splitViewHolder.binding
             splitViewBinding.inputAccountsSpinner.isEnabled = false
             splitViewBinding.btnRemoveSplit.isVisible = false
@@ -165,7 +168,7 @@ class SplitEditorFragment : MenuFragment() {
             )
         } else {
             //aha! there are some splits. Let's load those instead
-            loadSplitViews(splitList)
+            loadSplitViews(binding, splitList)
             imbalanceWatcher?.notifyChanged()
         }
     }
@@ -180,9 +183,9 @@ class SplitEditorFragment : MenuFragment() {
         }
     }
 
-    private fun loadSplitViews(splits: List<Split>) {
+    private fun loadSplitViews(binding: FragmentSplitEditorBinding, splits: List<Split>) {
         for (split in splits) {
-            addSplitView(split)
+            addSplitView(binding, split)
         }
     }
 
@@ -212,7 +215,8 @@ class SplitEditorFragment : MenuFragment() {
             }
 
             R.id.menu_add -> {
-                addSplitView(null)
+                val binding = binding ?: return false
+                addSplitView(binding, null)
                 true
             }
 
@@ -226,9 +230,8 @@ class SplitEditorFragment : MenuFragment() {
      * @param split Split to initialize the contents to
      * @return Returns the split view which was added
      */
-    private fun addSplitView(split: Split?): SplitViewHolder {
-        val binding =
-            ItemSplitEntryBinding.inflate(layoutInflater, binding!!.splitListLayout, true)
+    private fun addSplitView(parent: FragmentSplitEditorBinding, split: Split?): SplitViewHolder {
+        val binding = ItemSplitEntryBinding.inflate(layoutInflater, parent.splitListLayout, true)
         val splitView = binding.root
         val viewHolder = SplitViewHolder(binding)
         viewHolder.bind(split)
@@ -383,7 +386,12 @@ class SplitEditorFragment : MenuFragment() {
             return
         }
 
-        if (isMultiCurrencyTransaction && !currencyConversionDone) {
+        val splits = extractSplitsFromView()
+        if (splits.isEmpty()) {
+            Timber.w("Splits required")
+            return
+        }
+        if (isMultiCurrencyTransaction(splits) && !currencyConversionDone) {
             onSaveAttempt = true
             if (startTransferFunds()) {
                 return
@@ -395,9 +403,8 @@ class SplitEditorFragment : MenuFragment() {
             Timber.w("Activity required")
             return
         }
-        val splits = ArrayList(extractSplitsFromView())
         val data = Intent()
-            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, splits)
+            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, ArrayList(splits))
         activity.setResult(Activity.RESULT_OK, data)
         activity.finish()
     }
@@ -408,23 +415,47 @@ class SplitEditorFragment : MenuFragment() {
      * @return List of [Split]s represented in the view
      */
     private fun extractSplitsFromView(): List<Split> {
+        val context = requireContext()
+        val account = this.account!!
+        val commodity = account.commodity
         val accountNameAdapter = accountNameAdapter!!
         val splits = mutableListOf<Split>()
+        val pricesDbAdapter = PricesDbAdapter.instance
+
         for (viewHolder in splitViewHolders) {
             val enteredAmount = viewHolder.splitAmountEditText.value ?: continue
+            val value = Money(enteredAmount.abs(), commodity)
 
-            var account = this.account
-            val valueAmount = Money(enteredAmount.abs(), account!!.commodity)
+            val accountPosition = viewHolder.accountsSpinner.selectedItemPosition
+            val splitAccount = accountNameAdapter.getAccount(accountPosition) ?: continue
 
-            val position = viewHolder.accountsSpinner.selectedItemPosition
-            account = accountNameAdapter.getAccount(position) ?: continue
-            val split = Split(valueAmount, account)
+            val price = pricesDbAdapter.getPrice(commodity, splitAccount.commodity)
+            if (price == null) {
+                startTransferFunds(commodity, splitAccount.commodity, viewHolder)
+                return emptyList()
+            }
+
+            val split = Split(value, splitAccount)
+            split.quantity = value * price
             split.memo = viewHolder.splitMemoEditText.getText().toString()
             split.type = viewHolder.splitTypeSwitch.transactionType
             split.setUID(viewHolder.splitUidTextView.getText().toString())
             splits.add(split)
         }
-        return splits
+
+        var balance = calculateBalance(account)
+        if (!balance.isZero) {
+            val accountsDbAdapter = AccountsDbAdapter.instance
+            val imbalanceAccount =
+                accountsDbAdapter.getOrCreateImbalanceAccount(context, account.commodity)
+            if (balance.isNegative && account.type.hasDebitNormalBalance) {
+                balance = -balance
+            }
+            val imbalance = Split(balance, imbalanceAccount)
+            splits.add(imbalance)
+        }
+
+        return squashImbalances(splits)
     }
 
     /**
@@ -441,30 +472,26 @@ class SplitEditorFragment : MenuFragment() {
         }
 
         fun notifyChanged() {
-            val accountNameAdapter = accountNameAdapter!!
-            var imbalance = BigDecimal.ZERO
-
-            for (viewHolder in splitViewHolders) {
-                val amount = viewHolder.amountValue.abs()
-                val position = viewHolder.accountsSpinner.selectedItemPosition
-                if (position < 0) return
-                val account = accountNameAdapter.getAccount(position) ?: return
-                val hasDebitNormalBalance = account.type.hasDebitNormalBalance
-
-                imbalance += if (viewHolder.splitTypeSwitch.isChecked) {
-                    if (hasDebitNormalBalance) amount else -amount
-                } else {
-                    if (hasDebitNormalBalance) -amount else amount
-                }
-            }
-
             val account = this@SplitEditorFragment.account!!
-            val commodity = account.commodity
-            binding.imbalanceTextview.displayBalance(
-                Money(imbalance, commodity),
-                colorBalanceZero
-            )
+            val balance = calculateBalance(account)
+            binding.imbalanceTextview.displayBalance(balance, colorBalanceZero)
         }
+    }
+
+    private fun calculateBalance(account: Account): Money {
+        val commodity = account.commodity
+        var balance = Money.createZeroInstance(commodity)
+
+        for (viewHolder in splitViewHolders) {
+            val amountValue = viewHolder.amountValue.abs()
+            val splitType = viewHolder.splitTypeSwitch.transactionType
+            val splitAmount = if (splitType == TransactionType.DEBIT) amountValue else -amountValue
+            val value = Money(splitAmount, commodity)
+
+            balance += value
+        }
+
+        return balance
     }
 
     /**
@@ -564,19 +591,55 @@ class SplitEditorFragment : MenuFragment() {
      *
      * @return `true` if multi-currency transaction, `false` otherwise
      */
-    private val isMultiCurrencyTransaction: Boolean
-        get() {
-            val accountFrom = this.account
-            val accountCommodity = accountFrom!!.commodity
+    private fun isMultiCurrencyTransaction(splits: List<Split>): Boolean {
+        val accountFrom = this.account!!
+        val accountCommodity = accountFrom.commodity
 
-            val splits: List<Split> = extractSplitsFromView()
-            for (split in splits) {
-                val splitCommodity = split.quantity.commodity
-                if (accountCommodity != splitCommodity) {
-                    return true
-                }
+        for (split in splits) {
+            val splitCommodity = split.quantity.commodity
+            if (accountCommodity != splitCommodity) {
+                return true
             }
-
-            return false
         }
+
+        return false
+    }
+
+    /**
+     * Squash "imbalance" splits of same accounts.
+     * For example: CREDIT of $499.00 + DEBIT of $99.00 -> CREDIT of $400.00
+     */
+    private fun squashImbalances(splits: List<Split>): List<Split> {
+        val context = requireContext()
+        val accountsDbAdapter = AccountsDbAdapter.instance
+        val imbalances = mutableMapOf<String, MutableList<Split>>()
+        val squashed = mutableListOf<Split>()
+
+        for (split in splits) {
+            val accountUID = split.accountUID!!
+            if (accountsDbAdapter.isImbalanceAccount(context, accountUID)) {
+                imbalances.getOrPut(accountUID) { mutableListOf() }.add(split)
+            } else {
+                squashed.add(split)
+            }
+        }
+
+        for (accountUID in imbalances.keys) {
+            val splits = imbalances[accountUID]!!
+            squashSplits(splits)
+            squashed.addAll(splits)
+        }
+
+        return squashed
+    }
+
+    private fun squashSplits(splits: MutableList<Split>) {
+        if (splits.size < 2) return
+        val splitFirst = splits[0]
+        for (i in 1..splits.lastIndex) {
+            splitFirst += splits[i]
+        }
+        splits.clear()
+        splits.add(splitFirst)
+    }
 }

@@ -20,7 +20,7 @@ import org.gnucash.android.model.Money
 /**
  * Interface to be implemented by classes which start the transfer funds fragment
  */
-interface OnTransferFundsListener {
+fun interface OnTransferFundsListener {
     /**
      * Method called after the funds have been converted to the desired currency
      *

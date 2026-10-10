@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Myynti"</string>
     <string name="gnucash_po_bid">"Osto"</string>
     <string name="gnucash_po_commodity_currency">"Hyödyke/valuutta"</string>
+    <string name="gnucash_po_create_automatically">"Luo automaattisesti"</string>
     <string name="gnucash_po_currencies">"Valuutat"</string>
     <string name="gnucash_po_date">"Päiväys"</string>
     <string name="gnucash_po_description">"Selite"</string>

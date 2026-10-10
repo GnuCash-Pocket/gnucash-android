@@ -3,13 +3,14 @@
     <string name="gnucash_po_account_color">"একাউন্টৰ ৰং"</string>
     <string name="gnucash_po_account_name">"একাউন্টৰ নাম"</string>
     <string name="gnucash_po_action">"কার্য্য"</string>
-    <string name="gnucash_po_add">"_ঠিকনা"</string>
+    <string name="gnucash_po_add">"ঠিকনা"</string>
     <string name="gnucash_po_all_non_currency">"মুদ্ৰা নিৰ্বাচন কৰক"</string>
     <string name="gnucash_po_amount_num">"দিবলগীয়া পৰিমাণ"</string>
     <string name="gnucash_po_amount_with_sym">"উইথ ছিষ্টেমলৈ"</string>
     <string name="gnucash_po_ask">"আস্ক"</string>
     <string name="gnucash_po_bid">"বিড"</string>
     <string name="gnucash_po_commodity_currency">"চলিত মুদ্ৰা"</string>
+    <string name="gnucash_po_create_automatically">"স্বয়ংক্ৰিয়ভাবে সৃ্ষ্টি কৰক"</string>
     <string name="gnucash_po_currencies">"মুদ্ৰাবোৰ"</string>
     <string name="gnucash_po_date">"তাৰিখ"</string>
     <string name="gnucash_po_description">"বিৱৰণ"</string>

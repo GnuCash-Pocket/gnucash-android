@@ -393,8 +393,6 @@
     <string name="label_export_transactions_since_date">Od</string>
     <string name="switch_export_transactions_from_all_time">Cały czas</string>
     <string name="label_recommend_app">Poleć w Sklepie Play</string>
-    <string name="repeat_until_date">do %1$s</string>
-    <string name="repeat_x_times">%1$d razy</string>
     <string name="menu_show_compact_view">Widok kompaktowy</string>
     <string name="book_default_name">Zarezerwuj %1$d</string>
     <string name="last_export_time_never">nigdy</string>
@@ -438,4 +436,5 @@
     <string name="title_progress_processing_schedules">Przetwarzanie harmonogramów</string>
     <string name="title_progress_processing_transactions">Przetwarzanie transakcji</string>
     <string name="title_tab_labels">Pokaż karty z etykietami</string>
+    <string name="execute">Wykonaj</string>
 </resources>

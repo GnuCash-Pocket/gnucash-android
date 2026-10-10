@@ -19,6 +19,7 @@ import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.gnucash.android.util.dayOfWeek
 import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
+import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDateTime
 import timber.log.Timber
 import java.math.BigDecimal
@@ -192,7 +193,7 @@ class Budget() : BaseModel() {
                 PeriodType.END_OF_MONTH -> localDate.minusMonths(interval)
                     .dayOfMonth().withMaximumValue()
             }
-            return localDate.toDateTime().millis
+            return localDate.toMillis()
         }
 
     /**
@@ -221,7 +222,7 @@ class Budget() : BaseModel() {
                 PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
                 PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
             }
-            return localDate.toDateTime().millis
+            return localDate.toMillis()
         }
 
     fun getStartOfPeriod(periodNum: Int): Long {
@@ -238,7 +239,7 @@ class Budget() : BaseModel() {
             PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
             PeriodType.END_OF_MONTH -> localDate.minusMonths(interval).lastDayOfMonth()
         }
-        return localDate.toDateTime().millis
+        return localDate.toMillis()
     }
 
     /**
@@ -261,7 +262,7 @@ class Budget() : BaseModel() {
             PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
             PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
         }
-        return localDate.toDateTime().millis
+        return localDate.toMillis()
     }
 
     fun getBudgetAmount(account: Account, period: Int): BudgetAmount? {

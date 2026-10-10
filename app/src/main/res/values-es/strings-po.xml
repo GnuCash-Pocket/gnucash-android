@@ -5,11 +5,12 @@
     <string name="gnucash_po_action">"Operación"</string>
     <string name="gnucash_po_add">"Agregar"</string>
     <string name="gnucash_po_all_non_currency">"Todo no monetario"</string>
-    <string name="gnucash_po_amount_num">"Num. Cantidad."</string>
+    <string name="gnucash_po_amount_num">"Num. Cantidad"</string>
     <string name="gnucash_po_amount_with_sym">"Cantidad con Sym"</string>
     <string name="gnucash_po_ask">"Razón"</string>
     <string name="gnucash_po_bid">"Cid"</string>
-    <string name="gnucash_po_commodity_currency">"Acción/Moneda"</string>
+    <string name="gnucash_po_commodity_currency">"Mercancía/Moneda"</string>
+    <string name="gnucash_po_create_automatically">"Crear automáticamente"</string>
     <string name="gnucash_po_currencies">"Monedas"</string>
     <string name="gnucash_po_date">"Fecha"</string>
     <string name="gnucash_po_description">"Descripción"</string>

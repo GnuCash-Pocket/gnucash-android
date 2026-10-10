@@ -53,12 +53,12 @@ class DatePickerDialogFragment : VolatileDialogFragment() {
         /**
          * Create a new instance.
          *
-         * @param listener   Listener to notify when the date is set and the dialog is closed
          * @param dateMillis Date in milliseconds to which to initialize the dialog
+         * @param listener   Listener to notify when the date is set and the dialog is closed
          */
         fun newInstance(
-            listener: DatePickerDialog.OnDateSetListener,
-            dateMillis: Long
+            dateMillis: Long,
+            listener: DatePickerDialog.OnDateSetListener
         ): DatePickerDialogFragment {
             val fragment = DatePickerDialogFragment()
             fragment.listener = listener

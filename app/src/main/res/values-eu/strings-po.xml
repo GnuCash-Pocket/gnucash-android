@@ -8,6 +8,7 @@
     <string name="gnucash_po_ask">"Saltzeko eskaintza"</string>
     <string name="gnucash_po_bid">"Erosteko eskaintza"</string>
     <string name="gnucash_po_commodity_currency">"Aukeratu moneta"</string>
+    <string name="gnucash_po_create_automatically">"Sortu automatikoki"</string>
     <string name="gnucash_po_currencies">"Dibisak"</string>
     <string name="gnucash_po_date">"Data"</string>
     <string name="gnucash_po_description">"Azalpena"</string>
@@ -31,7 +32,7 @@
     <string name="gnucash_po_security">"Balore berria"</string>
     <string name="gnucash_po_symbol">"Ikurra"</string>
     <string name="gnucash_po_tax_info">"Zerga-inf."</string>
-    <string name="gnucash_po_transaction_id">"_Transakzioa"</string>
+    <string name="gnucash_po_transaction_id">"Transakzioa"</string>
     <string name="gnucash_po_type">"Mota"</string>
     <string name="gnucash_po_unknown">"Ezezaguna"</string>
     <string name="gnucash_po_value_num">"$ balioa"</string>

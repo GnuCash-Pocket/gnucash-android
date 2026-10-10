@@ -26,20 +26,25 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.db.toTimestamp
 import org.gnucash.android.export.ExporterFactory
+import org.gnucash.android.model.BaseModel.Companion.isNew
 import org.gnucash.android.model.Book
+import org.gnucash.android.model.Price
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.util.BackupManager.schedulePeriodicBackups
 import org.gnucash.android.util.formatLongDateTime
 import org.gnucash.android.util.set
 import org.gnucash.android.work.ActionWorker
+import org.joda.time.Instant
 import timber.log.Timber
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
@@ -60,36 +65,6 @@ class ScheduledActionService {
             Timber.i("Completed service @ %s", formatLongDateTime(System.currentTimeMillis()))
         } catch (e: Throwable) {
             Timber.e(e, "Scheduled service error: %s", e.message)
-        }
-    }
-
-    private fun processScheduledBooks(context: Context) {
-        val booksDbAdapter = BooksDbAdapter.instance
-        val books = booksDbAdapter.allRecords
-        for (book in books) {
-            processScheduledBook(context, book)
-        }
-    }
-
-    private fun processScheduledBook(context: Context, book: Book) {
-        val activeBookUID = GnuCashApplication.activeBookUID
-        val dbHelper = DatabaseHelper(context, book.uid)
-        val dbHolder = dbHelper.holder
-        val recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
-        val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
-        val scheduledActionDbAdapter =
-            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
-
-        val scheduledActions = scheduledActionDbAdapter.allEnabledScheduledActions
-        Timber.i(
-            "Processing %d total scheduled actions for Book: %s",
-            scheduledActions.size, book.displayName
-        )
-        processScheduledActions(dbHolder, scheduledActions)
-
-        //close all databases except the currently active database
-        if (book.uid != activeBookUID) {
-            dbHelper.close()
         }
     }
 
@@ -121,6 +96,32 @@ class ScheduledActionService {
                 .enqueue(request)
         }
 
+        private fun processScheduledBooks(context: Context) {
+            val booksDbAdapter = BooksDbAdapter.instance
+            val books = booksDbAdapter.allRecords
+            for (book in books) {
+                processScheduledBook(context, book)
+            }
+        }
+
+        fun processScheduledBook(context: Context, book: Book) {
+            val dbHelper = DatabaseHelper(context, book.uid)
+            val dbHolder = dbHelper.holder
+            val recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
+            val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
+            val scheduledActionDbAdapter =
+                ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
+
+            val scheduledActions = scheduledActionDbAdapter.allEnabledScheduledActions
+            Timber.i(
+                "Processing %d total scheduled actions for Book: %s",
+                scheduledActions.size, book.displayName
+            )
+            processScheduledActions(dbHolder, scheduledActions)
+
+            dbHelper.close()
+        }
+
         /**
          * Process scheduled actions and execute any pending actions
          *
@@ -144,18 +145,17 @@ class ScheduledActionService {
          * @param dbHolder        Database holder
          * @param scheduledAction The scheduled action.
          */
-        //made public static for testing. Do not call these methods directly
-        @VisibleForTesting
-        fun processScheduledAction(dbHolder: DatabaseHolder, scheduledAction: ScheduledAction) {
+        internal fun processScheduledAction(
+            dbHolder: DatabaseHolder,
+            scheduledAction: ScheduledAction
+        ) {
             val now = System.currentTimeMillis()
-            val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
-            val executionCount = scheduledAction.instanceCount
 
             //the end time of the ScheduledAction is not handled here because
             //it is handled differently for transactions and backups. See the individual methods.
             if (scheduledAction.startDate > now //if schedule begins in the future
                 || !scheduledAction.isEnabled // of if schedule is disabled
-                || (totalPlannedExecutions in 1..executionCount)
+                || (scheduledAction.totalPlannedExecutionCount in 1..scheduledAction.instanceCount)
             ) { //limit was set and we reached or exceeded it
                 Timber.i("Skipping scheduled action: %s", scheduledAction)
                 return
@@ -186,7 +186,6 @@ class ScheduledActionService {
             }
 
             if (executionCount > 0) {
-                scheduledAction.lastRunDate = System.currentTimeMillis()
                 // Set the execution count in the object because it will be checked
                 // for the next iteration in the calling loop.
                 // This call is important, do not remove!!
@@ -208,7 +207,7 @@ class ScheduledActionService {
          * Executes scheduled backups for a given scheduled action.
          * The backup will be executed only once, even if multiple schedules were missed
          *
-         * @param dbHolder Databas holder
+         * @param dbHolder Database holder
          * @param scheduledAction Scheduled action referencing the backup
          * @return Number of times backup is executed. This should either be 1 or 0
          */
@@ -228,34 +227,27 @@ class ScheduledActionService {
             } catch (e: Throwable) {
                 Timber.e(e)
             }
-            if (result == null) {
+            if (result != null) {
+                scheduledAction.instanceCount++
+                scheduledAction.lastRunDate = System.currentTimeMillis()
+                return 1
+            } else {
                 Timber.w("Backup/export did not occur. There might have been no new transactions to export")
-                return 0
             }
-            return 1
+            return 0
         }
 
         /**
-         * Check if a scheduled action is due for execution
+         * Check if a scheduled action is due for execution.
+         * Don't worry about all the missed instances, just use the latest.
          *
          * @param scheduledAction Scheduled action
          * @return `true` if execution is due, `false` otherwise
          */
         private fun shouldExecuteScheduledBackup(scheduledAction: ScheduledAction): Boolean {
-            if (scheduledAction.actionType != ScheduledAction.ActionType.EXPORT) {
-                return false
-            }
+            val scheduledTime = scheduledAction.computeNextTimeBasedScheduledExecutionTime()
             val now = System.currentTimeMillis()
-            val endTime = scheduledAction.endDate
-
-            if (endTime in 1..<now) {
-                return false
-            }
-            if (scheduledAction.computeNextTimeBasedScheduledExecutionTime() > now) {
-                return false
-            }
-
-            return true
+            return scheduledTime <= now
         }
 
         /**
@@ -272,9 +264,18 @@ class ScheduledActionService {
             dbHolder: DatabaseHolder,
             scheduledAction: ScheduledAction
         ): Int {
-            val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
+            val accountsDbAdapter = AccountsDbAdapter(dbHolder)
+            val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
+            val pricesDbAdapter = accountsDbAdapter.pricesDbAdapter
             //if the record could not be found, then abort
             val template = getTemplate(transactionsDbAdapter, scheduledAction) ?: return 0
+
+            var executionCount = 0
+            val previousExecutionCount = scheduledAction.instanceCount // We'll modify it
+            //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
+            //so compute the actual transaction time from pre-known values
+            var transactionTime = scheduledAction.computeNextTimeBasedScheduledExecutionTime()
+            val scheduledActionUID = if (scheduledAction.isNew) null else scheduledAction.uid
 
             val now = System.currentTimeMillis()
             //if there is an end time in the past, we execute all schedules up to the end time.
@@ -287,29 +288,38 @@ class ScheduledActionService {
             }
             val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
 
-            var executionCount = 0
-            val previousExecutionCount = scheduledAction.instanceCount // We'll modify it
-            //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
-            //so compute the actual transaction time from pre-known values
-            var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
             while (transactionTime <= endTime) {
+                Timber.i(
+                    "Executing scheduled transaction: #%d [%s] on %s",
+                    executionCount,
+                    template,
+                    Instant.ofEpochMilli(transactionTime)
+                )
                 val transaction = template.copy(datePosted = transactionTime)
-                transaction.scheduledActionUID = scheduledAction.uid
+                transaction.scheduledActionUID = scheduledActionUID
+                transaction.isTemplate = false
+
                 for (split in transaction.splits) {
-                    if (split.scheduledActionAccountUID.isNullOrEmpty()) continue
-                    split.accountUID = split.scheduledActionAccountUID
+                    val splitAccountUID = split.scheduledActionAccountUID ?: split.accountUID
+                    if (splitAccountUID.isNullOrEmpty()) continue
+                    val quantityCommodity = accountsDbAdapter.getCommodity(splitAccountUID)
+                    val price = pricesDbAdapter.getPrice(transaction.commodity, quantityCommodity)
+                        ?: Price(transaction.commodity, quantityCommodity, BigDecimal.ONE)
+                    split.accountUID = splitAccountUID
                     split.scheduledActionAccountUID = null
+                    split.quantity = split.value * price
                 }
 
                 transactionsDbAdapter.insert(transaction)
-                //required for computingNextScheduledExecutionTime
+                // required for computing next scheduled execution time
                 scheduledAction.instanceCount = previousExecutionCount + ++executionCount
+                scheduledAction.lastRunDate = transactionTime
 
                 if (totalPlannedExecutions in 1..executionCount) {
                     break //if we hit the total planned executions set, then abort
                 }
 
-                transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
+                transactionTime = scheduledAction.computeNextTimeBasedScheduledExecutionTime()
             }
 
             // Be nice and restore the parameter's original state to avoid confusing the callers

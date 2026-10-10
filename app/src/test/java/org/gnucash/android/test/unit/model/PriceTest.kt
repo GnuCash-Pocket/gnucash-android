@@ -19,6 +19,7 @@ import junit.framework.TestCase.fail
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
 import org.gnucash.android.model.Price
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Test
@@ -58,6 +59,20 @@ class PriceTest : GnuCashTest() {
         val price = Price(commodity1, commodity2, exchangeRate)
         // USD uses 2 fractional digits.
         assertThat(price.toString()).isEqualTo("CURRENCY::EUR/CURRENCY::USD=1,23")
+    }
+
+    @Test
+    fun price_not_found() {
+        val commodity1 = Commodity.EUR
+        val commodity2 = Commodity.USD
+
+        val pricesDbAdapter = PricesDbAdapter.instance
+        val price = pricesDbAdapter.getPrice(commodity1, commodity2)
+        assertThat(price).isNull()
+
+        val amount = Money(BigDecimal.TEN, commodity1)
+        val value = amount * price
+        assertThat(value).isEqualTo(amount)
     }
 
     /**

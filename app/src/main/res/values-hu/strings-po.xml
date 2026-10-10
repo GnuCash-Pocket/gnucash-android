@@ -5,11 +5,12 @@
     <string name="gnucash_po_action">"Művelet"</string>
     <string name="gnucash_po_add">"Hozzáadás"</string>
     <string name="gnucash_po_all_non_currency">"Minden ami nem deviza"</string>
-    <string name="gnucash_po_amount_num">"Érték számmal"</string>
-    <string name="gnucash_po_amount_with_sym">"Érték szimbólummal"</string>
+    <string name="gnucash_po_amount_num">"Összeg számmal"</string>
+    <string name="gnucash_po_amount_with_sym">"Összeg szimbólummal"</string>
     <string name="gnucash_po_ask">"Eladási árfolyam"</string>
     <string name="gnucash_po_bid">"Vételi árfolyam"</string>
     <string name="gnucash_po_commodity_currency">"Áru/pénznem"</string>
+    <string name="gnucash_po_create_automatically">"Automatikus létrehozás"</string>
     <string name="gnucash_po_currencies">"Pénznemek"</string>
     <string name="gnucash_po_date">"Dátum"</string>
     <string name="gnucash_po_description">"Leírás"</string>
@@ -36,6 +37,9 @@
     <string name="gnucash_po_transaction_id">"Tranzakcióazonosító"</string>
     <string name="gnucash_po_type">"Típus"</string>
     <string name="gnucash_po_unknown">"Ismeretlen"</string>
+    <string name="gnucash_po_value_num">"Érték számmal"</string>
+    <string name="gnucash_po_value_with_sym">"Érték szimbólummal"</string>
+    <string name="gnucash_po_void_reason">"Az érvénytelenítés oka"</string>
     <string name="gnucash_po_you_must_enter_a_valid_amount">"Érvényes árat kell megadni."</string>
     <string name="gnucash_po_you_must_enter_a_valid_price">"Érvényes árat kell megadni."</string>
     <string name="gnucash_po_you_must_select_a_currency">"Ki kell választani egy pénznemet."</string>

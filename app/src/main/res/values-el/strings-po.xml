@@ -3,10 +3,11 @@
     <string name="gnucash_po_account_color">"Χρώμα λογαριασμού"</string>
     <string name="gnucash_po_account_name">"Όνομα λογαριασμού"</string>
     <string name="gnucash_po_action">"Ενέργεια"</string>
-    <string name="gnucash_po_add">"_Προσθήκη"</string>
+    <string name="gnucash_po_add">"Προσθήκη"</string>
     <string name="gnucash_po_all_non_currency">"Επιλογή νομίσματος"</string>
     <string name="gnucash_po_amount_num">"Ποσό οφειλής"</string>
     <string name="gnucash_po_commodity_currency">"Επιλογή νομίσματος"</string>
+    <string name="gnucash_po_create_automatically">"Αυτόματη δημιουργία"</string>
     <string name="gnucash_po_currencies">"Νομίσματα"</string>
     <string name="gnucash_po_date">"Ημερομηνία"</string>
     <string name="gnucash_po_description">"Περιγραφή"</string>

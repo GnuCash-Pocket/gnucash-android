@@ -3,13 +3,14 @@
     <string name="gnucash_po_account_color">"Konta krāsa"</string>
     <string name="gnucash_po_account_name">"Konta nosaukums"</string>
     <string name="gnucash_po_action">"Darbs"</string>
-    <string name="gnucash_po_add">"_Pievienot"</string>
+    <string name="gnucash_po_add">"Pievienot"</string>
     <string name="gnucash_po_all_non_currency">"Izvēlieties valūtu"</string>
     <string name="gnucash_po_amount_num">"Summa"</string>
     <string name="gnucash_po_amount_with_sym">"Līdz ar simbolu"</string>
     <string name="gnucash_po_ask">"Pārdod"</string>
     <string name="gnucash_po_bid">"Pērk"</string>
     <string name="gnucash_po_commodity_currency">"Valūta"</string>
+    <string name="gnucash_po_create_automatically">"Izveidot automātiski"</string>
     <string name="gnucash_po_currencies">"Valūtas"</string>
     <string name="gnucash_po_date">"Datums"</string>
     <string name="gnucash_po_description">"Apraksts"</string>

@@ -372,8 +372,6 @@
     <string name="label_export_transactions_since_date">מאז</string>
     <string name="switch_export_transactions_from_all_time">כל הזמנים</string>
     <string name="label_recommend_app">המלץ ב-Play Store</string>
-    <string name="repeat_until_date">עד %1$s</string>
-    <string name="repeat_x_times">%1$d פעמים</string>
     <string name="menu_show_compact_view">תצוגה קומפקטית</string>
     <string name="book_default_name">ספר %1$d</string>
     <string name="last_export_time_never">אף פעם</string>
@@ -417,4 +415,5 @@
     <string name="title_progress_processing_schedules">עיבוד לוחות זמנים</string>
     <string name="title_progress_processing_transactions">עיבוד עסקאות</string>
     <string name="title_tab_labels">הצג לשוניות עם תוויות</string>
+    <string name="execute">בצע</string>
 </resources>

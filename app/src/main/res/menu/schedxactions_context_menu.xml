@@ -18,6 +18,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_run"
+        android:icon="@drawable/ic_timer_play"
+        android:orderInCategory="1"
+        android:title="@string/menu_run"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/menu_delete"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="3"

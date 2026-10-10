@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Depuis le</string>
     <string name="switch_export_transactions_from_all_time">Tous les temps</string>
     <string name="label_recommend_app">Recommander dans le PlayStore</string>
-    <string name="repeat_until_date">jusqu\'à %1$s</string>
-    <string name="repeat_x_times">pour les %1$d fois</string>
     <string name="menu_show_compact_view">Vue compacte</string>
     <string name="book_default_name">Livre %1$d</string>
     <string name="last_export_time_never">jamais</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Traitement des échéanciers</string>
     <string name="title_progress_processing_transactions">Traitement des transactions</string>
     <string name="title_tab_labels">Afficher les onglets avec libellés</string>
+    <string name="execute">Exécuter</string>
 </resources>

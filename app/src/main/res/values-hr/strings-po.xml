@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Ponuđena prodajna cijena"</string>
     <string name="gnucash_po_bid">"Ponuđena kupovna cijena"</string>
     <string name="gnucash_po_commodity_currency">"Roba/Valuta"</string>
+    <string name="gnucash_po_create_automatically">"Stvori automatski"</string>
     <string name="gnucash_po_currencies">"Valute"</string>
     <string name="gnucash_po_date">"Datum"</string>
     <string name="gnucash_po_description">"Opis"</string>
@@ -28,7 +29,7 @@
     <string name="gnucash_po_price">"Cijena"</string>
     <string name="gnucash_po_rate_price">"Tečaj/cijena"</string>
     <string name="gnucash_po_reconcile_date">"Datum usklađivanja"</string>
-    <string name="gnucash_po_reconcile">"Usklađivanje"</string>
+    <string name="gnucash_po_reconcile">"Uskladi"</string>
     <string name="gnucash_po_remove_old_prices">"Ukloni stare cijene"</string>
     <string name="gnucash_po_security">"Vrijednosni papir"</string>
     <string name="gnucash_po_symbol">"Oznaka"</string>
@@ -39,8 +40,8 @@
     <string name="gnucash_po_value_num">"Numerička vrijednost"</string>
     <string name="gnucash_po_value_with_sym">"Vrijednost s oznakom"</string>
     <string name="gnucash_po_void_reason">"Razlog anuliranja"</string>
-    <string name="gnucash_po_you_must_enter_a_valid_amount">"Moraš upisati valjani iznos."</string>
-    <string name="gnucash_po_you_must_enter_a_valid_price">"Moraš upisati valjanu cijenu."</string>
+    <string name="gnucash_po_you_must_enter_a_valid_amount">"Moraš upisati ispravan iznos."</string>
+    <string name="gnucash_po_you_must_enter_a_valid_price">"Moraš upisati ispravnu cijenu."</string>
     <string name="gnucash_po_you_must_select_a_currency">"Moraš odabrati valutu."</string>
     <string name="gnucash_po_you_must_select_a_security">"Moraš odabrati vrijednosni papir."</string>
 </resources>

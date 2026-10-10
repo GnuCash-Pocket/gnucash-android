@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Dopyt"</string>
     <string name="gnucash_po_bid">"Ponuka"</string>
     <string name="gnucash_po_commodity_currency">"Komodita/Mena"</string>
+    <string name="gnucash_po_create_automatically">"Automaticky vytvoriť"</string>
     <string name="gnucash_po_currencies">"Meny"</string>
     <string name="gnucash_po_date">"Dátum"</string>
     <string name="gnucash_po_description">"Popis"</string>

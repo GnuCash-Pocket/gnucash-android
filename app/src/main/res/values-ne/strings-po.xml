@@ -7,6 +7,7 @@
     <string name="gnucash_po_all_non_currency">"मुद्रा चयन गर्नुहोस्"</string>
     <string name="gnucash_po_amount_num">"बाँकी रकम"</string>
     <string name="gnucash_po_commodity_currency">"साझा मुद्रा"</string>
+    <string name="gnucash_po_create_automatically">"स्वचालित तरिकाले सिर्जना गर्नुहोस्"</string>
     <string name="gnucash_po_currencies">"मुद्रा"</string>
     <string name="gnucash_po_date">"मिति"</string>
     <string name="gnucash_po_description">"वर्णन"</string>

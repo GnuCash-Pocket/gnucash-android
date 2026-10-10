@@ -442,7 +442,7 @@ class OfxExporter(
                 return false
             }
         }
-        return transactionsDbAdapter.getTransactionsCount(account.uid) > 0
+        return transactionsDbAdapter.getCountByAccount(account.uid) > 0
     }
 
     private fun allowTransfer(account: Account, transaction: Transaction): Boolean {

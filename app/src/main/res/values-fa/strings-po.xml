@@ -3,10 +3,11 @@
     <string name="gnucash_po_account_color">"رنگ حساب"</string>
     <string name="gnucash_po_account_name">"نام حساب"</string>
     <string name="gnucash_po_action">"عمل"</string>
-    <string name="gnucash_po_add">"_اضافه"</string>
+    <string name="gnucash_po_add">"اضافه"</string>
     <string name="gnucash_po_all_non_currency">"انتخاب واحد پول"</string>
     <string name="gnucash_po_amount_num">"مبلغ مورد انتظار"</string>
     <string name="gnucash_po_commodity_currency">"کارز رایج"</string>
+    <string name="gnucash_po_create_automatically">"ساخت خودکار"</string>
     <string name="gnucash_po_currencies">"وجوه رایج"</string>
     <string name="gnucash_po_date">"تاریخ"</string>
     <string name="gnucash_po_description">"شرح"</string>
@@ -25,11 +26,11 @@
     <string name="gnucash_po_rate_price">"قیمت کل"</string>
     <string name="gnucash_po_reconcile_date">"تاریخ تطبیق"</string>
     <string name="gnucash_po_reconcile">"مغایرت‌گیری"</string>
-    <string name="gnucash_po_remove_old_prices">"_حذف قدیمی‌ها"</string>
+    <string name="gnucash_po_remove_old_prices">"حذف قدیمی‌ها"</string>
     <string name="gnucash_po_security">"ضمانت"</string>
     <string name="gnucash_po_symbol">"نماد"</string>
     <string name="gnucash_po_tax_info">"اطلاعات مالیات"</string>
-    <string name="gnucash_po_transaction_id">"_تراکنش"</string>
+    <string name="gnucash_po_transaction_id">"تراکنش"</string>
     <string name="gnucash_po_type">"نوع"</string>
     <string name="gnucash_po_unknown">"ناشناخته"</string>
     <string name="gnucash_po_value_num">"مقدار"</string>

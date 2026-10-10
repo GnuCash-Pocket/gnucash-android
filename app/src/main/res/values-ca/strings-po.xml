@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Demanda"</string>
     <string name="gnucash_po_bid">"Oferta"</string>
     <string name="gnucash_po_commodity_currency">"Producte/Divisa"</string>
+    <string name="gnucash_po_create_automatically">"Crea automàticament"</string>
     <string name="gnucash_po_currencies">"Divises"</string>
     <string name="gnucash_po_date">"Data"</string>
     <string name="gnucash_po_description">"Descripció"</string>

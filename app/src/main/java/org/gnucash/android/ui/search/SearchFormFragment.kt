@@ -249,7 +249,7 @@ class SearchFormFragment : Fragment() {
                 binding.dateText.text = dateFormatter.print(criterion.value!!)
             }
             val dateMillis = criterion.value?.toMillis() ?: System.currentTimeMillis()
-            DatePickerDialogFragment.newInstance(listener, dateMillis)
+            DatePickerDialogFragment.newInstance(dateMillis, listener)
                 .show(parentFragmentManager, "date_fragment")
         }
         binding.deleteBtn.setOnClickListener {
@@ -299,11 +299,9 @@ class SearchFormFragment : Fragment() {
         }
         binding.inputSplitAmount.setValue(criterion.value, true)
         binding.inputSplitAmount.bindKeyboard(bindingRoot.calculatorKeyboard)
-        binding.inputSplitAmount.addValueChangedListener(object : OnValueChangedListener {
-            override fun onValueChanged(value: BigDecimal?) {
-                criterion.value = value
-            }
-        })
+        binding.inputSplitAmount.addValueChangedListener {
+            criterion.value = it
+        }
         binding.deleteBtn.setOnClickListener {
             viewModel.remove(criterion)
             removeItem(binding.root)

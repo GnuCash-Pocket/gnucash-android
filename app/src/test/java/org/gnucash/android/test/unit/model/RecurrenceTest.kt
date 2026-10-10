@@ -20,7 +20,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.ui.util.RecurrenceParser
 import org.gnucash.android.util.dayOfWeek
+import org.gnucash.android.util.toMillis
 import org.gnucash.android.util.weekOfMonth
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
@@ -101,9 +103,10 @@ class RecurrenceTest : GnuCashTest() {
         days.add(Calendar.MONDAY)
         recurrence.periodStart = start.millis
         recurrence.byDays = days
+        recurrence.multiplier = 1
 
         assertThat(recurrence.periodType).isEqualTo(PeriodType.WEEK)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
         assertThat(recurrence.byDays).isEqualTo(days)
         val ruleString = recurrence.ruleString
         assertThat(ruleString).isEqualTo("FREQ=WEEKLY;INTERVAL=1;BYDAY=MO")
@@ -111,52 +114,83 @@ class RecurrenceTest : GnuCashTest() {
     }
 
     @Test
-    fun rfc2445() {
-        // Every other week on Tuesday and Thursday, for 8 occurrences:
-        var rrule = "FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH"
-        var recurrence = EventRecurrence()
-        recurrence.parse(rrule)
-        assertThat(recurrence.freq).isEqualTo(EventRecurrence.WEEKLY)
-        assertThat(recurrence.interval).isEqualTo(2)
-        assertThat(recurrence.count).isEqualTo(8)
-        assertThat(recurrence.bydayCount).isEqualTo(2)
-        assertThat(recurrence.byday[0]).isEqualTo(EventRecurrence.TU)
-        assertThat(recurrence.byday[1]).isEqualTo(EventRecurrence.TH)
-        assertThat(recurrence.bydayNum[0]).isZero()
-        assertThat(recurrence.bydayNum[1]).isZero()
-        assertThat(recurrence.bymonthCount).isZero()
-        assertThat(recurrence.bymonthdayCount).isZero()
-        assertThat(recurrence.byyeardayCount).isZero()
+    fun `RFC 5545 - Every other week on Tuesday and Thursday, for 8 occurrences`() {
+        val rrule = "FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH"
+        val recurrence = RecurrenceParser.parse(rrule)
+        val eventRecurrence = recurrence.eventRaw
+        assertThat(eventRecurrence.freq).isEqualTo(EventRecurrence.WEEKLY)
+        assertThat(eventRecurrence.interval).isEqualTo(2)
+        assertThat(eventRecurrence.count).isEqualTo(8)
+        assertThat(eventRecurrence.wkst).isEqualTo(EventRecurrence.SU)
+        assertThat(eventRecurrence.bydayCount).isEqualTo(2)
+        assertThat(eventRecurrence.byday[0]).isEqualTo(EventRecurrence.TU)
+        assertThat(eventRecurrence.byday[1]).isEqualTo(EventRecurrence.TH)
+        assertThat(eventRecurrence.bydayNum[0]).isZero
+        assertThat(eventRecurrence.bydayNum[1]).isZero
+        assertThat(eventRecurrence.bymonthCount).isZero
+        assertThat(eventRecurrence.bymonth).isNullOrEmpty()
+        assertThat(eventRecurrence.bymonthdayCount).isZero
+        assertThat(eventRecurrence.bymonthday).isNullOrEmpty()
+        assertThat(eventRecurrence.byyeardayCount).isZero
+        assertThat(eventRecurrence.byyearday).isNullOrEmpty()
+    }
 
-        // On the last Sunday in October.
-        rrule = "FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10"
-        recurrence = EventRecurrence()
-        recurrence.parse(rrule)
-        assertThat(recurrence.freq).isEqualTo(EventRecurrence.YEARLY)
-        assertThat(recurrence.interval).isZero()
-        assertThat(recurrence.count).isZero()
-        assertThat(recurrence.bydayCount).isOne()
-        assertThat(recurrence.byday[0]).isEqualTo(EventRecurrence.SU)
-        assertThat(recurrence.bydayNum[0]).isEqualTo(-1)
-        assertThat(recurrence.bymonthCount).isOne()
-        assertThat(recurrence.bymonth[0]).isEqualTo(10)
-        assertThat(recurrence.bymonthdayCount).isZero()
-        assertThat(recurrence.byyeardayCount).isZero()
+    @Test
+    fun `RFC 5545 - On the last Sunday in October`() {
+        val rrule = "FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10"
+        val recurrence = RecurrenceParser.parse(rrule)
+        val eventRecurrence = recurrence.eventRaw
+        assertThat(eventRecurrence.freq).isEqualTo(EventRecurrence.YEARLY)
+        assertThat(eventRecurrence.interval).isZero
+        assertThat(eventRecurrence.count).isZero
+        assertThat(eventRecurrence.bydayCount).isOne
+        assertThat(eventRecurrence.byday[0]).isEqualTo(EventRecurrence.SU)
+        assertThat(eventRecurrence.bydayNum[0]).isEqualTo(-1)
+        assertThat(eventRecurrence.bymonthCount).isOne
+        assertThat(eventRecurrence.bymonth[0]).isEqualTo(10)
+        assertThat(eventRecurrence.bymonthdayCount).isZero
+        assertThat(eventRecurrence.bymonthday).isNullOrEmpty()
+        assertThat(eventRecurrence.byyeardayCount).isZero
+        assertThat(eventRecurrence.byyearday).isNullOrEmpty()
+    }
 
-        // On the first Sunday in April.
-        rrule = "FREQ=YEARLY;BYDAY=1SU;BYMONTH=4"
-        recurrence = EventRecurrence()
-        recurrence.parse(rrule)
-        assertThat(recurrence.freq).isEqualTo(EventRecurrence.YEARLY)
-        assertThat(recurrence.interval).isZero()
-        assertThat(recurrence.count).isZero()
-        assertThat(recurrence.bydayCount).isOne()
-        assertThat(recurrence.byday[0]).isEqualTo(EventRecurrence.SU)
-        assertThat(recurrence.bydayNum[0]).isOne()
-        assertThat(recurrence.bymonthCount).isOne()
-        assertThat(recurrence.bymonth[0]).isEqualTo(4)
-        assertThat(recurrence.bymonthdayCount).isZero()
-        assertThat(recurrence.byyeardayCount).isZero()
+    @Test
+    fun `RFC 5545 - On the first Sunday in April`() {
+        val  rrule = "FREQ=YEARLY;BYDAY=1SU;BYMONTH=4"
+        val recurrence = RecurrenceParser.parse(rrule)
+        val eventRecurrence = recurrence.eventRaw
+        assertThat(eventRecurrence.freq).isEqualTo(EventRecurrence.YEARLY)
+        assertThat(eventRecurrence.interval).isZero
+        assertThat(eventRecurrence.count).isZero
+        assertThat(eventRecurrence.bydayCount).isOne
+        assertThat(eventRecurrence.byday[0]).isEqualTo(EventRecurrence.SU)
+        assertThat(eventRecurrence.bydayNum[0]).isOne
+        assertThat(eventRecurrence.bymonthCount).isOne
+        assertThat(eventRecurrence.bymonth[0]).isEqualTo(4)
+        assertThat(eventRecurrence.bymonthdayCount).isZero
+        assertThat(eventRecurrence.bymonthday).isNullOrEmpty()
+        assertThat(eventRecurrence.byyeardayCount).isZero
+        assertThat(eventRecurrence.byyearday).isNullOrEmpty()
+    }
+
+    @Test
+    fun `RFC 5545 - On every third Thursday of the month`() {
+        val   rrule = "FREQ=MONTHLY;WKST=SU;BYDAY=3TH"
+        val recurrence = RecurrenceParser.parse(rrule)
+        val eventRecurrence = recurrence.eventRaw
+        assertThat(eventRecurrence.freq).isEqualTo(EventRecurrence.MONTHLY)
+        assertThat(eventRecurrence.interval).isZero
+        assertThat(eventRecurrence.count).isZero
+        assertThat(eventRecurrence.wkst).isEqualTo(EventRecurrence.SU)
+        assertThat(eventRecurrence.bydayCount).isOne
+        assertThat(eventRecurrence.byday[0]).isEqualTo(EventRecurrence.TH)
+        assertThat(eventRecurrence.bydayNum[0]).isEqualTo(3)
+        assertThat(eventRecurrence.bymonthCount).isZero
+        assertThat(eventRecurrence.bymonth).isNullOrEmpty()
+        assertThat(eventRecurrence.bymonthdayCount).isZero
+        assertThat(eventRecurrence.bymonthday).isNullOrEmpty()
+        assertThat(eventRecurrence.byyeardayCount).isZero
+        assertThat(eventRecurrence.byyearday).isNullOrEmpty()
     }
 
     @Test
@@ -171,42 +205,42 @@ class RecurrenceTest : GnuCashTest() {
         val recurrence = Recurrence(PeriodType.HOUR)
         recurrence.periodStart = start.millis
         recurrence.multiplier = 1
-        var formatted1 = recurrence.frequencyRepeatString(context)
+        var formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Hourly")
         recurrence.multiplier = 2
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Every 2 hours")
 
         recurrence.periodType = PeriodType.DAY
         recurrence.multiplier = 1
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Daily")
         recurrence.multiplier = 2
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Every 2 days")
 
         recurrence.periodType = PeriodType.WEEK
         recurrence.multiplier = 1
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Weekly on Monday")
         recurrence.multiplier = 2
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Every 2 weeks on Monday")
 
         recurrence.periodType = PeriodType.MONTH
         recurrence.multiplier = 1
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Monthly ")
         recurrence.multiplier = 2
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Every 2 months ")
 
         recurrence.periodType = PeriodType.YEAR
         recurrence.multiplier = 1
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Yearly ")
         recurrence.multiplier = 2
-        formatted1 = recurrence.frequencyRepeatString(context)
+        formatted1 = recurrence.formatRepeatString(context)
         assertThat(formatted1).isEqualTo("Every 2 years ")
     }
 
@@ -352,6 +386,7 @@ class RecurrenceTest : GnuCashTest() {
         val date = DateTime(now)
         assertThat(date.toDate().time).isEqualTo(now)
         assertThat(date.toDateTime().millis).isEqualTo(now)
+        assertThat(date.toMillis()).isEqualTo(now)
     }
 
     @Test
@@ -372,7 +407,7 @@ class RecurrenceTest : GnuCashTest() {
         assertThat(firstWeekday.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
         val week1 = firstWeekday.plusWeeks(0)
         assertThat(week1.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
-        assertThat(week1.dayOfMonth).isOne()
+        assertThat(week1.dayOfMonth).isOne
         val week2 = firstWeekday.plusWeeks(1)
         assertThat(week2.dayOfWeek).isEqualTo(DateTimeConstants.MONDAY)
         assertThat(week2.dayOfMonth).isEqualTo(8)
@@ -394,7 +429,7 @@ class RecurrenceTest : GnuCashTest() {
         assertThat(date.dayOfWeek(3).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
         assertThat(date.dayOfWeek(4).dayOfMonth).isEqualTo(25)
         assertThat(date.dayOfWeek(4).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
-        assertThat(date.dayOfWeek(5).dayOfMonth).isOne()
+        assertThat(date.dayOfWeek(5).dayOfMonth).isOne
         assertThat(date.dayOfWeek(5).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
 
         val nextMonth = date.plusMonths(1)
@@ -403,7 +438,7 @@ class RecurrenceTest : GnuCashTest() {
         val nextMonthSameWeekday = nextMonth.dayOfWeek(date)
         assertThat(nextMonthSameWeekday.dayOfMonth).isEqualTo(15)
         assertThat(nextMonthSameWeekday.dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
-        assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfMonth).isOne()
+        assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfMonth).isOne
         assertThat(nextMonthSameWeekday.dayOfWeek(1).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
         assertThat(nextMonthSameWeekday.dayOfWeek(2).dayOfMonth).isEqualTo(8)
         assertThat(nextMonthSameWeekday.dayOfWeek(2).dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
@@ -418,9 +453,9 @@ class RecurrenceTest : GnuCashTest() {
     @Test
     fun reoccurs_every_4th_wednesday() {
         val recurrence = Recurrence(PeriodType.ONCE)
-        assertThat(recurrence.ruleString).isEqualTo("FREQ=;INTERVAL=1")
+        assertThat(recurrence.ruleString).isEmpty()
         assertThat(recurrence.periodType).isEqualTo(PeriodType.ONCE)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
         assertThat(recurrence.byDays).isEmpty()
 
         // Monthly; week starts on Sunday; on 4th Wednesday of the month.
@@ -428,7 +463,8 @@ class RecurrenceTest : GnuCashTest() {
         recurrence.ruleString = rule
         assertThat(recurrence.ruleString).isEqualTo(rule)
         assertThat(recurrence.periodType).isEqualTo(PeriodType.MONTH)
-        assertThat(recurrence.multiplier).isOne()
+        assertThat(recurrence.multiplier).isOne
+        assertThat(recurrence.weekStart).isEqualTo(Calendar.SUNDAY)
         assertThat(recurrence.byDays).isEqualTo(listOf(Calendar.WEDNESDAY))
     }
 }

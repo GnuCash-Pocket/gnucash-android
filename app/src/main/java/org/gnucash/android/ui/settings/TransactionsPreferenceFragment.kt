@@ -20,7 +20,6 @@ import android.os.Bundle
 import androidx.preference.Preference
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
-import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog
@@ -45,9 +44,10 @@ class TransactionsPreferenceFragment : GnuPreferenceFragment() {
             true
         }
 
-        val preferenceDelete = findPreference<Preference?>(getString(R.string.key_delete_all_transactions))!!
+        val preferenceDelete =
+            findPreference<Preference?>(getString(R.string.key_delete_all_transactions))!!
         preferenceDelete.setOnPreferenceClickListener { preference ->
-            showDeleteTransactionsDialog(preference.context)
+            showDeleteTransactionsDialog()
             true
         }
     }
@@ -55,13 +55,9 @@ class TransactionsPreferenceFragment : GnuPreferenceFragment() {
     /**
      * Deletes all transactions in the system
      */
-    fun showDeleteTransactionsDialog(context: Context) {
-        val dialog = DeleteAllTransactionsConfirmationDialog()
-        if (shouldBackupTransactions(context)) {
-            dialog.show(parentFragmentManager, "transaction_settings")
-        } else {
-            dialog.deleteAll(context)
-        }
+    fun showDeleteTransactionsDialog() {
+        DeleteAllTransactionsConfirmationDialog()
+            .show(parentFragmentManager, "delete_transactions")
     }
 
     /**

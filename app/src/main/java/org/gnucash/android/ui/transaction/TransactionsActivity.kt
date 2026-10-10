@@ -102,7 +102,7 @@ class TransactionsActivity : BaseDrawerActivity(),
         override fun getItemCount(): Int {
             val account = account
             if (account.isPlaceholder) {
-                val txCount = transactionsDbAdapter.getTransactionsCount(account.uid)
+                val txCount = transactionsDbAdapter.getCountByAccount(account.uid)
                 if (txCount == 0) return 1
             }
             return NUM_PAGES
@@ -467,7 +467,7 @@ class TransactionsActivity : BaseDrawerActivity(),
             //if there are no transactions, and there are sub-accounts, show the sub-accounts
             val binding = this.binding
             val tabLayout = binding.tabLayout
-            val txCount = transactionsDbAdapter.getTransactionsCount(accountUID)
+            val txCount = transactionsDbAdapter.getCountByAccount(accountUID)
             var tabIndex = INDEX_TRANSACTIONS_FRAGMENT
             var needsTransactionsTab = txCount > 0
             if (txCount == 0) {

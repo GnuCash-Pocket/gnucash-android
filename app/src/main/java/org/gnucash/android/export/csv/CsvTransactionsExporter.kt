@@ -141,7 +141,7 @@ class CsvTransactionsExporter(
     }
 
     private fun formatRate(value: Money, quantity: Money): String {
-        if (quantity.isAmountZero) {
+        if (quantity.isZero) {
             return formatRate(1)
         }
         val precision = max(4, value.commodity.smallestFractionDigits)
