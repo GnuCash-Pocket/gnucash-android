@@ -24,12 +24,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <TextView
+    <ImageView
         android:id="@android:id/empty"
-        style="@style/Text.Empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/label_no_accounts"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/label_no_accounts"
+        android:src="@drawable/ic_remove_circle"
         tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
