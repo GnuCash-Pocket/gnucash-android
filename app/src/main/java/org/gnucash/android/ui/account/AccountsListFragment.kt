@@ -129,18 +129,18 @@ class AccountsListFragment : MenuFragment(),
         actionbar?.setDisplayHomeAsUpEnabled(true)
 
         val binding = binding!!
+        val context = binding.list.context
         binding.list.setHasFixedSize(true)
         binding.list.emptyView = binding.empty
         binding.list.adapter = accountListAdapter
         binding.list.tag = TAG
 
         when (displayMode) {
-            DisplayMode.TOP_LEVEL -> binding.empty.setText(R.string.label_no_accounts)
-            DisplayMode.RECENT -> binding.empty.setText(R.string.label_no_recent_accounts)
-            DisplayMode.FAVORITES -> binding.empty.setText(R.string.label_no_favorite_accounts)
+            DisplayMode.TOP_LEVEL -> binding.empty.setContentDescription(context.getText(R.string.label_no_accounts))
+            DisplayMode.RECENT -> binding.empty.setContentDescription(context.getText(R.string.label_no_recent_accounts))
+            DisplayMode.FAVORITES -> binding.empty.setContentDescription(context.getText(R.string.label_no_favorite_accounts))
         }
 
-        val context = binding.list.context
         if (context.isLandscape) {
             binding.list.layoutManager = GridLayoutManager(context, 2)
         } else {
