@@ -17,8 +17,7 @@ val versionMinor = 3
 val versionPatch = 1
 val versionBuild = 0
 
-val dropboxAppKey =
-    (project.properties["RELEASE_DROPBOX_APP_KEY"] as String?) ?: "dhjh8ke9wf05948"
+val dropboxAppKey = (project.findProperty("RELEASE_DROPBOX_APP_KEY") as? String) ?: "dhjh8ke9wf05948"
 
 android {
     namespace = "org.gnucash.android"
@@ -65,10 +64,10 @@ android {
 
         create("release") {
             if (project.hasProperty("RELEASE_STORE_FILE")) {
-                storeFile = file(project.properties["RELEASE_STORE_FILE"] as String)
-                storePassword = project.properties["RELEASE_STORE_PASSWORD"] as String
-                keyAlias = project.properties["RELEASE_KEY_ALIAS"] as String
-                keyPassword = project.properties["RELEASE_KEY_PASSWORD"] as String
+                storeFile = file(project.property("RELEASE_STORE_FILE") as String)
+                storePassword = project.property("RELEASE_STORE_PASSWORD") as String
+                keyAlias = project.property("RELEASE_KEY_ALIAS") as String
+                keyPassword = project.property("RELEASE_KEY_PASSWORD") as String
             } else {
                 storeFile = file("../debug.keystore")
             }

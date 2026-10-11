@@ -23,9 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.ActionBar
 import androidx.recyclerview.widget.LinearLayoutManager
-import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.FragmentScheduledEventsListBinding
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.ui.common.Refreshable
 
 /**
@@ -33,16 +34,23 @@ import org.gnucash.android.ui.common.Refreshable
  *
  * Currently, it handles the display of scheduled transactions and scheduled exports
  */
-abstract class ScheduledActionsListFragment : MenuFragment(), Refreshable {
+abstract class ScheduledActionsListFragment : DatabaseFragment(), Refreshable {
+    protected lateinit var scheduledActionDbAdapter: ScheduledActionDbAdapter
+        private set
     private var listAdapter: ScheduledAdapter<*>? = null
 
     protected var binding: FragmentScheduledEventsListBinding? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scheduledActionDbAdapter = readableDatabaseHolder.scheduledActionDbAdapter
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentScheduledEventsListBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root

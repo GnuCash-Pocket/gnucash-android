@@ -32,7 +32,7 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import org.gnucash.android.R
-import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentBudgetAmountEditorBinding
@@ -50,16 +50,17 @@ import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
 /**
  * Fragment for editing budgeting amounts
  */
-class BudgetAmountEditorFragment : MenuFragment() {
-    private var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
+class BudgetAmountEditorFragment : DatabaseFragment() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
     private var accountNameAdapter: QualifiedAccountNameAdapter? = null
     private val budgetAmountViews = mutableListOf<View>()
     private var binding: FragmentBudgetAmountEditorBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        accountsDbAdapter = AccountsDbAdapter.instance
         val context = requireContext()
+
+        accountsDbAdapter = databaseHolder.accountsDbAdapter
         accountNameAdapter =
             QualifiedAccountNameAdapter(context, accountsDbAdapter, viewLifecycleOwner)
     }
@@ -79,7 +80,7 @@ class BudgetAmountEditorFragment : MenuFragment() {
         val actionBar: ActionBar? = this.actionBar
         actionBar?.title = getString(R.string.title_edit_budget_amounts)
 
-        val budgetAmounts = arguments?.getParcelableArrayListCompat(
+        val budgetAmounts = requireArguments().getParcelableArrayListCompat(
             UxArgument.BUDGET_AMOUNT_LIST,
             BudgetAmount::class.java
         )

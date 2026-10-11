@@ -1,5 +1,6 @@
 package org.gnucash.android.ui.report
 
+import android.os.Bundle
 import com.github.mikephil.charting.data.ChartData
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.AccountType
@@ -16,11 +17,11 @@ abstract class IntervalReportFragment<D : ChartData<*>> : BaseReportFragment<D>(
 
     protected val accountTypes = listOf(AccountType.INCOME, AccountType.EXPENSE)
 
-    protected var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
+    protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
 
-    override fun onStart() {
-        super.onStart()
-        transactionsDbAdapter = TransactionsDbAdapter.instance
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        transactionsDbAdapter = readableDatabaseHolder.transactionsDbAdapter
     }
 
     /**

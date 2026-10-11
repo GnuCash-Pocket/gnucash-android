@@ -27,6 +27,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
@@ -95,7 +96,7 @@ object BackupManager {
      */
     @WorkerThread
     fun backupActiveBook(context: Context): Boolean {
-        return backupBook(context, GnuCashApplication.activeBookUID!!)
+        return backupBook(context, activeBookUID)
     }
 
     /**
@@ -244,6 +245,6 @@ object BackupManager {
     }
 
     fun backupActiveBookAsync(activity: Activity?, after: BooleanCallback) {
-        backupBookAsync(activity, GnuCashApplication.activeBookUID!!, after)
+        backupBookAsync(activity, activeBookUID, after)
     }
 }

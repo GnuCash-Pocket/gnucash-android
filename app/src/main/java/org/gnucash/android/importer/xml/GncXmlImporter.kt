@@ -17,6 +17,7 @@
 package org.gnucash.android.importer.xml
 
 import android.content.Context
+import android.net.Uri
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.importer.Importer
 import org.gnucash.android.model.Book
@@ -40,8 +41,8 @@ class GncXmlImporter(
 ) : Importer(context, inputStream, listener) {
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    override fun parse(inputStream: InputStream): List<Book> {
-        val handler = GncXmlHandler(context, listener, cancellationSignal)
+    override fun parse(uri: Uri, inputStream: InputStream): List<Book> {
+        val handler = GncXmlHandler(context, uri, listener, cancellationSignal)
         val reader = createXMLReader(handler)
         reader.parse(InputSource(inputStream))
         return handler.importedBooks
@@ -51,29 +52,30 @@ class GncXmlImporter(
         /**
          * Parse GnuCash XML input and populates the database
          *
-         * @param gncXmlInputStream InputStream source of the GnuCash XML file
+         * @param inputStream InputStream source of the GnuCash XML file
          * @return GUID of the book into which the XML was imported
          */
         @Throws(ParserConfigurationException::class, SAXException::class, IOException::class)
-        fun parse(context: Context, gncXmlInputStream: InputStream): String {
-            return parseBook(context, gncXmlInputStream, null).uid
+        fun parse(context: Context, uri: Uri, inputStream: InputStream): String {
+            return parseBook(context, uri, inputStream, null).uid
         }
 
         /**
          * Parse GnuCash XML input and populates the database
          *
-         * @param gncXmlInputStream InputStream source of the GnuCash XML file
+         * @param inputStream InputStream source of the GnuCash XML file
          * @param listener          the listener to receive events.
          * @return the book into which the XML was imported
          */
         @Throws(ParserConfigurationException::class, SAXException::class, IOException::class)
         fun parseBook(
             context: Context,
-            gncXmlInputStream: InputStream,
+            uri: Uri,
+            inputStream: InputStream,
             listener: GncProgressListener?
         ): Book {
-            val importer = GncXmlImporter(context, gncXmlInputStream, listener)
-            return importer.parse()[0]
+            val importer = GncXmlImporter(context, inputStream, listener)
+            return importer.parse(uri)[0]
         }
 
         @Throws(ParserConfigurationException::class, SAXException::class)

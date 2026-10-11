@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import org.gnucash.android.app.GnuCashApplication.Companion.isAbsoluteDate
 import org.gnucash.android.databinding.CardviewPriceBinding
+import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 
 class PriceCursorAdapter(
+    private val pricesDbAdapter: PricesDbAdapter,
     private val onEditPriceClick: PriceCallback,
     private val onDeletePriceClick: PriceCallback,
     private val onDuplicatePriceClick: PriceCallback,
@@ -20,6 +22,7 @@ class PriceCursorAdapter(
         val useAbsoluteDate = isAbsoluteDate(context)
         return PriceViewHolder(
             binding,
+            pricesDbAdapter,
             useAbsoluteDate,
             onEditPriceClick,
             onDeletePriceClick,

@@ -37,6 +37,7 @@ import com.tech.freak.wizardpager.model.ReviewItem
 import com.tech.freak.wizardpager.ui.PageFragmentCallbacks
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.databinding.ActivityFirstRunWizardBinding
 import org.gnucash.android.db.adapter.BooksDbAdapter
@@ -145,33 +146,39 @@ class FirstRunWizardActivity : GnuCashActivity(),
      * This method also removes the first run flag from the application
      */
     private fun createAccountsAndFinish(accountOption: String, currencyCode: String) {
-        if (accountOption == wizardModel.optionAccountImport) {
-            AccountsActivity.startXmlFileChooser(this)
-        } else if (accountOption == wizardModel.optionAccountUser) {
-            //user prefers to handle account creation themselves
-            AccountsActivity.start(this)
-            finish()
-        } else {
-            val accountAssetId = wizardModel.getAccountsByLabel(accountOption)
-            if (accountAssetId.isNullOrEmpty()) {
-                return
+        when (accountOption) {
+            wizardModel.optionAccountImport -> {
+                AccountsActivity.startXmlFileChooser(this)
             }
 
-            val activity: Activity = this@FirstRunWizardActivity
-            //save the UID of the active book, and then delete it after successful import
-            val booksDbAdapter = BooksDbAdapter.instance
-            val bookOldUID = booksDbAdapter.activeBookUID
+            wizardModel.optionAccountUser -> {
+                //user prefers to handle account creation themselves
+                val bookUID = GnuCashApplication.activeBookUID
+                AccountsActivity.start(this, bookUID)
+                finish()
+            }
 
-            AccountsActivity.createDefaultAccounts(
-                activity,
-                currencyCode,
-                accountAssetId
-            ) { bookUID ->
-                if (bookOldUID.isNotEmpty()) {
-                    maybeDeleteOldBook(activity, bookOldUID, bookUID)
-                    finish()
-                } else {
-                    finish()
+            else -> {
+                val accountAssetId = wizardModel.getAccountsByLabel(accountOption)
+                if (accountAssetId.isNullOrEmpty()) {
+                    return
+                }
+
+                val activity: Activity = this@FirstRunWizardActivity
+                //save the UID of the active book, and then delete it after successful import
+                val bookOldUID = GnuCashApplication.activeBookUID
+
+                AccountsActivity.createDefaultAccounts(
+                    activity,
+                    currencyCode,
+                    accountAssetId
+                ) { bookUID ->
+                    if (bookOldUID.isNotEmpty()) {
+                        maybeDeleteOldBook(activity, bookOldUID, bookUID)
+                        finish()
+                    } else {
+                        finish()
+                    }
                 }
             }
         }
@@ -231,11 +238,11 @@ class FirstRunWizardActivity : GnuCashActivity(),
         return wizardModel
     }
 
-    override fun onEditScreenAfterReview(key: String) {
+    override fun onEditScreenAfterReview(pageKey: String) {
         editingAfterReview = false
         val pages = pagerAdapter.data
         for (i in pages.indices.reversed()) {
-            if (pages[i].key == key) {
+            if (pages[i].key == pageKey) {
                 editingAfterReview = true
                 gotoPage(i)
                 return
@@ -310,16 +317,12 @@ class FirstRunWizardActivity : GnuCashActivity(),
         var feedbackOption = ""
         for (reviewItem in reviewItems) {
             val title = reviewItem.title
-            if (title == model.titleCurrency) {
-                currencyLabel = reviewItem.displayValue
-            } else if (title == model.titleOtherCurrency) {
-                currencyLabel = reviewItem.displayValue
-            } else if (title == model.titleAccount) {
-                accountLabel = reviewItem.displayValue
-            } else if (title == model.optionAccountDefault) {
-                accountLabel = reviewItem.displayValue
-            } else if (title == model.titleFeedback) {
-                feedbackOption = reviewItem.displayValue
+            when (title) {
+                model.titleCurrency -> currencyLabel = reviewItem.displayValue
+                model.titleOtherCurrency -> currencyLabel = reviewItem.displayValue
+                model.titleAccount -> accountLabel = reviewItem.displayValue
+                model.optionAccountDefault -> accountLabel = reviewItem.displayValue
+                model.titleFeedback -> feedbackOption = reviewItem.displayValue
             }
         }
 
@@ -345,8 +348,7 @@ class FirstRunWizardActivity : GnuCashActivity(),
 
     private fun importFileAndFinish(data: Intent?) {
         val activity: Activity = this
-        val booksDbAdapter = BooksDbAdapter.instance
-        val bookOldUID = booksDbAdapter.activeBookUID
+        val bookOldUID = GnuCashApplication.activeBookUID
 
         openBook(this, data) { bookUID ->
             maybeDeleteOldBook(activity, bookOldUID, bookUID)
@@ -405,5 +407,10 @@ class FirstRunWizardActivity : GnuCashActivity(),
     companion object {
         private const val STATE_MODEL = "model"
         private const val STEP_REVIEW = 1
+
+        fun show(context: Context) {
+            val intent = Intent(context, FirstRunWizardActivity::class.java)
+            context.startActivity(intent)
+        }
     }
 }

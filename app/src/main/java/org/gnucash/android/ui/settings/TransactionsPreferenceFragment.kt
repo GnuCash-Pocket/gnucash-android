@@ -19,8 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.preference.Preference
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
-import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog
@@ -30,11 +29,17 @@ import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationD
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class TransactionsPreferenceFragment : GnuPreferenceFragment() {
+class TransactionsPreferenceFragment : BookPreferencesFragment() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+
     override val titleId: Int = R.string.title_transaction_preferences
 
+    override fun initDatabase(dbHolder: DatabaseHolder) {
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.setSharedPreferencesName(activeBookUID)
+        super.onCreatePreferences(savedInstanceState, rootKey)
         addPreferencesFromResource(R.xml.fragment_transaction_preferences)
 
         val preferenceDouble =
@@ -45,9 +50,10 @@ class TransactionsPreferenceFragment : GnuPreferenceFragment() {
             true
         }
 
-        val preferenceDelete = findPreference<Preference?>(getString(R.string.key_delete_all_transactions))!!
+        val preferenceDelete =
+            findPreference<Preference>(getString(R.string.key_delete_all_transactions))!!
         preferenceDelete.setOnPreferenceClickListener { preference ->
-            showDeleteTransactionsDialog(preference.context)
+            showDeleteTransactionsDialog()
             true
         }
     }
@@ -55,13 +61,9 @@ class TransactionsPreferenceFragment : GnuPreferenceFragment() {
     /**
      * Deletes all transactions in the system
      */
-    fun showDeleteTransactionsDialog(context: Context) {
-        val dialog = DeleteAllTransactionsConfirmationDialog()
-        if (shouldBackupTransactions(context)) {
-            dialog.show(parentFragmentManager, "transaction_settings")
-        } else {
-            dialog.deleteAll(context)
-        }
+    fun showDeleteTransactionsDialog() {
+        DeleteAllTransactionsConfirmationDialog()
+            .show(parentFragmentManager, "delete_transactions")
     }
 
     /**
@@ -71,7 +73,6 @@ class TransactionsPreferenceFragment : GnuPreferenceFragment() {
      */
     private fun setImbalanceAccountsHidden(context: Context, isDoubleEntry: Boolean) {
         val isHidden = if (isDoubleEntry) "0" else "1"
-        val accountsDbAdapter = AccountsDbAdapter.instance
         val commodities = accountsDbAdapter.commoditiesInUse
         for (commodity in commodities) {
             val uid = accountsDbAdapter.getImbalanceAccountUID(context, commodity)

@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteStatement
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
@@ -78,14 +77,12 @@ class AccountsDbAdapter(
     transactionsDbAdapter.holder,
     AccountEntry.TABLE_NAME,
     entryColumns,
-    true
+    false
 ) {
     /**
      * Commodities database adapter for commodity manipulation
      */
     val commoditiesDbAdapter: CommoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter
-
-    private var rootUID: String? = null
 
     /**
      * Convenience overloaded constructor.
@@ -116,7 +113,7 @@ class AccountsDbAdapter(
     override fun addRecord(account: Account, updateMethod: UpdateMethod): Account {
         Timber.d("Replace account to db")
         if (account.isRoot && !account.isTemplate) {
-            rootUID = account.uid
+            rootUID[holder.name] = account.uid
         }
         //in-case the account already existed, we want to update the templates based on it as well
         return super.addRecord(account, updateMethod)
@@ -439,7 +436,7 @@ class AccountsDbAdapter(
      * @return String unique ID of the account
      */
     fun getOrCreateImbalanceAccountUID(context: Context, commodity: Commodity): String {
-        return getOrCreateImbalanceAccount(context, commodity)!!.uid
+        return getOrCreateImbalanceAccount(context, commodity).uid
     }
 
     /**
@@ -449,7 +446,7 @@ class AccountsDbAdapter(
      * @param commodity Commodity for the imbalance account
      * @return The account
      */
-    fun getOrCreateImbalanceAccount(context: Context, commodity: Commodity): Account? {
+    fun getOrCreateImbalanceAccount(context: Context, commodity: Commodity): Account {
         val imbalanceAccountName = getImbalanceAccountName(context, commodity)
         val uid = findAccountUidByFullName(imbalanceAccountName)
         if (uid.isNullOrEmpty()) {
@@ -476,6 +473,17 @@ class AccountsDbAdapter(
     fun getImbalanceAccountUID(context: Context, commodity: Commodity): String? {
         val imbalanceAccountName: String = getImbalanceAccountName(context, commodity)
         return findAccountUidByFullName(imbalanceAccountName)
+    }
+
+    fun isImbalanceAccount(context: Context, accountUID: String): Boolean {
+        val account = getRecord(accountUID)
+        if (account.type != AccountType.BANK) {
+            return false
+        }
+        if (account.parentUID != rootAccountUID) {
+            return false
+        }
+        return getImbalanceAccountUID(context, account.commodity) == accountUID
     }
 
     /**
@@ -550,20 +558,21 @@ class AccountsDbAdapter(
                 }
             }
         }
-        val c = db.query(
+        val projection = arrayOf<String?>(AccountEntry.COLUMN_UID)
+        val where = AccountEntry.COLUMN_FULL_NAME + "= ?"
+        val whereArgs = arrayOf(fullName)
+        val cursor = db.query(
             tableName,
-            arrayOf<String?>(AccountEntry.COLUMN_UID),
-            AccountEntry.COLUMN_FULL_NAME + "= ?", arrayOf<String?>(fullName),
+            projection,
+            where, whereArgs,
             null, null, null, "1"
         )
-        try {
-            if (c.moveToNext()) {
-                return c.getString(0)
+        return cursor.use { cursor ->
+            if (cursor.moveToNext()) {
+                cursor.getString(0)
             } else {
-                return null
+                null
             }
-        } finally {
-            c.close()
         }
     }
 
@@ -793,7 +802,7 @@ class AccountsDbAdapter(
                 val child = getRecord(childUID)
                 val childCommodity = child.commodity
                 val childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
-                if (childBalance.isAmountZero) continue
+                if (childBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
                 balance += childBalance * price
             }
@@ -879,16 +888,16 @@ class AccountsDbAdapter(
         var balance = createZeroInstance(currency)
         if ((startTimestamp == ALWAYS) && (endTimestamp == ALWAYS)) { // Use cached balances.
             for (account in accounts) {
-                var accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false)
-                if (accountBalance.isAmountZero) continue
+                val accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false)
+                if (accountBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
         } else {
             val balances = getAccountsBalances(accounts, startTimestamp, endTimestamp)
             for (account in accounts) {
-                var accountBalance = balances[account.uid]
-                if ((accountBalance == null) || accountBalance.isAmountZero) continue
+                val accountBalance = balances[account.uid]
+                if ((accountBalance == null) || accountBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
@@ -966,7 +975,7 @@ class AccountsDbAdapter(
      * @param isShowHiddenAccounts Show hidden accounts?
      * @return [Cursor] to the sub accounts data set
      */
-    fun fetchSubAccounts(accountUID: String?, isShowHiddenAccounts: Boolean): Cursor? {
+    fun fetchSubAccounts(accountUID: String?, isShowHiddenAccounts: Boolean): Cursor {
         Timber.v("Fetching sub accounts for account id %s", accountUID)
         var selection = AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?"
         if (!isShowHiddenAccounts) {
@@ -981,7 +990,7 @@ class AccountsDbAdapter(
      *
      * @return Cursor to the top level accounts
      */
-    fun fetchTopLevelAccounts(filterName: String?, isShowHiddenAccounts: Boolean): Cursor? {
+    fun fetchTopLevelAccounts(filterName: String?, isShowHiddenAccounts: Boolean): Cursor {
         //condition which selects accounts with no parent, whose UID is not ROOT and whose type is not ROOT
         val selectionArgs: Array<String?>
         var selection = AccountEntry.COLUMN_TYPE + " != ?"
@@ -991,13 +1000,10 @@ class AccountsDbAdapter(
         if (filterName.isNullOrEmpty()) {
             selection += (" AND (" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL OR "
                     + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)")
-            selectionArgs = arrayOf<String?>(
-                AccountType.ROOT.name,
-                rootAccountUID
-            )
+            selectionArgs = arrayOf(AccountType.ROOT.name, rootAccountUID)
         } else {
             selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")"
-            selectionArgs = arrayOf<String?>(AccountType.ROOT.name)
+            selectionArgs = arrayOf(AccountType.ROOT.name)
         }
         return fetchAccounts(selection, selectionArgs, null)
     }
@@ -1042,7 +1048,7 @@ class AccountsDbAdapter(
      *
      * @return Cursor holding set of favorite accounts
      */
-    fun fetchFavoriteAccounts(filterName: String?, isShowHiddenAccounts: Boolean): Cursor? {
+    fun fetchFavoriteAccounts(filterName: String?, isShowHiddenAccounts: Boolean): Cursor {
         Timber.v("Fetching favorite accounts from db")
         var selection = AccountEntry.COLUMN_FAVORITE + " = 1"
         if (!isShowHiddenAccounts) {
@@ -1064,45 +1070,45 @@ class AccountsDbAdapter(
      */
     val rootAccountUID: String
         get() {
-            var uid = rootUID
+            val bookUID = holder.name
+            var uid = rootUID[bookUID]
             if (uid != null) {
                 return uid
             }
             val where = AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=0"
             val whereArgs = arrayOf<String?>(AccountType.ROOT.name)
             val cursor = fetchAccounts(where, whereArgs, null)
-            if (cursor != null) {
-                try {
-                    if (cursor.moveToFirst()) {
-                        uid = cursor.getString(AccountEntry.COLUMN_UID)!!
-                        rootUID = uid
-                        return uid
-                    }
-                } finally {
-                    cursor.close()
+            cursor.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    uid = cursor.getString(AccountEntry.COLUMN_UID)!!
+                    rootUID[bookUID] = uid
+                    return uid
                 }
             }
+
             // No ROOT exits, create a new one
-            val commodity = commoditiesDbAdapter.defaultCommodity
-            val rootAccount = Account(ROOT_ACCOUNT_NAME, commodity)
-            rootAccount.setUID(uid)
-            rootAccount.type = AccountType.ROOT
-            rootAccount.fullName = ROOT_ACCOUNT_FULL_NAME
-            rootAccount.isHidden = false
-            rootAccount.isPlaceholder = false
-            uid = rootAccount.uid
-            val contentValues = ContentValues()
-            contentValues[AccountEntry.COLUMN_UID] = uid
-            contentValues[AccountEntry.COLUMN_NAME] = rootAccount.name
-            contentValues[AccountEntry.COLUMN_FULL_NAME] = rootAccount.fullName
-            contentValues[AccountEntry.COLUMN_TYPE] = rootAccount.type.name
-            contentValues[AccountEntry.COLUMN_HIDDEN] = rootAccount.isHidden
-            contentValues[AccountEntry.COLUMN_CURRENCY] = rootAccount.commodity.currencyCode
-            contentValues[AccountEntry.COLUMN_COMMODITY_UID] = rootAccount.commodity.uid
-            contentValues[AccountEntry.COLUMN_PLACEHOLDER] = rootAccount.isPlaceholder
             Timber.i("Creating ROOT account")
+            val commodity = commoditiesDbAdapter.defaultCommodity
+            val rootAccount = Account(ROOT_ACCOUNT_NAME, commodity).apply {
+                setUID(uid)
+                type = AccountType.ROOT
+                fullName = ROOT_ACCOUNT_FULL_NAME
+                isHidden = false
+                isPlaceholder = false
+            }
+            uid = rootAccount.uid
+            val contentValues = ContentValues().apply {
+                put(AccountEntry.COLUMN_UID, uid)
+                put(AccountEntry.COLUMN_NAME, rootAccount.name)
+                put(AccountEntry.COLUMN_FULL_NAME, rootAccount.fullName)
+                put(AccountEntry.COLUMN_TYPE, rootAccount.type.name)
+                put(AccountEntry.COLUMN_HIDDEN, rootAccount.isHidden)
+                put(AccountEntry.COLUMN_CURRENCY, rootAccount.commodity.currencyCode)
+                put(AccountEntry.COLUMN_COMMODITY_UID, rootAccount.commodity.uid)
+                put(AccountEntry.COLUMN_PLACEHOLDER, rootAccount.isPlaceholder)
+            }
             db.insert(tableName, null, contentValues)
-            rootUID = uid
+            rootUID[bookUID] = uid
             return uid
         }
 
@@ -1152,31 +1158,31 @@ class AccountsDbAdapter(
     /**
      * Returns the default transfer account record ID for the account with UID `accountUID`
      *
-     * @param accountID Database ID of the account record
-     * @return Record ID of default transfer account
+     * @param account The main account
+     * @return Record of default transfer account
      */
-    fun getDefaultTransferAccountID(accountID: Long): Long {
+    fun getDefaultTransferAccount(account: Account): Account? {
+        val accountUID = account.uid
+        val defaultTransferUid = account.defaultTransferAccountUID
+
+        if (defaultTransferUid.isNullOrEmpty()) {
+            val where = (AccountEntry.COLUMN_UID + " != ?"
+                    + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                    + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                    + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                    + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+            val whereArgs = arrayOf<String?>(accountUID, account.type.name, AccountType.ROOT.name)
+            return getAllRecords(where, whereArgs, null).firstOrNull()
+        }
+
         if (isCached) {
-            for (account in cache.values) {
-                if (account.id == accountID) {
-                    val uid = account.defaultTransferAccountUID
-                    return if (uid.isNullOrEmpty()) 0 else getID(uid)
+            for (a in cache.values) {
+                if (defaultTransferUid == a.uid) {
+                    return a
                 }
             }
         }
-        val cursor = db.query(
-            tableName,
-            arrayOf<String?>(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID),
-            AccountEntry.COLUMN_ID + " = " + accountID,
-            null, null, null, null
-        )
-        cursor.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val uid = cursor.getString(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
-                return if (uid.isNullOrEmpty()) 0 else getID(uid)
-            }
-        }
-        return 0
+        return getRecord(defaultTransferUid)
     }
 
     /**
@@ -1280,7 +1286,7 @@ class AccountsDbAdapter(
             val openingTransactions = mutableListOf<Transaction>()
             for (account in accounts) {
                 val balance = computeSplitsBalance(account, ALWAYS, ALWAYS)
-                if (balance.isAmountZero) continue
+                if (balance.isZero) continue
 
                 val transaction =
                     Transaction(context.getString(R.string.account_name_opening_balances))
@@ -1370,7 +1376,7 @@ class AccountsDbAdapter(
         db.delete(BudgetAmountEntry.TABLE_NAME, null, null)
         db.delete(BudgetEntry.TABLE_NAME, null, null)
         db.delete(RecurrenceEntry.TABLE_NAME, null, null)
-        rootUID = null
+        rootUID.clear()
 
         return super.deleteAllRecords()
     }
@@ -1379,7 +1385,9 @@ class AccountsDbAdapter(
     override fun deleteRecord(uid: String): Boolean {
         val result = super.deleteRecord(uid)
         if (result) {
-            if (uid == rootUID) rootUID = null
+            if (uid == rootAccountUID) {
+                rootUID.clear()
+            }
             val contentValues = ContentValues()
             contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
             db.update(
@@ -1407,8 +1415,8 @@ class AccountsDbAdapter(
         return transactionsDbAdapter.getTransactionMaxSplitNum(accountUID)
     }
 
-    fun getTransactionCount(uid: String): Long {
-        return transactionsDbAdapter.getTransactionsCountForAccount(uid)
+    fun getTransactionCount(accountUID: String): Int {
+        return transactionsDbAdapter.getCountByAccount(accountUID)
     }
 
     /**
@@ -1537,12 +1545,7 @@ class AccountsDbAdapter(
 
         const val ALWAYS: Long = -1L
 
-        /**
-         * Returns an application-wide instance of this database adapter
-         *
-         * @return Instance of Accounts db adapter
-         */
-        val instance: AccountsDbAdapter get() = GnuCashApplication.accountsDbAdapter!!
+        private val rootUID: MutableMap<String, String> = mutableMapOf()
 
         fun getImbalanceAccountPrefix(context: Context): String {
             return context.getString(R.string.imbalance_account_name) + "-"

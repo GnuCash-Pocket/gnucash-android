@@ -16,10 +16,10 @@
 package org.gnucash.android.test.unit.export
 
 import android.content.Context
+import android.net.Uri
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
@@ -69,12 +69,11 @@ class BackupTest : GnuCashTest() {
             try {
                 val bookUID = GncXmlImporter.parse(
                     context,
+                    Uri.EMPTY,
                     context.resources.openRawResource(R.raw.default_accounts)
                 )
                 if (activate) {
-                    val booksDbAdapter = BooksDbAdapter.instance
-                    booksDbAdapter.setActive(bookUID)
-                    assertThat(booksDbAdapter.activeBookUID).isEqualTo(bookUID)
+                    GnuCashApplication.activeBookUID = bookUID
                     assertThat(GnuCashApplication.activeBookUID).isEqualTo(bookUID)
                 }
                 return bookUID

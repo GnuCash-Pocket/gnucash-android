@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Permintaan"</string>
     <string name="gnucash_po_bid">"Penawaran"</string>
     <string name="gnucash_po_commodity_currency">"Komoditas/Mata Uang"</string>
+    <string name="gnucash_po_create_automatically">"Buat otomatis"</string>
     <string name="gnucash_po_currencies">"Mata Uang"</string>
     <string name="gnucash_po_date">"Tanggal"</string>
     <string name="gnucash_po_description">"Deskripsi"</string>

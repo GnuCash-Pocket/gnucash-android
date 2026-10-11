@@ -36,12 +36,13 @@ import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentResultListener
 import org.gnucash.android.R
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
-import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.FragmentAccountFormBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.lang.trim
@@ -64,14 +65,11 @@ import timber.log.Timber
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-class AccountFormFragment : MenuFragment(), FragmentResultListener {
-    /**
-     * Accounts database adapter
-     */
-    private var accountsDbAdapter = AccountsDbAdapter.instance
-    private var commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
+class AccountFormFragment : DatabaseFragment(), FragmentResultListener {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
     private var accountTypesAdapter: AccountTypesAdapter? = null
-    private var commoditiesAdapter: CommoditiesAdapter? = null
+    private lateinit var commoditiesAdapter: CommoditiesAdapter
 
     /**
      * GUID of the parent account
@@ -116,22 +114,25 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
     private var selectedDefaultTransferAccount: Account? = null
     private var selectedName = ""
     private var selectedAccountType: AccountType = AccountType.ROOT
-    private var selectedCommodity: Commodity = commoditiesDbAdapter.defaultCommodity
+    private lateinit var selectedCommodity: Commodity
 
     private var binding: FragmentAccountFormBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val context = requireContext()
+
+        val dbHolder = databaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
+        accountTypesAdapter = AccountTypesAdapter(context)
+
         useDoubleEntry = isDoubleEntryEnabled(context)
         val args = requireArguments()
         val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)
         parentAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID)
         rootAccountUID = accountsDbAdapter.rootAccountUID
 
-        accountsDbAdapter = AccountsDbAdapter.instance
-        commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
-        accountTypesAdapter = AccountTypesAdapter(context)
         val account = accountUID?.let { accountsDbAdapter.getRecordOrNull(it) }
         this.account = account
         if (account != null) {
@@ -142,6 +143,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
             parentAccountUID = rootAccountUID
         }
         selectedParentAccountUID = parentAccountUID
+        selectedCommodity = commoditiesDbAdapter.defaultCommodity
     }
 
     /**
@@ -211,7 +213,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
             showColorPickerDialog()
         }
 
-        commoditiesAdapter = CommoditiesAdapter(context, viewLifecycleOwner).load { adapter ->
+        commoditiesAdapter = CommoditiesAdapter(context, commoditiesDbAdapter, viewLifecycleOwner).load { adapter ->
             val commodity = account?.commodity ?: commoditiesDbAdapter.defaultCommodity
             val position = adapter.getPosition(commodity)
             binding.inputCurrencySpinner.setSelection(position)
@@ -463,17 +465,19 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         binding: FragmentAccountFormBinding,
         account: Account?
     ) {
-        val condition = (AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
-
         val context = binding.root.context
         val accountUID = account?.uid.orEmpty()
+        val where = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val whereArgs = arrayOf<String?>(accountUID, account?.type?.name ?: AccountType.ROOT.name, AccountType.ROOT.name)
+
         defaultAccountNameAdapter = QualifiedAccountNameAdapter(
             context,
-            condition,
-            arrayOf(accountUID, AccountType.ROOT.name),
+            where,
+            whereArgs,
             accountsDbAdapter,
             viewLifecycleOwner
         ).load { adapter ->

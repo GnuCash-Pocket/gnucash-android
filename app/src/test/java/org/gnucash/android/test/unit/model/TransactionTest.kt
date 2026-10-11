@@ -15,7 +15,7 @@ class TransactionTest : GnuCashTest() {
     fun testCloningTransaction() {
         val transaction = Transaction("Bobba Fett")
         assertThat(transaction.uid).isNotNull()
-        assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
+        assertThat(transaction.commodity).isEqualTo(Commodity.DEFAULT_COMMODITY)
 
         val clone1 = transaction.copy(false)
         assertThat(transaction.uid).isEqualTo(clone1.uid)
@@ -23,7 +23,7 @@ class TransactionTest : GnuCashTest() {
 
         val clone2 = transaction.copy(true)
         assertThat(transaction.uid).isNotEqualTo(clone2.uid)
-        assertThat(transaction.currencyCode).isEqualTo(clone2.currencyCode)
+        assertThat(transaction.commodity).isEqualTo(clone2.commodity)
         assertThat(transaction.description).isEqualTo(clone2.description)
         assertThat(transaction.notes).isEqualTo(clone2.notes)
         assertThat(transaction.datePosted).isEqualTo(clone2.datePosted)
@@ -36,7 +36,7 @@ class TransactionTest : GnuCashTest() {
     @Test
     fun addingSplitsShouldSetTransactionUID() {
         val transaction = Transaction("")
-        assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
+        assertThat(transaction.commodity).isEqualTo(Commodity.DEFAULT_COMMODITY)
 
         val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account")
         assertThat(split.transactionUID).isNullOrEmpty()
@@ -67,8 +67,8 @@ class TransactionTest : GnuCashTest() {
     @Test
     fun testCreateAutoBalanceSplit() {
         val transactionCredit = Transaction("Transaction with more credit")
-        transactionCredit.commodity = Commodity.getInstance("EUR")
-        val creditSplit = Split(Money("1", "EUR"), "test-account")
+        transactionCredit.commodity = Commodity.EUR
+        val creditSplit = Split(Money("1", Commodity.EUR), "test-account")
         creditSplit.type = TransactionType.CREDIT
         transactionCredit.addSplit(creditSplit)
         val debitBalanceSplit = transactionCredit.createAutoBalanceSplit()
@@ -80,8 +80,8 @@ class TransactionTest : GnuCashTest() {
         assertThat(debitBalanceSplit.quantity).isEqualTo(creditSplit.quantity)
 
         val transactionDebit = Transaction("Transaction with more debit")
-        transactionDebit.commodity = Commodity.getInstance("EUR")
-        val debitSplit = Split(Money("1", "EUR"), "test-account")
+        transactionDebit.commodity = Commodity.EUR
+        val debitSplit = Split(Money("1", Commodity.EUR), "test-account")
         debitSplit.type = TransactionType.DEBIT
         transactionDebit.addSplit(debitSplit)
         val creditBalanceSplit = transactionDebit.createAutoBalanceSplit()

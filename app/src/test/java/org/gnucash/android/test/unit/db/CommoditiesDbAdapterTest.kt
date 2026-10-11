@@ -5,15 +5,14 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.MigrationHelper
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.model.Commodity
-import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Test
 
-class CommoditiesDbAdapterTest : GnuCashTest() {
+class CommoditiesDbAdapterTest : DatabaseTest() {
     @Test
     fun parseCurrencies() {
         val helper = DatabaseHelper(context, "test")
         val holder = helper.holder
-        MigrationHelper.importCommodities(holder)
+        MigrationHelper.importCurrencies(holder)
 
         val adapter = CommoditiesDbAdapter(holder)
 
@@ -29,5 +28,7 @@ class CommoditiesDbAdapterTest : GnuCashTest() {
 
         val currencyByUID = adapter.getRecord(currency.uid)
         assertThat(currency).isEqualTo(currencyByUID)
+
+        helper.close()
     }
 }

@@ -137,11 +137,6 @@ class TransactionTypeSwitch @JvmOverloads constructor(
                 textDebit = context.getString(R.string.label_debit)
                 textCredit = context.getString(R.string.label_credit)
             }
-
-            else -> {
-                textDebit = context.getString(R.string.label_debit)
-                textCredit = context.getString(R.string.label_credit)
-            }
         }
 
         this.textCredit = textCredit

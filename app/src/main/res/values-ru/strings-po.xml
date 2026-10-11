@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Цена предложения"</string>
     <string name="gnucash_po_bid">"Цена покупки"</string>
     <string name="gnucash_po_commodity_currency">"Товар/Валюта"</string>
+    <string name="gnucash_po_create_automatically">"Создать автоматически"</string>
     <string name="gnucash_po_currencies">"Валюты"</string>
     <string name="gnucash_po_date">"Дата"</string>
     <string name="gnucash_po_description">"Описание"</string>
@@ -27,8 +28,8 @@
     <string name="gnucash_po_price_editor">"Редактор цен"</string>
     <string name="gnucash_po_price">"Цена"</string>
     <string name="gnucash_po_rate_price">"Ставка/цена"</string>
-    <string name="gnucash_po_reconcile_date">"Дата согласования"</string>
-    <string name="gnucash_po_reconcile">"Согласование"</string>
+    <string name="gnucash_po_reconcile_date">"Дата сверки"</string>
+    <string name="gnucash_po_reconcile">"Сверка"</string>
     <string name="gnucash_po_remove_old_prices">"Удалить старые цены"</string>
     <string name="gnucash_po_security">"Ценные бумаги"</string>
     <string name="gnucash_po_symbol">"Символ"</string>

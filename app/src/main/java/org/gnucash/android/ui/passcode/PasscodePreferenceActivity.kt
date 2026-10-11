@@ -18,6 +18,8 @@ package org.gnucash.android.ui.passcode
 import android.os.Bundle
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.app.arguments
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.ui.settings.ThemeHelper
 
 /**
@@ -31,10 +33,7 @@ class PasscodePreferenceActivity : GnuCashActivity() {
         ThemeHelper.apply(this)
         setContentView(R.layout.passcode_lockscreen)
 
-        val args = Bundle()
-        args.putAll(intent.extras ?: Bundle())
-        val fragment = PasscodeModifyFragment()
-        fragment.arguments = args
+        val fragment = PasscodeModifyFragment().withArguments(intent.arguments())
 
         supportFragmentManager
             .beginTransaction()

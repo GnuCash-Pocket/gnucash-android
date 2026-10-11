@@ -36,6 +36,7 @@ data class Slot(
         get() = if (isDouble) value as Double
         else throw TypeCastException(type.attribute)
 
+    @Suppress("UNCHECKED_CAST")
     val asFrame: List<Slot>
         get() = if (isFrame) value as List<Slot>
         else throw TypeCastException(type.attribute)

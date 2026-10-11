@@ -18,7 +18,6 @@ package org.gnucash.android.util
 import android.content.Context
 import androidx.core.content.edit
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import timber.log.Timber
 import java.sql.Timestamp
@@ -33,18 +32,6 @@ object PreferencesHelper {
     private const val KEY_LAST_EXPORT_TIME: String = "last_export_time"
 
     /**
-     * Set the last export time in UTC time zone of the currently active Book in the application.
-     * This method calls through to [.setLastExportTime]
-     *
-     * @param lastExportTime the last export time to set.
-     * @see .setLastExportTime
-     */
-    fun setLastExportTime(context: Context, lastExportTime: Timestamp) {
-        Timber.v("Saving last export time for the currently active book")
-        setLastExportTime(context, lastExportTime, activeBookUID!!)
-    }
-
-    /**
      * Set the last export time in UTC time zone for a specific book.
      * This value will be used during export to determine new transactions since the last export
      *
@@ -57,15 +44,6 @@ object PreferencesHelper {
         prefs.edit {
             putString(KEY_LAST_EXPORT_TIME, utcString)
         }
-    }
-
-    /**
-     * Get the time for the last export operation.
-     *
-     * @return A [Timestamp] with the time.
-     */
-    fun getLastExportTime(context: Context): Timestamp {
-        return getLastExportTime(context, activeBookUID!!)
     }
 
     /**

@@ -52,10 +52,11 @@ class TransactionsTest : BookHelperTest() {
         assertThat(tx2.splits[0].accountUID).isEqualTo("f973a7c67330448bb6dda4ed40b45d81")
         assertThat(tx2.splits[1].accountUID).isEqualTo("5cd48b4cbd9b492db920690207d5d89b")
 
+        val currencyILS = commoditiesDbAdapter.getCurrency("ILS")!!
         val tx3 = transactionsDbAdapter.getRecord("9b42fbb885db4918819a05fc42dd63e0")
         assertThat(tx3.isTemplate).isTrue()
         assertThat(tx3.description).isEqualTo("AT&T")
-        assertThat(tx3.splits[0].value).isEqualTo(Money(999, 10, Commodity.getInstance("ILS")))
+        assertThat(tx3.splits[0].value).isEqualTo(Money(999, 10, currencyILS))
 
         deleteAllTransactions(accountsDbAdapter)
 
@@ -63,7 +64,7 @@ class TransactionsTest : BookHelperTest() {
         assertThat(txCountAfterDelete).isEqualTo(6) // each account has its own opening balance now.
 
         val txsAfter = transactionsDbAdapter.allRecords
-        assertThat(txsAfter.size).isEqualTo(7)
+        assertThat(txsAfter).hasSize(7)
 
         val tx0After = txsAfter[0]
         assertThat(tx0After.uid).isEqualTo("9b42fbb885db4918819a05fc42dd63e0")

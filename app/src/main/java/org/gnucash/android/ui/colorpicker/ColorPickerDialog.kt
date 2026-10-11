@@ -26,6 +26,8 @@ import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import org.gnucash.android.R
+import org.gnucash.android.app.resultBundle
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.model.Account
 import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener
 
@@ -43,18 +45,6 @@ class ColorPickerDialog : DialogFragment(), OnColorSelectedListener {
 
     private var palette: ColorPickerPalette? = null
     private var listener: OnColorSelectedListener? = null
-
-    private fun setArguments(
-        titleResId: Int,
-        size: Int,
-        @ColorInt selectedColor: Int
-    ) {
-        arguments = Bundle().apply {
-            putInt(KEY_TITLE_ID, titleResId)
-            putInt(KEY_SIZE, size)
-            putInt(KEY_SELECTED_COLOR, selectedColor)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,8 +92,9 @@ class ColorPickerDialog : DialogFragment(), OnColorSelectedListener {
     override fun onColorSelected(@ColorInt color: Int) {
         listener?.onColorSelected(color)
 
-        val result = Bundle()
-        result.putInt(EXTRA_COLOR, color)
+        val result = resultBundle {
+            putInt(EXTRA_COLOR, color)
+        }
         parentFragmentManager.setFragmentResult(COLOR_PICKER_DIALOG_TAG, result)
 
         val palette = palette
@@ -144,10 +135,12 @@ class ColorPickerDialog : DialogFragment(), OnColorSelectedListener {
         fun newInstance(
             titleResId: Int,
             size: Int,
-            selectedColor: Int
+            @ColorInt selectedColor: Int
         ): ColorPickerDialog {
-            return ColorPickerDialog().apply {
-                setArguments(titleResId, size, selectedColor)
+            return ColorPickerDialog().withArguments {
+                putInt(KEY_TITLE_ID, titleResId)
+                putInt(KEY_SIZE, size)
+                putInt(KEY_SELECTED_COLOR, selectedColor)
             }
         }
     }

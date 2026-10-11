@@ -31,6 +31,14 @@ import org.gnucash.android.util.BackupManager.backupActiveBookAsync
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class DeleteAllAccountsConfirmationDialog : DoubleConfirmationDialog() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val dbHolder = databaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val activity: Activity = requireActivity()
 
@@ -46,7 +54,7 @@ class DeleteAllAccountsConfirmationDialog : DoubleConfirmationDialog() {
 
     private fun deleteAccounts(activity: Activity) {
         backupActiveBookAsync(activity) {
-            AccountsDbAdapter.instance.deleteAllRecords()
+            accountsDbAdapter.deleteAllRecords()
             snackLong(R.string.toast_all_accounts_deleted)
             WidgetConfigurationActivity.updateAllWidgets(activity)
         }

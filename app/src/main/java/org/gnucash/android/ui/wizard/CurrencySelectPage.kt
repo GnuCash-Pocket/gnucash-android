@@ -15,9 +15,12 @@
  */
 package org.gnucash.android.ui.wizard
 
+import android.content.Context
 import com.tech.freak.wizardpager.model.ModelCallbacks
 import com.tech.freak.wizardpager.model.SingleFixedChoicePage
-import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.model.Commodity
 import java.util.SortedSet
 import java.util.TreeSet
@@ -29,11 +32,14 @@ class CurrencySelectPage(callbacks: ModelCallbacks, title: String) :
     SingleFixedChoicePage(callbacks, title) {
     val currenciesByLabel = mutableMapOf<String, String>()
 
-    fun setChoices(): CurrencySelectPage {
+    fun setChoices(context: Context): CurrencySelectPage {
         currenciesByLabel.clear()
-        val adapter = GnuCashApplication.commoditiesDbAdapter
-        val commodities = adapter!!.allRecords
-        val choices: SortedSet<String> = TreeSet<String>()
+
+        val dbHelper = DatabaseHelper(context, activeBookUID)
+        val dbHolder: DatabaseHolder = dbHelper.holder
+        val commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
+        val commodities = commoditiesDbAdapter.allRecords
+        val choices: SortedSet<String> = TreeSet()
         for (commodity in commodities) {
             choices.add(addCurrency(commodity))
         }

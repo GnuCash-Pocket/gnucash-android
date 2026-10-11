@@ -28,6 +28,7 @@ import androidx.preference.PreferenceFragmentCompat
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivitySettingsBinding
+import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
 import timber.log.Timber
 
@@ -45,10 +46,12 @@ class PreferenceActivity : PasscodeLockActivity(),
 
         if (savedInstanceState == null || supportFragmentManager.fragments.isEmpty()) {
             val action = intent.action
-            if (action != null && action == ACTION_MANAGE_BOOKS) {
-                loadFragment(BookManagerFragment(), false)
+            if (action == ACTION_MANAGE_BOOKS) {
+                val fragment = BookManagerFragment()
+                loadFragment(fragment, false)
             } else {
-                loadFragment(PreferenceHeadersFragment(), false)
+                val fragment = PreferenceHeadersFragment()
+                loadFragment(fragment, false)
             }
         }
 
@@ -127,8 +130,16 @@ class PreferenceActivity : PasscodeLockActivity(),
     companion object {
         const val ACTION_MANAGE_BOOKS: String = BuildConfig.APPLICATION_ID + ".action.MANAGE_BOOKS"
 
-        fun show(context: Context) {
+        fun show(context: Context, bookUID: String) {
             val intent = Intent(context, PreferenceActivity::class.java)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            context.startActivity(intent)
+        }
+
+        fun showBooks(context: Context, bookUID: String) {
+            val intent = Intent(context, PreferenceActivity::class.java)
+                .setAction(ACTION_MANAGE_BOOKS)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
             context.startActivity(intent)
         }
     }

@@ -35,6 +35,7 @@ import org.gnucash.android.test.ui.util.performClick
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.PreferenceActivity
 import org.hamcrest.Matchers.allOf
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.Rule
@@ -46,12 +47,16 @@ import org.junit.Test
 class MultiBookTest : GnuAndroidTest() {
     @Rule
     @JvmField
-    val activityRule = IntentsTestRule(AccountsActivity::class.java)
+    val activityRule = IntentsTestRule(AccountsActivity::class.java, false, false)
+
+    @Before
+    fun setUp() {
+        activityRule.launchActivity(null)
+    }
 
     @Test
     fun shouldOpenBookManager() {
         onView(withId(R.id.drawer_layout)).perform(open())
-        clickViewId(R.id.book_name)
 
         clickViewText(R.string.menu_manage_books)
 
@@ -70,12 +75,15 @@ class MultiBookTest : GnuAndroidTest() {
     }
 
     @Test
+    /* TODO: 25.08.2016 Delete all books before the start of this test */
     fun creatingNewAccounts_shouldCreatedNewBook() {
         val bookCount = booksDbAdapter.recordsCount
         assertThat(bookCount).isOne()
+        var activeBook = booksDbAdapter.activeBook
+        var name = context.getString(R.string.book_default_name, bookCount)
+        assertThat(activeBook.displayName).isEqualTo(name)
 
-        onView(withId(R.id.drawer_layout)).perform(open())
-        onView(withId(R.id.drawer_layout)).perform(swipeUp())
+        onView(withId(R.id.drawer_layout)).perform(open(), swipeUp())
         clickViewText(R.string.title_settings)
 
         Intents.intended(IntentMatchers.hasComponent(PreferenceActivity::class.java.name))
@@ -85,13 +93,12 @@ class MultiBookTest : GnuAndroidTest() {
         clickViewId(android.R.id.button1)
 
         /* TODO: 18.05.2016 wait for import to finish instead */
-        sleep(2000) //give import time to finish
+        sleep(5000) //give import time to finish
 
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
 
-        /* TODO: 25.08.2016 Delete all books before the start of this test */
-        val activeBook = booksDbAdapter.getRecord(booksDbAdapter.activeBookUID)
-        val name = context.getString(R.string.book_default_name, bookCount + 1)
+        activeBook = booksDbAdapter.activeBook
+        name = context.getString(R.string.book_default_name, bookCount + 1)
         assertThat(activeBook.displayName).isEqualTo(name)
     }
 

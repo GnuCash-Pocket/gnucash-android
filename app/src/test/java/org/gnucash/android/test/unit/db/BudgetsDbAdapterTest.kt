@@ -17,10 +17,6 @@ package org.gnucash.android.test.unit.db
 
 import android.database.sqlite.SQLiteException
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
-import org.gnucash.android.db.adapter.BudgetsDbAdapter
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
@@ -29,41 +25,22 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
-import org.gnucash.android.test.unit.GnuCashTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 /**
  * Tests for the budgets database adapter
  */
-class BudgetsDbAdapterTest : GnuCashTest() {
-    private lateinit var budgetsDbAdapter: BudgetsDbAdapter
-    private lateinit var recurrenceDbAdapter: RecurrenceDbAdapter
-    private lateinit var budgetAmountsDbAdapter: BudgetAmountsDbAdapter
-    private lateinit var accountsDbAdapter: AccountsDbAdapter
-
+class BudgetsDbAdapterTest : DatabaseTest() {
     private lateinit var account: Account
     private lateinit var secondAccount: Account
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.instance
-        budgetsDbAdapter = BudgetsDbAdapter.instance
-        budgetAmountsDbAdapter = budgetsDbAdapter.budgetAmountsDbAdapter
-        recurrenceDbAdapter = RecurrenceDbAdapter.instance
-
         account = Account("Budgeted account")
         secondAccount = Account("Another account")
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(secondAccount)
-    }
-
-    @After
-    fun tearDown() {
-        budgetsDbAdapter.deleteAllRecords()
-        budgetAmountsDbAdapter.deleteAllRecords()
-        recurrenceDbAdapter.deleteAllRecords()
     }
 
     @Test
@@ -129,11 +106,11 @@ class BudgetsDbAdapterTest : GnuCashTest() {
         )
         budgets.add(budget)
 
-        val defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.currencyCode
+        val defaultCurrency = Commodity.DEFAULT_COMMODITY
         budget = Budget("Random", Recurrence(PeriodType.WEEK))
-        budget.addAmount(BudgetAmount(Money("10.50", defaultCurrencyCode), account.uid))
+        budget.addAmount(BudgetAmount(Money("10.50", defaultCurrency), account.uid))
         budget.addAmount(
-            BudgetAmount(Money("32.35", defaultCurrencyCode), secondAccount.uid)
+            BudgetAmount(Money("32.35", defaultCurrency), secondAccount.uid)
         )
 
         budgets.add(budget)

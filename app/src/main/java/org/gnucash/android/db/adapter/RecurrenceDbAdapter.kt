@@ -17,7 +17,6 @@ package org.gnucash.android.db.adapter
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
 import org.gnucash.android.db.bindInt
@@ -42,7 +41,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
         val periodEnd = cursor.getTimestamp(INDEX_COLUMN_PERIOD_END)
         val byDays = cursor.getString(INDEX_COLUMN_BYDAY)
 
-        val periodType = PeriodType.valueOf(type)
+        val periodType = PeriodType.of(type)
         val recurrence = Recurrence(periodType)
         populateBaseModelAttributes(cursor, recurrence)
         recurrence.multiplier = multiplier
@@ -56,7 +55,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
     override fun bind(stmt: SQLiteStatement, recurrence: Recurrence): SQLiteStatement {
         bindBaseModel(stmt, recurrence)
         stmt.bindInt(1 + INDEX_COLUMN_MULTIPLIER, recurrence.multiplier)
-        stmt.bindString(1 + INDEX_COLUMN_PERIOD_TYPE, recurrence.periodType.name)
+        stmt.bindString(1 + INDEX_COLUMN_PERIOD_TYPE, recurrence.periodType.value)
         if (!recurrence.byDays.isEmpty()) {
             stmt.bindString(1 + INDEX_COLUMN_BYDAY, byDaysToString(recurrence.byDays))
         }
@@ -80,8 +79,6 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
         private const val INDEX_COLUMN_BYDAY = INDEX_COLUMN_PERIOD_TYPE + 1
         private const val INDEX_COLUMN_PERIOD_START = INDEX_COLUMN_BYDAY + 1
         private const val INDEX_COLUMN_PERIOD_END = INDEX_COLUMN_PERIOD_START + 1
-
-        val instance: RecurrenceDbAdapter get() = GnuCashApplication.recurrenceDbAdapter!!
 
         /**
          * Converts a list of days of week as Calendar constants to an String for

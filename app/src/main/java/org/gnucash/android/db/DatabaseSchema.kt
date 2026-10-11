@@ -81,6 +81,7 @@ object DatabaseSchema {
         const val COLUMN_TEMPLATE_GUID: String = "root_template_guid"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
+        @Deprecated("Using shared preferences")
         const val COLUMN_ACTIVE: String = "is_active"
 
         @Column(Cursor.FIELD_TYPE_STRING)

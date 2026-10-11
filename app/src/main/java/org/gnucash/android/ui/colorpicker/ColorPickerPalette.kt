@@ -46,7 +46,7 @@ class ColorPickerPalette @JvmOverloads constructor(context: Context, attrs: Attr
      * Initialize the size, columns, and listener.
      *
      * @param size  Size should be a pre-defined size (`ColorPickerPalette.SIZE_LARGE` or `ColorPickerPalette.SIZE_SMALL`)
-     * @param columnCount the maximum number of columns.
+     * @param spanCount the maximum number of columns.
      * @param listener the listener for when the color is selected.
      */
     fun init(size: Int, spanCount: Int, listener: OnColorSelectedListener?) {

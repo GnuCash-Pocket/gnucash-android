@@ -9,25 +9,39 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.launch
 import org.gnucash.android.R
-import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.databinding.FragmentPriceListBinding
 import org.gnucash.android.model.Price
 import org.gnucash.android.ui.common.UxArgument
 
-class PriceListFragment : MenuFragment() {
+class PriceListFragment : DatabaseFragment() {
 
-    private val viewModel by viewModels<PriceListViewModel>()
+    private val viewModel: PriceListViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val pricesDbAdapter = readableDatabaseHolder.pricesDbAdapter
+                return PriceListViewModel(pricesDbAdapter) as T
+            }
+        }
+    }
     private var binding: FragmentPriceListBinding? = null
-    private val pricesAdapter = PriceCursorAdapter(
-        onEditPriceClick = ::onEditPriceClick,
-        onDeletePriceClick = ::onDeletePriceClick,
-        onDuplicatePriceClick = ::onDuplicatePriceClick,
-    )
+    private val pricesAdapter by lazy {
+        PriceCursorAdapter(
+            pricesDbAdapter = readableDatabaseHolder.pricesDbAdapter,
+            onEditPriceClick = ::onEditPriceClick,
+            onDeletePriceClick = ::onDeletePriceClick,
+            onDuplicatePriceClick = ::onDuplicatePriceClick,
+        )
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -129,11 +143,8 @@ class PriceListFragment : MenuFragment() {
     }
 
     private fun showPriceEditor(price: Price?) {
-        val args = Bundle()
-        args.putString(UxArgument.SELECTED_PRICE_UID, price?.uid)
-
-        val fragment = PriceFormFragment().apply {
-            arguments = args
+        val fragment = PriceFormFragment().withArguments {
+            putString(UxArgument.SELECTED_PRICE_UID, price?.uid)
         }
 
         parentFragmentManager.beginTransaction()

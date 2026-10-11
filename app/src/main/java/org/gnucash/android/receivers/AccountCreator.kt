@@ -18,8 +18,9 @@ package org.gnucash.android.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.isNullOrEmpty
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import timber.log.Timber
@@ -43,8 +44,11 @@ class AccountCreator : BroadcastReceiver() {
             Timber.w("Account arguments required")
             return
         }
-        val accountsDbAdapter = AccountsDbAdapter.instance
-        val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
+        val bookUID = GnuCashApplication.activeBookUID ?: return
+        val dbHelper = DatabaseHelper(context, bookUID)
+        val dbHolder = dbHelper.holder
+        val accountsDbAdapter = dbHolder.accountsDbAdapter
+        val commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
 
         val name = args.getString(Intent.EXTRA_TITLE)
         if (name.isNullOrEmpty()) {
@@ -74,5 +78,6 @@ class AccountCreator : BroadcastReceiver() {
         }
 
         accountsDbAdapter.insert(account)
+        dbHelper.close()
     }
 }

@@ -33,11 +33,8 @@ import androidx.test.rule.ActivityTestRule
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.model.Account
-import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
@@ -45,6 +42,7 @@ import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.test.ui.util.PerformEnableAction.Companion.enable
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.OwnCloudPreferences
+import org.junit.After
 import org.junit.Assume
 import org.junit.Before
 import org.junit.BeforeClass
@@ -52,7 +50,7 @@ import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 
-class OwnCloudExportTest : GnuAndroidTest() {
+class OwnCloudExportTest : DatabaseTest() {
 
     /**
      * A JUnit [@Rule][Rule] to launch your activity under test. This is a replacement
@@ -69,32 +67,25 @@ class OwnCloudExportTest : GnuAndroidTest() {
      */
     @Rule
     @JvmField
-    val activityRule = ActivityTestRule(AccountsActivity::class.java)
+    val activityRule = ActivityTestRule(AccountsActivity::class.java, false, false)
 
     @Before
     fun setUp() {
-        GnuCashApplication.initializeDatabaseAdapters(context)
-
-        val accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
         val currencyCode = GnuCashApplication.defaultCurrencyCode
-        Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.instance.getCurrency(currencyCode)!!
+        val currency = commoditiesDbAdapter.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
         accountsDbAdapter.insert(account)
 
         val transaction = Transaction("birds")
         transaction.datePosted = System.currentTimeMillis()
-        val split = Split(Money("11.11", currencyCode), account)
+        val split = Split(Money("11.11", currency), account)
         transaction.addSplit(split)
         transaction.addSplit(
             split.createPair(
-                accountsDbAdapter.getOrCreateImbalanceAccountUID(
-                    context,
-                    Commodity.DEFAULT_COMMODITY
-                )
+                accountsDbAdapter.getOrCreateImbalanceAccountUID(context, currency)
             )
         )
         val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
@@ -102,6 +93,13 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         val prefs = OwnCloudPreferences(context)
         prefs.isEnabled = false
+
+        activityRule.launchActivity(null)
+    }
+
+    @After
+    fun tearDown() {
+        activityRule.finishActivity()
     }
 
     /**

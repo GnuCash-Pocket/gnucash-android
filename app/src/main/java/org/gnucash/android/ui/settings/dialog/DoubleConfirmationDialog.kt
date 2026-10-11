@@ -18,7 +18,7 @@ package org.gnucash.android.ui.settings.dialog
 import android.widget.CheckBox
 import androidx.appcompat.app.AlertDialog
 import org.gnucash.android.R
-import org.gnucash.android.ui.util.dialog.VolatileDialogFragment
+import org.gnucash.android.app.DatabaseDialogFragment
 
 /**
  * Confirmation dialog with additional checkbox to confirm the action.
@@ -34,7 +34,7 @@ import org.gnucash.android.ui.util.dialog.VolatileDialogFragment
  *
  * @author Àlex Magaz <alexandre.magaz@gmail.com>
  */
-abstract class DoubleConfirmationDialog : VolatileDialogFragment() {
+abstract class DoubleConfirmationDialog : DatabaseDialogFragment() {
     /**
      * Returns the dialog builder with the defaults for a double confirmation
      * dialog already set up.

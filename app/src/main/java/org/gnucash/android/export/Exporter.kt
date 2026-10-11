@@ -19,7 +19,6 @@ package org.gnucash.android.export
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
-import android.database.SQLException
 import android.net.Uri
 import android.os.CancellationSignal
 import android.os.SystemClock
@@ -38,15 +37,12 @@ import com.owncloud.android.lib.resources.files.UploadFileRemoteOperation
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.db.DatabaseHelper
-import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.PricesDbAdapter
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.SplitsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
@@ -118,25 +114,19 @@ abstract class Exporter protected constructor(
     protected val budgetsDbAdapter: BudgetsDbAdapter
     private var exportCacheFile: File?
 
-    /**
-     * Database being currently exported
-     */
-    protected val holder: DatabaseHolder
+    protected val dbHelper: DatabaseHelper = DatabaseHelper(context, bookUID)
 
     protected val cancellationSignal: CancellationSignal = CancellationSignal()
 
     init {
-        val dbHelper = DatabaseHelper(context, bookUID)
-        holder = dbHelper.readableHolder
-        commoditiesDbAdapter = CommoditiesDbAdapter(holder)
-        pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
-        splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
-        transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
-        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
-        val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
-        budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
-        scheduledActionDbAdapter =
-            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
+        val holder = dbHelper.readableHolder
+        commoditiesDbAdapter = holder.commoditiesDbAdapter
+        pricesDbAdapter = holder.pricesDbAdapter
+        splitsDbAdapter = holder.splitsDbAdapter
+        transactionsDbAdapter = holder.transactionsDbAdapter
+        accountsDbAdapter = holder.accountsDbAdapter
+        budgetsDbAdapter = holder.budgetDbAdapter
+        scheduledActionDbAdapter = holder.scheduledActionDbAdapter
 
         exportCacheFile = null
         cacheDir = File(context.cacheDir, exportParams.exportFormat.name)
@@ -153,6 +143,7 @@ abstract class Exporter protected constructor(
     @WorkerThread
     @Throws(ExportException::class)
     fun export(): Uri? {
+        val bookUID = this.bookUID
         Timber.i("generate export for book %s", bookUID)
         val timeStart = SystemClock.elapsedRealtime()
         val exportParams = this.exportParams
@@ -169,12 +160,11 @@ abstract class Exporter protected constructor(
         if (result != null && exportParams.deleteTransactionsAfterExport) {
             // Avoid recursion - Don't do a backup if just did a backup already!
             val context = this.context
-            val bookUID = activeBookUID
-            val backupFolder = getBackupFolder(context, bookUID!!)
+            val backupFolder = getBackupFolder(context, bookUID)
             val backupUri = exportParams.exportLocation
             val backupFile = File(backupUri!!.path!!)
             val backupFileParent = backupFile.parentFile
-            val isBackupParams = exportParams.exportFormat == ExportFormat.XML
+            val isBackupParams = (exportParams.exportFormat == ExportFormat.XML || exportParams.exportFormat == ExportFormat.SQLITE)
                     && exportParams.exportTarget == ExportTarget.URI
                     && exportParams.isCompressed
                     && backupFolder == backupFileParent
@@ -262,16 +252,8 @@ abstract class Exporter protected constructor(
     val exportMimeType: String
         get() = exportParams.exportFormat.mimeType
 
-    @Throws(IOException::class, SQLException::class)
     protected fun close() {
-        accountsDbAdapter.close()
-        budgetsDbAdapter.close()
-        commoditiesDbAdapter.close()
-        pricesDbAdapter.close()
-        scheduledActionDbAdapter.close()
-        splitsDbAdapter.close()
-        transactionsDbAdapter.close()
-        holder.close()
+        dbHelper.close()
     }
 
     @Throws(IOException::class)

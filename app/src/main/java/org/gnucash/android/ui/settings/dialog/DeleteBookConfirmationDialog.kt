@@ -19,6 +19,8 @@ import android.app.Activity
 import android.app.Dialog
 import android.os.Bundle
 import org.gnucash.android.R
+import org.gnucash.android.app.resultBundle
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.util.BackupManager.backupBookAsync
@@ -49,8 +51,9 @@ class DeleteBookConfirmationDialog : DoubleConfirmationDialog() {
         val fm = parentFragmentManager
         backupBookAsync(activity, bookUID) {
             val deleted = BooksDbAdapter.instance.deleteBook(activity, bookUID)
-            val result = Bundle()
-            result.putBoolean(Refreshable.EXTRA_REFRESH, deleted)
+            val result = resultBundle {
+                putBoolean(Refreshable.EXTRA_REFRESH, deleted)
+            }
             fm.setFragmentResult(requestKey, result)
         }
     }
@@ -62,12 +65,10 @@ class DeleteBookConfirmationDialog : DoubleConfirmationDialog() {
         private const val EXTRA_REQUEST_KEY = "request_key"
 
         fun newInstance(bookUID: String, requestKey: String = TAG): DeleteBookConfirmationDialog {
-            val args = Bundle().apply {
+            val fragment = DeleteBookConfirmationDialog().withArguments {
                 putString(EXTRA_BOOK_ID, bookUID)
                 putString(EXTRA_REQUEST_KEY, requestKey)
             }
-            val fragment = DeleteBookConfirmationDialog()
-            fragment.arguments = args
             return fragment
         }
     }

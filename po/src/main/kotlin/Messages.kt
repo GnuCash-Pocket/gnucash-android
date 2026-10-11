@@ -33,9 +33,14 @@ class Messages {
 
         keys.forEach { msgid ->
             val msgstr = msgid
-            val translation = msgstr.substring(msgstr.indexOf('"') + 1, msgstr.lastIndexOf('"'))
+            var translation = msgstr.substring(msgstr.indexOf('"') + 1, msgstr.lastIndexOf('"'))
             if (translation.isNotEmpty()) {
-                translations[msgid] = translation
+                if (translation.first() == '_') {
+                    translation = translation.substring(1)
+                }
+                if (translation.isNotEmpty()) {
+                    translations[msgid] = translation
+                }
             }
         }
 
@@ -62,10 +67,15 @@ class Messages {
             if (index > 0) {
                 val msgstr = lines[index + 1]
                 if (msgstr.startsWith("msgstr ")) {
-                    val translation =
+                    var translation =
                         msgstr.substring(msgstr.indexOf('"') + 1, msgstr.lastIndexOf('"'))
                     if (translation.isNotEmpty()) {
-                        translations[msgid] = translation
+                        if (translation.first() == '_') {
+                            translation = translation.substring(1)
+                        }
+                        if (translation.isNotEmpty()) {
+                            translations[msgid] = translation
+                        }
                     }
                 }
             }

@@ -23,7 +23,6 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
 import androidx.core.database.sqlite.transaction
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
@@ -41,7 +40,7 @@ import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
-import org.gnucash.android.model.Transaction.Companion.computeBalance
+import org.gnucash.android.model.Transaction.Companion.computeAccountBalance
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.TimestampHelper.timestampFromEpochZero
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
@@ -187,13 +186,16 @@ class TransactionsDbAdapter(
      * @param accountUID GUID of account
      * @return Cursor with set of transactions
      */
-    fun fetchTransactionsForAccount(accountUID: String): Cursor {
+    fun fetchTransactionsForAccount(accountUID: String, isTemplate: Boolean? = null): Cursor {
         val table = TransactionEntry.TABLE_NAME + " t" +
                 " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
                 "t." + TransactionEntry.COLUMN_UID + " = " +
                 "s." + SplitEntry.COLUMN_TRANSACTION_UID
         val projectionIn = allColumnsPrefix("t.")
-        val selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+        var selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+        if (isTemplate != null) {
+            selection += " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = " + if (isTemplate) "1" else "0"
+        }
         val selectionArgs = arrayOf<String?>(accountUID)
         val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
                 "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
@@ -385,12 +387,12 @@ class TransactionsDbAdapter(
      * We consider only those splits which belong to this account
      *
      * @param transactionUID GUID of the transaction
-     * @param accountUID     GUID of the account
+     * @param account     the account
      * @return [Money] balance of the transaction for that account
      */
-    fun getBalance(transactionUID: String, accountUID: String, display: Boolean): Money {
-        val splits = splitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, accountUID)
-        return computeBalance(accountUID, splits, display)
+    fun getBalance(transactionUID: String, account: Account, display: Boolean): Money {
+        val splits = splitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, account.uid)
+        return computeAccountBalance(account, splits, display)
     }
 
     /**
@@ -418,19 +420,6 @@ class TransactionsDbAdapter(
         }
         splitsDbAdapter.bulkAddRecords(splits, UpdateMethod.Update)
         return splits.size
-    }
-
-    /**
-     * Returns the number of transactions belonging to an account
-     *
-     * @param accountUID GUID of the account
-     * @return Number of transactions with splits in the account
-     */
-    fun getTransactionsCount(accountUID: String): Int {
-        val cursor = fetchTransactionsForAccount(accountUID)
-        return cursor.use { cursor ->
-            cursor.count
-        }
     }
 
     /**
@@ -578,12 +567,10 @@ class TransactionsDbAdapter(
         )
 
         var timestamp = timestampFromNow
-        try {
+        cursor.use { cursor ->
             if (cursor.moveToFirst()) {
                 timestamp = cursor.getTimestamp(0) ?: timestamp
             }
-        } finally {
-            cursor.close()
         }
         return timestamp
     }
@@ -621,7 +608,7 @@ class TransactionsDbAdapter(
         return timestamp
     }
 
-    fun getTransactionsCountForAccount(accountUID: String): Long {
+    fun getCountByAccount(accountUID: String): Int {
         val queryBuilder = SQLiteQueryBuilder()
         queryBuilder.tables = TransactionEntry.TABLE_NAME + " t " +
                 " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON" +
@@ -633,14 +620,16 @@ class TransactionsDbAdapter(
 
         val cursor =
             queryBuilder.query(db, projectionIn, selection, selectionArgs, null, null, null)
-        try {
+        cursor.use { cursor ->
             if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getLong(0)
+                return cursor.getLong(0).toInt()
             }
-        } finally {
-            cursor.close()
         }
-        return 0L
+        return 0
+    }
+
+    fun getCountByAccount(account: Account): Int {
+        return getCountByAccount(account.uid)
     }
 
     @Throws(IOException::class)
@@ -836,12 +825,5 @@ class TransactionsDbAdapter(
         internal const val INDEX_COLUMN_NUMBER = INDEX_COLUMN_TEMPLATE + 1
 
         const val INVALID_DATE: Long = Long.MIN_VALUE
-
-        /**
-         * Returns an application-wide instance of the database adapter
-         *
-         * @return Transaction database adapter
-         */
-        val instance: TransactionsDbAdapter get() = GnuCashApplication.transactionDbAdapter!!
     }
 }

@@ -7,6 +7,7 @@
     <string name="gnucash_po_all_non_currency">"Chọn tiền tệ"</string>
     <string name="gnucash_po_amount_num">"Số tiền đến hạn"</string>
     <string name="gnucash_po_commodity_currency">"Tiền tệ chung"</string>
+    <string name="gnucash_po_create_automatically">"Tự động tạo"</string>
     <string name="gnucash_po_currencies">"Tiền tệ"</string>
     <string name="gnucash_po_date">"Ngày"</string>
     <string name="gnucash_po_description">"Mô tả"</string>

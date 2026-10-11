@@ -15,11 +15,11 @@
  */
 package org.gnucash.android.ui.util
 
-import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
+import org.gnucash.android.app.withArguments
 import java.util.Calendar
 
 /**
@@ -32,19 +32,17 @@ class RecurrenceViewClickListener(
 ) : View.OnClickListener {
 
     override fun onClick(v: View) {
-        val args = Bundle()
-
         val now = Calendar.getInstance()
-        args.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, now.timeInMillis)
-        args.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, now.getTimeZone().id)
 
-        // may be more efficient to serialize and pass in EventRecurrence
-        args.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, recurrenceRule)
-
-        var fragmentOld = fragmentManager.findFragmentByTag(TAG_RECURRENCE_PICKER) as? RecurrencePickerDialogFragment
+        val fragmentOld = fragmentManager.findFragmentByTag(TAG_RECURRENCE_PICKER) as? RecurrencePickerDialogFragment
         fragmentOld?.dismiss()
-        val fragment = RecurrencePickerDialogFragment()
-        fragment.arguments = args
+        val fragment = RecurrencePickerDialogFragment().withArguments {
+            putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, now.timeInMillis)
+            putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, now.getTimeZone().id)
+
+            // may be more efficient to serialize and pass in EventRecurrence
+            putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, recurrenceRule)
+        }
         fragment.setOnRecurrenceSetListener(onRecurrenceSetListener)
         fragment.show(fragmentManager, TAG_RECURRENCE_PICKER)
     }

@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.ui.transaction
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
@@ -41,11 +42,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.gnucash.android.R
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
 import org.gnucash.android.app.GnuCashApplication.Companion.isAbsoluteDate
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
-import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.isLandscape
 import org.gnucash.android.databinding.CardviewTransactionBinding
@@ -70,12 +71,12 @@ import timber.log.Timber
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class TransactionsListFragment : MenuFragment(),
+class TransactionsListFragment : DatabaseFragment(),
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
     FragmentResultListener {
-    private var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
-    private var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
     private var accountUID: String? = null
     private var scrollTransactionUID: String? = null
 
@@ -112,8 +113,9 @@ class TransactionsListFragment : MenuFragment(),
             )
         }
 
-        accountsDbAdapter = AccountsDbAdapter.instance
-        transactionsDbAdapter = TransactionsDbAdapter.instance
+        val dbHolder = readableDatabaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        transactionsDbAdapter = dbHolder.transactionsDbAdapter
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -158,7 +160,7 @@ class TransactionsListFragment : MenuFragment(),
             binding.fabAdd.isEnabled = false
         } else {
             binding.fabAdd.setOnClickListener {
-                createNewTransaction(context, accountUID)
+                createNewTransaction(accountUID)
             }
         }
     }
@@ -192,7 +194,6 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun showTransactionDetails(
-        context: Context,
         transactionUID: String,
         accountUID: String
     ) {
@@ -200,10 +201,7 @@ class TransactionsListFragment : MenuFragment(),
             Timber.w("You must specify both the transaction and account UID")
             return
         }
-        val intent = Intent(context, TransactionDetailActivity::class.java)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-        startActivity(intent)
+        TransactionDetailActivity.show(this, bookUID, accountUID, transactionUID, 0)
     }
 
     @Deprecated("Deprecated in Java")
@@ -246,7 +244,7 @@ class TransactionsListFragment : MenuFragment(),
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
         Timber.d("Creating transactions loader")
-        return TransactionsCursorLoader(requireContext(), accountUID!!)
+        return TransactionsCursorLoader(requireContext(), accountUID!!, transactionsDbAdapter)
     }
 
     override fun onLoadFinished(loader: Loader<Cursor>, cursor: Cursor?) {
@@ -267,19 +265,28 @@ class TransactionsListFragment : MenuFragment(),
         }
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK) {
+            val refresh = data?.getBooleanExtra(Refreshable.EXTRA_REFRESH, false) ?: false
+            if (refresh) refresh()
+        }
+    }
+
     /**
      * [DatabaseCursorLoader] for loading transactions asynchronously from the database
      *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
-    private class TransactionsCursorLoader(context: Context, private val accountUID: String) :
-        DatabaseCursorLoader<TransactionsDbAdapter>(context) {
-        override fun loadInBackground(): Cursor? {
-            val databaseAdapter = TransactionsDbAdapter.instance
+    private class TransactionsCursorLoader(
+        context: Context,
+        private val accountUID: String,
+        private val transactionsDbAdapter: TransactionsDbAdapter
+    ) : DatabaseCursorLoader<TransactionsDbAdapter>(context) {
+        override fun loadInBackground(): Cursor {
+            val databaseAdapter: TransactionsDbAdapter = transactionsDbAdapter
             this.databaseAdapter = databaseAdapter
-            val c = databaseAdapter.fetchTransactionsForAccount(accountUID)
-            registerContentObserver(c)
-            return c
+            return databaseAdapter.fetchTransactionsForAccount(accountUID, false)
         }
     }
 
@@ -306,6 +313,7 @@ class TransactionsListFragment : MenuFragment(),
         //these views are not used in the compact view, hence the nullability
         private val transactionDate: TextView = binding.transactionDate
         private val editTransaction: ImageView = binding.editTransaction
+        private val iconRepeating: ImageView = binding.repeating
 
         private var transaction: Transaction? = null
 
@@ -326,7 +334,7 @@ class TransactionsListFragment : MenuFragment(),
             itemView.setOnClickListener {
                 val transactionUID = transaction?.uid ?: return@setOnClickListener
                 val accountUID = accountUID ?: return@setOnClickListener
-                showTransactionDetails(itemView.context, transactionUID, accountUID)
+                showTransactionDetails(transactionUID, accountUID)
             }
         }
 
@@ -364,13 +372,15 @@ class TransactionsListFragment : MenuFragment(),
         fun bind(cursor: Cursor) {
             val context = itemView.context
             val accountUID = accountUID!!
+            val account = accountsDbAdapter.getRecord(accountUID)
             val transaction = transactionsDbAdapter.buildModelInstance(cursor)
             this.transaction = transaction
             val transactionUID = transaction.uid
 
             primaryText.text = transaction.description
+            iconRepeating.isVisible = !transaction.scheduledActionUID.isNullOrEmpty()
 
-            val amount = transaction.getBalance(accountUID)
+            val amount = transaction.getBalance(account)
             transactionAmount.displayBalance(amount, colorBalanceZero)
 
             val dateText = if (useAbsoluteDate) {
@@ -395,9 +405,8 @@ class TransactionsListFragment : MenuFragment(),
                     if (splits[0].isPairOf(splits[1])) {
                         for (split in splits) {
                             if (split.accountUID != accountUID) {
-                                text = accountsDbAdapter.getFullyQualifiedAccountName(
-                                    split.accountUID!!
-                                )
+                                text =
+                                    accountsDbAdapter.getFullyQualifiedAccountName(split.accountUID!!)
                                 break
                             }
                         }
@@ -456,6 +465,7 @@ class TransactionsListFragment : MenuFragment(),
             transactionsAdapter?.notifyItemRemoved(position)
         }
         updateAllWidgets(context)
+        refresh()
     }
 
     private fun duplicateTransaction(transactionUID: String) {
@@ -489,11 +499,7 @@ class TransactionsListFragment : MenuFragment(),
         }
         val context: Context = context ?: return
         scrollTransactionUID = transactionUID
-        val intent = Intent(context, FormActivity::class.java)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-        startActivity(intent)
+        FormActivity.showEditTransaction(this, bookUID, accountUID, transactionUID, 0)
     }
 
     private fun scrollToTransaction(cursor: Cursor?, transactionUID: String?) {
@@ -512,16 +518,12 @@ class TransactionsListFragment : MenuFragment(),
         return adapter.getItemPosition(transactionUID)
     }
 
-    private fun createNewTransaction(context: Context, accountUID: String) {
+    private fun createNewTransaction(accountUID: String) {
         if (accountUID.isEmpty()) {
             Timber.w("Account UID required")
             return
         }
-        val intent = Intent(context, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-        startActivity(intent)
+        FormActivity.showEditTransaction(this, bookUID, accountUID, null, 0)
     }
 
     companion object {

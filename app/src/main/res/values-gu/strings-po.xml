@@ -3,10 +3,11 @@
     <string name="gnucash_po_account_color">"ખાતાનો_રંગ:"</string>
     <string name="gnucash_po_account_name">"ખાતાનું નામ"</string>
     <string name="gnucash_po_action">"એક્શન"</string>
-    <string name="gnucash_po_add">"_સરનામું"</string>
+    <string name="gnucash_po_add">"સરનામું"</string>
     <string name="gnucash_po_all_non_currency">"ચલણ પસંદ કરો"</string>
     <string name="gnucash_po_amount_num">"બાકી નીકળતી રકમ"</string>
     <string name="gnucash_po_commodity_currency">"સામાન્ય ચલણ"</string>
+    <string name="gnucash_po_create_automatically">"ઓટોમેટિક બનાવો"</string>
     <string name="gnucash_po_currencies">"ચલણ"</string>
     <string name="gnucash_po_date">"તારીખ"</string>
     <string name="gnucash_po_description">"વર્ણન"</string>

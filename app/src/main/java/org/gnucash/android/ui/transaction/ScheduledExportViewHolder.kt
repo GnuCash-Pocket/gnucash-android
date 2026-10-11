@@ -1,20 +1,22 @@
 package org.gnucash.android.ui.transaction
 
 import android.annotation.SuppressLint
-import android.content.Intent
+import android.content.Context
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
-import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.util.getDocumentName
 import timber.log.Timber
 
 internal class ScheduledExportViewHolder(
+    bookUID: String,
+    scheduledActionDbAdapter: ScheduledActionDbAdapter,
     binding: ListItemScheduledTrxnBinding,
     refreshable: Refreshable
-) : ScheduledViewHolder(binding, refreshable) {
+) : ScheduledViewHolder(bookUID, scheduledActionDbAdapter, binding, refreshable) {
 
     override fun bind(scheduledAction: ScheduledAction) {
         super.bind(scheduledAction)
@@ -42,16 +44,11 @@ internal class ScheduledExportViewHolder(
         descriptionTextView.text = formatSchedule(scheduledAction)
         amountTextView.text = params.exportFormat.name
 
-        itemView.setOnClickListener { editExport(scheduledAction) }
+        itemView.setOnClickListener { editExport(context, scheduledAction) }
     }
 
-    private fun editExport(scheduledAction: ScheduledAction) {
-        val context = itemView.context
-        val intent = Intent(context, FormActivity::class.java)
-            .setAction(Intent.ACTION_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
-            .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledAction.uid)
-        context.startActivity(intent)
+    private fun editExport(context: Context, scheduledAction: ScheduledAction) {
+        FormActivity.showEditExport(context, bookUID, scheduledAction.uid)
     }
 
     @SuppressLint("NotifyDataSetChanged")

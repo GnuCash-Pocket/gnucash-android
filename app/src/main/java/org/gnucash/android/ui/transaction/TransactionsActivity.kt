@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.transaction
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -32,6 +33,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentResultListener
 import com.google.android.material.tabs.TabLayoutMediator
 import org.gnucash.android.R
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.databinding.ActivityTransactionsBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -60,15 +62,12 @@ class TransactionsActivity : BaseDrawerActivity(),
     OnAccountClickedListener,
     FragmentResultListener {
     /**
-     * GUID of [Account] whose transactions are displayed
+     * The [Account] whose transactions are displayed
      */
     private var account: Account? = null
 
-    /**
-     * Account database adapter for manipulating the accounts list in navigation
-     */
-    private var accountsDbAdapter = AccountsDbAdapter.instance
-    private var transactionsDbAdapter = TransactionsDbAdapter.instance
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
     private var accountNameAdapter: QualifiedAccountNameAdapter? = null
 
     private var isShowHiddenAccounts = false
@@ -102,7 +101,7 @@ class TransactionsActivity : BaseDrawerActivity(),
         override fun getItemCount(): Int {
             val account = account
             if (account.isPlaceholder) {
-                val txCount = transactionsDbAdapter.getTransactionsCount(account.uid)
+                val txCount = transactionsDbAdapter.getCountByAccount(account.uid)
                 if (txCount == 0) return 1
             }
             return NUM_PAGES
@@ -114,12 +113,10 @@ class TransactionsActivity : BaseDrawerActivity(),
          * @return [AccountsListFragment] initialized with the sub-accounts
          */
         fun prepareSubAccountsListFragment(accountUID: String): AccountsListFragment {
-            val args = Bundle()
-            args.putString(UxArgument.PARENT_ACCOUNT_UID, accountUID)
-            args.putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
-            val fragment = AccountsListFragment()
-            fragment.arguments = args
-            return fragment
+            return AccountsListFragment().withArguments {
+                putString(UxArgument.PARENT_ACCOUNT_UID, accountUID)
+                putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
+            }
         }
 
         /**
@@ -129,15 +126,13 @@ class TransactionsActivity : BaseDrawerActivity(),
          */
         fun prepareTransactionsListFragment(accountUID: String): TransactionsListFragment {
             Timber.i("Opening transactions for account: %s", accountUID)
-            val args = Bundle()
-            args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            args.putString(
-                UxArgument.SELECTED_TRANSACTION_UID,
-                intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID)
-            )
-            val fragment = TransactionsListFragment()
-            fragment.arguments = args
-            return fragment
+            return TransactionsListFragment().withArguments {
+                putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                putString(
+                    UxArgument.SELECTED_TRANSACTION_UID,
+                    intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID)
+                )
+            }
         }
     }
 
@@ -216,8 +211,9 @@ class TransactionsActivity : BaseDrawerActivity(),
         actionBar?.setDisplayShowTitleEnabled(false)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        accountsDbAdapter = AccountsDbAdapter.instance
-        transactionsDbAdapter = TransactionsDbAdapter.instance
+        val holder = databaseHolder
+        accountsDbAdapter = holder.accountsDbAdapter
+        transactionsDbAdapter = holder.transactionsDbAdapter
 
         isShowHiddenAccounts =
             intent.getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
@@ -374,11 +370,7 @@ class TransactionsActivity : BaseDrawerActivity(),
             Timber.w("Account UID required")
             return
         }
-        val intent = Intent(this, TransactionsActivity::class.java)
-            .setAction(Intent.ACTION_VIEW)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
-        startActivityForResult(intent, REQUEST_REFRESH)
+        show(this, bookUID, accountUID, isShowHiddenAccounts, REQUEST_REFRESH)
     }
 
     override fun accountChanged(accountUID: String) {
@@ -395,11 +387,7 @@ class TransactionsActivity : BaseDrawerActivity(),
     }
 
     private fun editAccount(accountUID: String?) {
-        val editAccountIntent = Intent(this, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
-        startActivityForResult(editAccountIntent, REQUEST_REFRESH)
+        FormActivity.showEditAccount(this, bookUID, accountUID, REQUEST_REFRESH)
     }
 
     /**
@@ -467,7 +455,7 @@ class TransactionsActivity : BaseDrawerActivity(),
             //if there are no transactions, and there are sub-accounts, show the sub-accounts
             val binding = this.binding
             val tabLayout = binding.tabLayout
-            val txCount = transactionsDbAdapter.getTransactionsCount(accountUID)
+            val txCount = transactionsDbAdapter.getCountByAccount(accountUID)
             var tabIndex = INDEX_TRANSACTIONS_FRAGMENT
             var needsTransactionsTab = txCount > 0
             if (txCount == 0) {
@@ -545,10 +533,38 @@ class TransactionsActivity : BaseDrawerActivity(),
         /**
          * Displays the form for searching transactions
          */
-        fun openSearchFragment(context: Context) {
-            val intent = Intent(context, FormActivity::class.java)
-                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SEARCH.name)
-            context.startActivity(intent)
+        fun openSearchFragment(context: Context, bookUID: String) {
+            FormActivity.showSearch(context, bookUID)
+        }
+
+        fun show(
+            caller: Fragment,
+            bookUID: String,
+            accountUID: String,
+            isShowHiddenAccounts: Boolean = false,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, TransactionsActivity::class.java)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun show(
+            caller: Activity,
+            bookUID: String,
+            accountUID: String,
+            isShowHiddenAccounts: Boolean = false,
+            requestCode: Int
+        ) {
+            val context: Context = caller
+            val intent = Intent(context, TransactionsActivity::class.java)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
+            caller.startActivityForResult(intent, requestCode)
         }
     }
 }

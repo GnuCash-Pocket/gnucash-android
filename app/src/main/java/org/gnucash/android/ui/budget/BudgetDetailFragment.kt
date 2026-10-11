@@ -40,9 +40,10 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import org.gnucash.android.R
-import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.isLandscape
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.databinding.CardviewBudgetAmountBinding
 import org.gnucash.android.databinding.FragmentBudgetDetailBinding
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
@@ -63,15 +64,18 @@ import java.math.RoundingMode
 /**
  * Fragment for displaying budget details
  */
-class BudgetDetailFragment : MenuFragment(), Refreshable {
+class BudgetDetailFragment : DatabaseFragment(), Refreshable {
     private var budgetUID: String? = null
-    private var budgetsDbAdapter = BudgetsDbAdapter.instance
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var budgetsDbAdapter: BudgetsDbAdapter
 
     private var binding: FragmentBudgetDetailBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        budgetsDbAdapter = BudgetsDbAdapter.instance
+        val dbHolder = readableDatabaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        budgetsDbAdapter = dbHolder.budgetDbAdapter
         budgetUID = requireArguments().getString(UxArgument.BUDGET_UID)
     }
 
@@ -79,7 +83,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentBudgetDetailBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -113,7 +117,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         } else {
             binding.listItem2Lines.secondaryText.isVisible = false
         }
-        binding.budgetRecurrence.text = budget.recurrence.getRepeatString(context)
+        binding.budgetRecurrence.text = budget.recurrence.formatRepeatString(context)
 
         binding.list.adapter = BudgetAmountAdapter(budgetUID!!)
     }
@@ -148,12 +152,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_edit -> {
-                val context = context ?: return false
-                val intent = Intent(context, FormActivity::class.java)
-                    .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                    .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
-                    .putExtra(UxArgument.BUDGET_UID, budgetUID)
-                startActivityForResult(intent, REQUEST_REFRESH)
+                FormActivity.showEditBudget(this, bookUID, budgetUID, REQUEST_REFRESH)
                 true
             }
 
@@ -199,7 +198,6 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         fun bind(budget: Budget, budgetAmount: BudgetAmount) {
             val budgetAccountUID = budgetAmount.accountUID!!
             val projectedAmount = budgetAmount.amount
-            val accountsDbAdapter = AccountsDbAdapter.instance
             val spentAmount = accountsDbAdapter.getAccountBalance(
                 budgetAccountUID,
                 budget.startOfCurrentPeriod,
@@ -214,7 +212,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
             budgetLeft.text = projectedAmount.minus(spentAmountAbs).formattedString()
 
             var budgetProgress = 0f
-            if (!projectedAmount.isAmountZero) {
+            if (!projectedAmount.isZero) {
                 budgetProgress = spentAmount.toBigDecimal().divide(
                     projectedAmount.toBigDecimal(),
                     spentAmount.commodity.smallestFractionDigits,
@@ -235,9 +233,13 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
                     Timber.w("Account UID required")
                     return@setOnClickListener
                 }
-                val intent = Intent(v.context, TransactionsActivity::class.java)
-                    .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-                startActivityForResult(intent, REQUEST_REFRESH)
+                TransactionsActivity.show(
+                    this@BudgetDetailFragment,
+                    bookUID,
+                    accountUID,
+                    false,
+                    REQUEST_REFRESH
+                )
             }
         }
 
@@ -254,11 +256,10 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         ) {
             // FIXME: 25.10.15 chart is broken
 
-            val accountsDbAdapter = AccountsDbAdapter.instance
             val budgetAccountUID = budgetAmount.accountUID!!
 
             //todo: refactor getNumberOfPeriods into budget
-            var budgetPeriods = budget.numberOfPeriods.toInt()
+            var budgetPeriods = budget.numberOfPeriods
             budgetPeriods = if (budgetPeriods <= 0) 12 else budgetPeriods
             val periods = budget.recurrence.getNumberOfPeriods(budgetPeriods)
 
@@ -300,11 +301,9 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         private const val REQUEST_REFRESH = 0x0000
 
         fun newInstance(budgetUID: String): BudgetDetailFragment {
-            val args = Bundle()
-            args.putString(UxArgument.BUDGET_UID, budgetUID)
-            val fragment = BudgetDetailFragment()
-            fragment.arguments = args
-            return fragment
+            return BudgetDetailFragment().withArguments {
+                putString(UxArgument.BUDGET_UID, budgetUID)
+            }
         }
     }
 }

@@ -16,6 +16,7 @@
 package org.gnucash.android.test.unit.util
 
 import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
@@ -25,7 +26,8 @@ import java.sql.Timestamp
 class PreferencesHelperTest : GnuCashTest() {
     @Test
     fun shouldGetLastExportTimeDefaultValue() {
-        val lastExportTime = PreferencesHelper.getLastExportTime(context)
+        val bookUID = GnuCashApplication.activeBookUID
+        val lastExportTime = PreferencesHelper.getLastExportTime(context, bookUID)
         assertThat(lastExportTime).isEqualTo(TimestampHelper.timestampFromEpochZero)
     }
 
@@ -33,8 +35,9 @@ class PreferencesHelperTest : GnuCashTest() {
     fun shouldGetLastExportTimeCurrentValue() {
         val goldenBoyBirthday = 1_190_136_000L * 1000
         val goldenBoyBirthdayTimestamp = Timestamp(goldenBoyBirthday)
-        PreferencesHelper.setLastExportTime(context, goldenBoyBirthdayTimestamp)
-        assertThat(PreferencesHelper.getLastExportTime(context))
+        val bookUID = GnuCashApplication.activeBookUID
+        PreferencesHelper.setLastExportTime(context, goldenBoyBirthdayTimestamp, bookUID)
+        assertThat(PreferencesHelper.getLastExportTime(context, bookUID))
             .isEqualTo(goldenBoyBirthdayTimestamp)
     }
 }

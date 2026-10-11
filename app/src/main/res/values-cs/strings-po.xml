@@ -7,12 +7,13 @@
     <string name="gnucash_po_all_non_currency">"Zvolte měnu"</string>
     <string name="gnucash_po_amount_num">"Splatná částka"</string>
     <string name="gnucash_po_commodity_currency">"Společná měna"</string>
+    <string name="gnucash_po_create_automatically">"Vytvářet automaticky"</string>
     <string name="gnucash_po_currencies">"Měny"</string>
     <string name="gnucash_po_date">"Datum"</string>
     <string name="gnucash_po_description">"Popis"</string>
     <string name="gnucash_po_edit">"Upravit"</string>
     <string name="gnucash_po_full_account_name">"Použít úplný název účtu?"</string>
-    <string name="gnucash_po_hidden">"_Skryté"</string>
+    <string name="gnucash_po_hidden">"Skryté"</string>
     <string name="gnucash_po_last">"Poslední č"</string>
     <string name="gnucash_po_memo">"Poznámka"</string>
     <string name="gnucash_po_namespace">"Prostor jmen"</string>

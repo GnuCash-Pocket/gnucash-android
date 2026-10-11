@@ -17,35 +17,23 @@ package org.gnucash.android.test.unit.db
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Index
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.SplitsDbAdapter
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
-import org.gnucash.android.test.unit.GnuCashTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
 
-class TransactionsDbAdapterTest : GnuCashTest() {
-    private lateinit var accountsDbAdapter: AccountsDbAdapter
-    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
-    private lateinit var splitsDbAdapter: SplitsDbAdapter
+class TransactionsDbAdapterTest : DatabaseTest() {
     private lateinit var alphaAccount: Account
     private lateinit var bravoAccount: Account
     private lateinit var testSplit: Split
 
     @Before
     fun setUp() {
-        splitsDbAdapter = SplitsDbAdapter.instance
-        transactionsDbAdapter = TransactionsDbAdapter.instance
-        accountsDbAdapter = AccountsDbAdapter.instance
-
         alphaAccount = Account(ALPHA_ACCOUNT_NAME)
         bravoAccount = Account(BRAVO_ACCOUNT_NAME)
 
@@ -53,11 +41,6 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(alphaAccount)
 
         testSplit = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount)
-    }
-
-    @After
-    fun tearDown() {
-        accountsDbAdapter.deleteAllRecords()
     }
 
     @Test

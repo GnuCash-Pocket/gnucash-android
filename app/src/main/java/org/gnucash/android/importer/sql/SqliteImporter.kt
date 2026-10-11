@@ -3,6 +3,7 @@ package org.gnucash.android.importer.sql
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -71,7 +72,7 @@ import java.util.UUID
  */
 class SqliteImporter(context: Context, inputStream: InputStream, listener: GncProgressListener?) :
     Importer(context, inputStream, listener) {
-    private lateinit var holder: DatabaseHolder
+    private lateinit var dbHelper: DatabaseHelper
     private lateinit var accountsDbAdapter: AccountsDbAdapter
     private lateinit var transactionsDbAdapter: TransactionsDbAdapter
     private lateinit var splitsDbAdapter: SplitsDbAdapter
@@ -91,11 +92,11 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
      */
     private val templateAccountToTransaction = mutableMapOf<String, String>()
 
-    override fun parse(inputStream: InputStream): List<Book> {
+    override fun parse(uri: Uri, inputStream: InputStream): List<Book> {
         // 1. copy the stream to a cache file
         val file = copyToFile(inputStream)
         // 2. copy from the Desktop db to the Pocket db
-        return pipeBooks(file)
+        return pipeBooks(uri, file)
     }
 
     @Throws(IOException::class)
@@ -112,12 +113,12 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         return file
     }
 
-    private fun pipeBooks(file: File): List<Book> {
+    private fun pipeBooks(uri: Uri, file: File): List<Book> {
         val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
-        return pipeBooks(db)
+        return pipeBooks(uri, db)
     }
 
-    private fun pipeBooks(db: SQLiteDatabase): List<Book> {
+    private fun pipeBooks(uri: Uri, db: SQLiteDatabase): List<Book> {
         val books = mutableListOf<Book>()
         val cursor = db.query("books", null, null, null, null, null, null)
         cursor.moveToFirst()
@@ -125,16 +126,15 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
         cursor.forEach { cursor ->
             cancellationSignal.throwIfCanceled()
-            val book = pipeBook(cursor)
+            var book = pipeBook(cursor)
+            book.sourceUri = uri
 
             pipeSlots(db, book).forEach { slot ->
                 // TODO apply slot to book
             }
 
             listener?.onBook(book)
-            val displayName = book.displayName
-            booksDbAdapter.replace(book)
-            book.displayName = displayName
+            book = booksDbAdapter.replace(book)
             books.add(book)
 
             initDb(book).use {
@@ -159,24 +159,22 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         book.setUID(guid)
         book.rootAccountUID = rootAccountUID
         book.rootTemplateUID = rootTemplateUID
-        book.displayName = booksDbAdapter.generateDefaultBookName()
 
         return book
     }
 
     private fun initDb(book: Book): DatabaseHolder {
         val dbHelper = DatabaseHelper(context, book.uid)
-        val holder = dbHelper.readableHolder
-        this.holder = holder
-        commoditiesDbAdapter = CommoditiesDbAdapter(holder)
-        pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
-        splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
-        transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
-        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
-        recurrenceDbAdapter = RecurrenceDbAdapter(holder)
-        scheduledActionsDbAdapter =
-            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
-        budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
+        this.dbHelper = dbHelper
+        val holder = dbHelper.holder
+        commoditiesDbAdapter = holder.commoditiesDbAdapter
+        pricesDbAdapter = holder.pricesDbAdapter
+        splitsDbAdapter = holder.splitsDbAdapter
+        transactionsDbAdapter = holder.transactionsDbAdapter
+        accountsDbAdapter = holder.accountsDbAdapter
+        recurrenceDbAdapter = holder.recurrenceDbAdapter
+        scheduledActionsDbAdapter = holder.scheduledActionDbAdapter
+        budgetsDbAdapter = holder.budgetDbAdapter
 
         budgetsDbAdapter.deleteAllRecords()
         scheduledActionsDbAdapter.deleteAllRecords()
@@ -784,7 +782,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         if (value.isEmpty()) return
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 split.value = Money(value, account.commodity)
                 split.type = splitType
             }
@@ -806,7 +804,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
     ) {
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 split.value = Money(value, account.commodity)
                 split.type = splitType
             }

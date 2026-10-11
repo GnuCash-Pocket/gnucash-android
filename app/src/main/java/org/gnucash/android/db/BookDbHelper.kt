@@ -20,6 +20,7 @@ import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.annotation.WorkerThread
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -45,7 +46,8 @@ class BookDbHelper(context: Context) : SQLiteOpenHelper(
     fun getHolder(): DatabaseHolder {
         var holder: DatabaseHolder? = this.holder
         if (holder == null) {
-            holder = DatabaseHolder(context, writableDatabase)
+            val db = writableDatabase
+            holder = DatabaseHolder(context, db)
             this.holder = holder
         }
         return holder
@@ -53,51 +55,31 @@ class BookDbHelper(context: Context) : SQLiteOpenHelper(
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(BOOKS_TABLE_CREATE)
-        insertBlankBook(context, db)
+        val book = insertBlankBook(context, db)
+        activeBookUID = book.uid
     }
 
-    fun insertBlankBook(): Book {
-        return insertBlankBook(getHolder())
-    }
-
-    fun insertBlankBook(context: Context, db: SQLiteDatabase): Book {
+    private fun insertBlankBook(context: Context, db: SQLiteDatabase): Book {
         return insertBlankBook(DatabaseHolder(context, db))
     }
 
-    fun insertBlankBook(bookHolder: DatabaseHolder): Book {
+    private fun insertBlankBook(bookHolder: DatabaseHolder): Book {
         if (this.holder == null) {
             this.holder = bookHolder
         }
+        val booksDbAdapter = BooksDbAdapter(bookHolder)
         val book = Book()
+
         val dbHelper = DatabaseHelper(context, book.uid)
-        val dbHolder = dbHelper.holder
-
-        val accountsDbAdapter = AccountsDbAdapter(dbHolder, true)
-        val rootAccountUID = accountsDbAdapter.rootAccountUID
-        try {
-            dbHelper.close()
-        } catch (_: Exception) {
+        dbHelper.use {
+            val dbHolder = it.holder
+            val accountsDbAdapter = AccountsDbAdapter(dbHolder, true)
+            val rootAccountUID = accountsDbAdapter.rootAccountUID
+            book.rootAccountUID = rootAccountUID
+            book.isActive = true
+            booksDbAdapter.insert(book)
         }
-        book.rootAccountUID = rootAccountUID
-        book.isActive = true
-        insertBook(bookHolder, book)
         return book
-    }
-
-    /**
-     * Inserts the book into the database
-     *
-     * @param holder Database holder
-     * @param book       Book to insert
-     */
-    private fun insertBook(holder: DatabaseHolder, book: Book) {
-        val booksDbAdapter = BooksDbAdapter(holder)
-        var name = book.displayName
-        if (name.isNullOrEmpty()) {
-            name = booksDbAdapter.generateDefaultBookName()
-            book.displayName = name
-        }
-        booksDbAdapter.addRecord(book)
     }
 
     @WorkerThread

@@ -46,7 +46,6 @@ import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
-import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.databinding.CardviewBookBinding
 import org.gnucash.android.databinding.FragmentBookListBinding
 import org.gnucash.android.db.BookDbHelper
@@ -56,19 +55,17 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.importer.ImportBookCallback
-import org.gnucash.android.importer.xml.AccountsTemplate
 import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.account.AccountsActivity.Companion.importXmlFileFromIntent
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
 import org.gnucash.android.ui.adapter.ModelDiff
-import org.gnucash.android.ui.adapter.SpinnerItem
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
-import org.gnucash.android.util.BookUtils.loadBook
+import org.gnucash.android.util.BookUtils.showBook
 import org.gnucash.android.util.PreferencesHelper.getLastExportTime
 import org.gnucash.android.util.documentMimeTypes
 import org.gnucash.android.util.formatMediumDateTime
@@ -181,7 +178,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                 // Dismisses itself
             }
             .setSingleChoiceItems(adapter, RecyclerView.NO_POSITION) { dialog, which ->
-                val item = adapter[which] as SpinnerItem<AccountsTemplate.Header>
+                val item = adapter[which]
                 val header = item.value
                 val fileId = header.assetId
                 dialog.dismiss()
@@ -201,10 +198,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             return BookViewHolder(binding)
         }
 
-        override fun onBindViewHolder(
-            holder: BookViewHolder,
-            position: Int
-        ) {
+        override fun onBindViewHolder(holder: BookViewHolder, position: Int) {
             val item = getItem(position)
             holder.bind(item)
         }
@@ -239,7 +233,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             itemView.setOnClickListener { v ->
                 //do nothing if the active book is tapped
                 if (activeBookUID != bookUID) {
-                    loadBook(v.context, bookUID)
+                    showBook(v.context, bookUID)
                     finish()
                 }
             }

@@ -9,7 +9,7 @@ import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.test.unit.db.DatabaseTest
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -18,15 +18,15 @@ import java.math.BigDecimal
  *
  * @author Ngewi
  */
-class SplitTest : GnuCashTest() {
+class SplitTest : DatabaseTest() {
     @Test
     fun amounts_shouldBeStoredUnsigned() {
-        val split = Split(Money("-1", "USD"), Money("-2", "EUR"), "account-UID")
+        val split = Split(Money("-1", Commodity.USD), Money("-2", Commodity.EUR), "account-UID")
         assertThat(split.value.isNegative).isFalse()
         assertThat(split.quantity.isNegative).isFalse()
 
-        split.value = Money("-3", "USD")
-        split.quantity = Money("-4", "EUR")
+        split.value = Money("-3", Commodity.USD)
+        split.quantity = Money("-4", Commodity.EUR)
         assertThat(split.value.isNegative).isFalse()
         assertThat(split.quantity.isNegative).isFalse()
     }
@@ -44,7 +44,7 @@ class SplitTest : GnuCashTest() {
 
     @Test
     fun testCloning() {
-        val split = Split(Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account")
+        val split = Split(Money(BigDecimal.TEN, Commodity.EUR), "random-account")
         split.transactionUID = "terminator-trx"
         split.type = TransactionType.CREDIT
 
@@ -62,7 +62,7 @@ class SplitTest : GnuCashTest() {
      */
     @Test
     fun shouldCreateInversePair() {
-        val split = Split(Money("2", "USD"), "dummy")
+        val split = Split(Money("2", Commodity.USD), "dummy")
         split.type = TransactionType.CREDIT
         split.transactionUID = "random-trx"
         val pair = split.createPair("test")
@@ -75,7 +75,7 @@ class SplitTest : GnuCashTest() {
 
     @Test
     fun shouldGenerateValidCsv() {
-        val split = Split(Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account")
+        val split = Split(Money(BigDecimal.TEN, Commodity.EUR), "random-account")
         split.transactionUID = "terminator-trx"
         split.type = TransactionType.CREDIT
 
@@ -87,11 +87,95 @@ class SplitTest : GnuCashTest() {
     fun shouldParseCsv() {
         val csv =
             "test-split-uid;490;100;USD;490;100;USD;trx-action;test-account;DEBIT;Didn't you get the memo?"
-        val split = parseSplit(csv)
-        assertThat(split.value.numerator).isEqualTo(Money("4.90", "USD").numerator)
+        val split = parseSplit(csv, commoditiesDbAdapter)
+        assertThat(split.value.numerator).isEqualTo(Money("4.90", Commodity.USD).numerator)
         assertThat(split.transactionUID).isEqualTo("trx-action")
         assertThat(split.accountUID).isEqualTo("test-account")
         assertThat(split.type).isEqualTo(TransactionType.DEBIT)
         assertThat(split.memo).isEqualTo("Didn't you get the memo?")
+    }
+
+    @Test
+    fun `plusAssign - credit and credit`() {
+        val split1 = Split(Money("100", Commodity.USD), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("50", Commodity.USD), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("150", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("150", Commodity.USD))
+    }
+
+    @Test
+    fun `plusAssign - debit and debit`() {
+        val split1 = Split(Money("100", Commodity.USD), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("50", Commodity.USD), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("150", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("150", Commodity.USD))
+    }
+
+    @Test
+    fun `plusAssign - credit and debit`() {
+        val split1 = Split(Money("499", Commodity.USD), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("99", Commodity.USD), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("400", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("400", Commodity.USD))
+    }
+
+    @Test
+    fun `plusAssign - credit and big debit`() {
+        val split1 = Split(Money("499", Commodity.USD), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("599", Commodity.USD), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("100", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("100", Commodity.USD))
+    }
+
+    @Test
+    fun `plusAssign - debit and credit`() {
+        val split1 = Split(Money("499", Commodity.USD), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("99", Commodity.USD), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("400", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("400", Commodity.USD))
+    }
+
+    @Test
+    fun `plusAssign - debit and big credit`() {
+        val split1 = Split(Money("499", Commodity.USD), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("599", Commodity.USD), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("100", Commodity.USD))
+        assertThat(split1.quantity).isEqualTo(Money("100", Commodity.USD))
     }
 }

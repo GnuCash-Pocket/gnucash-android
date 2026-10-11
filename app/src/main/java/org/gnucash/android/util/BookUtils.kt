@@ -2,6 +2,10 @@ package org.gnucash.android.util
 
 import android.content.Context
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.initializeDatabaseAdapters
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
 
 /**
@@ -23,8 +27,8 @@ object BookUtils {
      * @param bookUID GUID of the book to be activated
      */
     fun activateBook(context: Context, bookUID: String) {
-        GnuCashApplication.booksDbAdapter!!.setActive(bookUID)
-        GnuCashApplication.initializeDatabaseAdapters(context)
+        activeBookUID = bookUID
+        initializeDatabaseAdapters(context, bookUID)
     }
 
     /**
@@ -33,8 +37,33 @@ object BookUtils {
      * @param context the context.
      * @param bookUID GUID of the book to be loaded
      */
-    fun loadBook(context: Context, bookUID: String) {
+    fun showBook(context: Context, bookUID: String) {
         activateBook(context, bookUID)
-        AccountsActivity.start(context)
+        AccountsActivity.start(context, bookUID)
+    }
+
+    fun populateName(context: Context, booksDbAdapter: BooksDbAdapter, book: Book) {
+        var displayName = book.displayName
+        if (displayName.isNullOrEmpty()) {
+            var name = book.sourceUri?.getDocumentName(context)
+            if (!name.isNullOrEmpty()) {
+                // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
+                val indexFileType = name.indexOf('.')
+                if (indexFileType > 0) {
+                    name = name.take(indexFileType)
+                }
+                displayName = name
+            }
+            if (displayName.isNullOrEmpty()) {
+                displayName = booksDbAdapter.generateDefaultBookName()
+            }
+            book.displayName = displayName
+        }
+    }
+
+    // Does not delete the actual database files.
+    fun deleteRecords(booksDbAdapter: BooksDbAdapter) {
+        booksDbAdapter.deleteAllRecords()
+        activeBookUID = ""
     }
 }

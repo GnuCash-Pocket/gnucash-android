@@ -17,7 +17,6 @@ package org.gnucash.android.db.adapter
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
@@ -176,7 +175,5 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         private const val INDEX_COLUMN_AMOUNT_DENOM = INDEX_COLUMN_AMOUNT_NUM + 1
         private const val INDEX_COLUMN_PERIOD_NUM = INDEX_COLUMN_AMOUNT_DENOM + 1
         private const val INDEX_COLUMN_NOTES = INDEX_COLUMN_PERIOD_NUM + 1
-
-        val instance: BudgetAmountsDbAdapter get() = GnuCashApplication.budgetAmountsDbAdapter!!
     }
 }

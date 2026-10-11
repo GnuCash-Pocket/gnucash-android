@@ -37,8 +37,8 @@
             layout="@layout/list_item_2_lines"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintEnd_toStartOf="@id/repeating"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -56,29 +56,42 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
+            android:id="@+id/repeating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Repeating"
+            android:src="@drawable/ic_repeat"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/edit_transaction"
+            app:layout_constraintTop_toTopOf="@id/edit_transaction"
+            tools:visibility="visible" />
+
+        <ImageView
             android:id="@+id/edit_transaction"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/title_edit_transaction"
             android:paddingStart="16dp"
             android:paddingEnd="0dp"
             android:paddingBottom="16dp"
             android:src="@drawable/ic_edit"
             app:layout_constraintBottom_toTopOf="@id/options_menu"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:ignore="ContentDescription" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/transaction_amount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:gravity="right"
             android:singleLine="true"
             android:textSize="18sp"
             app:layout_constraintEnd_toStartOf="@id/options_menu"
             app:layout_constraintStart_toEndOf="@id/transaction_date"
             app:layout_constraintTop_toTopOf="@id/transaction_date"
+            tools:ignore="RtlHardcoded"
             tools:text="$ 123,456,789.00" />
 
         <TextView

@@ -1,9 +1,11 @@
 package org.gnucash.android.test.unit
 
 import androidx.core.content.edit
+import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics
+import org.gnucash.android.util.ConsoleTree
 import org.junit.BeforeClass
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -21,7 +23,7 @@ abstract class GnuCashTest {
         @JvmStatic
         @BeforeClass
         fun before() {
-            Timber.plant(ConsoleTree())
+            Timber.plant(ConsoleTree(BuildConfig.DEBUG))
         }
     }
 

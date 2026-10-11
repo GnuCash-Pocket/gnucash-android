@@ -63,6 +63,7 @@ class Book(rootAccountUID: String? = null) : BaseModel() {
      *
      * An active book is one whose data is currently displayed in the UI
      */
+    @Deprecated("Compare to active book UID")
     var isActive = false
 
     /**
@@ -80,7 +81,6 @@ class Book(rootAccountUID: String? = null) : BaseModel() {
         if (other is Book) {
             if (this.displayName != other.displayName) return false
             if (this.rootAccountUID != other.rootAccountUID) return false
-            if (this.isActive != other.isActive) return false
             if (this.lastSync != other.lastSync) return false
         }
         return super.equals(other)

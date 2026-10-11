@@ -29,19 +29,19 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.PopupMenu
-import androidx.fragment.app.Fragment
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.gnucash.android.R
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.isLandscape
 import org.gnucash.android.databinding.CardviewBudgetBinding
 import org.gnucash.android.databinding.FragmentBudgetListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.BudgetEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.model.Budget
@@ -49,7 +49,6 @@ import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.budget.BudgetsActivity.Companion.getBudgetProgressColor
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
-import org.gnucash.android.ui.common.UxArgument
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -57,14 +56,18 @@ import java.math.RoundingMode
 /**
  * Budget list fragment
  */
-class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallbacks<Cursor> {
-    private var budgetsDbAdapter: BudgetsDbAdapter = BudgetsDbAdapter.instance
+class BudgetListFragment : DatabaseFragment(), Refreshable, LoaderManager.LoaderCallbacks<Cursor> {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var budgetsDbAdapter: BudgetsDbAdapter
     private var budgetRecyclerAdapter: BudgetRecyclerAdapter? = null
     private var binding: FragmentBudgetListBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        budgetsDbAdapter = BudgetsDbAdapter.instance
+
+        val dbHolder = readableDatabaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        budgetsDbAdapter = dbHolder.budgetDbAdapter
     }
 
     override fun onCreateView(
@@ -156,11 +159,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
      * @param budgetUID Db record UID of the budget
      */
     private fun editBudget(budgetUID: String?) {
-        val intent = Intent(requireContext(), FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
-            .putExtra(UxArgument.BUDGET_UID, budgetUID)
-        startActivityForResult(intent, REQUEST_REFRESH)
+        FormActivity.showEditBudget(this, bookUID, budgetUID, REQUEST_REFRESH)
     }
 
     /**
@@ -169,7 +168,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
      * @param budgetUID Database record UID
      */
     private fun deleteBudget(budgetUID: String) {
-        BudgetsDbAdapter.instance.deleteRecord(budgetUID)
+        budgetsDbAdapter.deleteRecord(budgetUID)
         refresh()
     }
 
@@ -180,16 +179,8 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         }
     }
 
-    /**
-     * Callback when create budget floating action button is clicked
-     *
-     * @param view View which was clicked
-     */
     private fun createBudget(context: Context) {
-        val intent = Intent(context, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
-        startActivity(intent)
+        FormActivity.showEditBudget(this, bookUID, null, REQUEST_REFRESH)
     }
 
     internal inner class BudgetRecyclerAdapter(cursor: Cursor?) :
@@ -247,7 +238,6 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
 
             budgetName.text = budget.name
 
-            val accountsDbAdapter = AccountsDbAdapter.instance
             val numberOfAccounts = budget.numberOfAccounts
             val accountString = if (numberOfAccounts == 1) {
                 accountsDbAdapter.getAccountFullName(budget.budgetAmounts[0].accountUID!!)
@@ -257,7 +247,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
             accountName.text = accountString
 
             val recurrence = budget.recurrence
-            budgetRecurrence.text = recurrence.getRepeatString(context) + " — " + context.getString(
+            budgetRecurrence.text = recurrence.formatRepeatString(context) + " — " + context.getString(
                 R.string.repeat_remaining,
                 recurrence.daysLeftInCurrentPeriod
             )
@@ -278,7 +268,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
                 (commodity.symbol + spentAmountValue + " / " + budgetTotal.formattedString())
             budgetAmount.text = usedAmount
 
-            val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
+            val budgetProgress = if (budgetTotal.isZero) 0f else spentAmountValue.divide(
                 budgetTotal.toBigDecimal(),
                 commodity.smallestFractionDigits,
                 RoundingMode.HALF_UP
@@ -296,14 +286,13 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
     /**
      * Loads Budgets asynchronously from the database
      */
-    private class BudgetsCursorLoader(context: Context) :
+    private inner class BudgetsCursorLoader(context: Context) :
         DatabaseCursorLoader<BudgetsDbAdapter>(context) {
         override fun loadInBackground(): Cursor? {
-            databaseAdapter = BudgetsDbAdapter.instance
-            return databaseAdapter!!.fetchAllRecords(
+            return budgetsDbAdapter.fetchAllRecords(
                 null,
                 null,
-                DatabaseSchema.BudgetEntry.COLUMN_NAME + " ASC"
+                BudgetEntry.COLUMN_NAME + " ASC"
             )
         }
     }

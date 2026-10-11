@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.model.Book
-import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.adapter.SpinnerArrayAdapter
 import org.gnucash.android.ui.adapter.SpinnerItem
 import org.gnucash.android.util.getDocumentName

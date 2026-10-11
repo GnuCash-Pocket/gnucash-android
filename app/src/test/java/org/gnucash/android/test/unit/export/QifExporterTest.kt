@@ -51,8 +51,7 @@ class QifExporterTest : BookHelperTest() {
     private lateinit var bookUID: String
 
     @Before
-    override fun setUp() {
-        super.setUp()
+    fun setUp() {
         val testBook = Book("testRootAccountUID")
         booksDbAdapter.addRecord(testBook)
         bookUID = testBook.uid
@@ -60,7 +59,7 @@ class QifExporterTest : BookHelperTest() {
     }
 
     @After
-    override fun tearDown() {
+    fun tearDown() {
         val booksDbAdapter = BooksDbAdapter.instance
         booksDbAdapter.deleteBook(context, bookUID)
         booksDbAdapter.close()
@@ -91,7 +90,7 @@ class QifExporterTest : BookHelperTest() {
         val account = Account("Basic Account", commodity)
         val transaction = Transaction("One transaction")
         transaction.commodity = commodity
-        transaction.addSplit(Split(createZeroInstance("EUR"), account))
+        transaction.addSplit(Split(createZeroInstance(Commodity.EUR), account))
 
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)
@@ -118,15 +117,15 @@ class QifExporterTest : BookHelperTest() {
     fun multiCurrencyTransactions_shouldResultInMultipleZippedQifFiles() {
         val accountsDbAdapter = this.accountsDbAdapter
 
-        val account = Account("Basic Account", Commodity.getInstance("EUR"))
+        val account = Account("Basic Account", Commodity.EUR)
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(createZeroInstance("EUR"), account))
+        transaction.addSplit(Split(createZeroInstance(Commodity.EUR), account))
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)
 
-        val foreignAccount = Account("US Konto", Commodity.getInstance("USD"))
+        val foreignAccount = Account("US Konto", Commodity.USD)
         val multiCurr = Transaction("multi-currency")
-        val split1 = Split(Money("12", "USD"), Money("15", "EUR"), foreignAccount)
+        val split1 = Split(Money("12", Commodity.USD), Money("15", Commodity.EUR), foreignAccount)
         val split2 = split1.createPair(account)
         multiCurr.addSplit(split1)
         multiCurr.addSplit(split2)
@@ -171,7 +170,7 @@ class QifExporterTest : BookHelperTest() {
         transaction.notes = expectedMemo
         transaction.number = expectedNumber
         transaction.datePosted = expectedTime
-        transaction.addSplit(Split(Money(-123.45, "EUR"), account))
+        transaction.addSplit(Split(Money(-123.45, Commodity.EUR), account))
 
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)

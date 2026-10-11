@@ -19,20 +19,17 @@ package org.gnucash.android.importer.xml
 import android.content.ContentValues
 import android.content.Context
 import android.database.SQLException
+import android.net.Uri
 import android.os.CancellationSignal
 import androidx.annotation.ColorInt
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseHelper
-import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.BooksDbAdapter.NoActiveBookFoundException
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.PricesDbAdapter
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_TYPE
@@ -149,7 +146,9 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
+import org.gnucash.android.service.ScheduledActionService
 import org.gnucash.android.util.AmountParser
+import org.gnucash.android.util.BookUtils.populateName
 import org.gnucash.android.util.NotSet
 import org.gnucash.android.util.parseColor
 import org.gnucash.android.util.set
@@ -174,6 +173,7 @@ import java.util.TimeZone
  */
 class GncXmlHandler(
     private val context: Context = appContext,
+    private val uri: Uri,
     private val listener: GncProgressListener? = null,
     private val cancellationSignal: CancellationSignal = CancellationSignal()
 ) : DefaultHandler(), Closeable {
@@ -258,6 +258,7 @@ class GncXmlHandler(
     @Deprecated("Use the new scheduled action elements instead")
     private var recurrencePeriod: Long = 0
 
+    private lateinit var dbHelper: DatabaseHelper
     private val booksDbAdapter: BooksDbAdapter = BooksDbAdapter.instance
     private lateinit var accountsDbAdapter: AccountsDbAdapter
     private lateinit var transactionsDbAdapter: TransactionsDbAdapter
@@ -269,7 +270,6 @@ class GncXmlHandler(
 
     val importedBooks = mutableListOf<Book>()
     private var book: Book = Book()
-    private var holder: DatabaseHolder? = null
     private var countDataType: String? = null
     private var isValidRoot = false
     private var hasBookElement = false
@@ -289,14 +289,16 @@ class GncXmlHandler(
     }
 
     private fun initDb(bookUID: String) {
-        val databaseHelper = DatabaseHelper(context, bookUID)
-        val holder = databaseHelper.holder
-        this.holder = holder
-        val db = holder.db
+        val dbHelper = DatabaseHelper(context, bookUID)
+        val dbHolder = dbHelper.holder
+        this.dbHelper = dbHelper
+        val db = dbHolder.db
         try {
             // Nice to have for performance, but not critical.
             db.enableWriteAheadLogging()
         } catch (e: SQLException) {
+            Timber.e(e)
+        } catch (e: IllegalStateException) {
             Timber.e(e)
         }
         // disable foreign key. The database structure should be ensured by the data inserted.
@@ -305,14 +307,13 @@ class GncXmlHandler(
 
         book = booksDbAdapter.getRecordOrNull(bookUID) ?: book
 
-        commoditiesDbAdapter = CommoditiesDbAdapter(holder, true)
-        pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
-        transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
-        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
-        val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
-        scheduledActionsDbAdapter =
-            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
-        budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
+        commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
+        pricesDbAdapter = dbHolder.pricesDbAdapter
+        transactionsDbAdapter = dbHolder.transactionsDbAdapter
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        scheduledActionsDbAdapter = dbHolder.scheduledActionDbAdapter
+        budgetsDbAdapter = dbHolder.budgetDbAdapter
+        val recurrenceDbAdapter = dbHolder.recurrenceDbAdapter
 
         Timber.d("before clean up db")
         budgetsDbAdapter.deleteAllRecords()
@@ -331,7 +332,7 @@ class GncXmlHandler(
 
     private fun maybeInitDb(bookUIDOld: String?, bookUIDNew: String) {
         if (bookUIDOld != null && bookUIDOld != bookUIDNew) {
-            holder?.close()
+            dbHelper.close()
             initDb(bookUIDNew)
         }
     }
@@ -347,7 +348,7 @@ class GncXmlHandler(
         elementNames.push(ElementName(uri, localName, qualifiedName))
         if (!isValidRoot) {
             if (TAG_ROOT == localName || AccountsTemplate.TAG_ROOT == localName) {
-                isValidRoot = true
+                handleStartRoot(uri)
                 return
             }
             throw SAXException("Expected root element")
@@ -498,7 +499,7 @@ class GncXmlHandler(
         saveToDatabase()
 
         // generate missed scheduled transactions.
-        //FIXME ScheduledActionService.schedulePeriodic(context);
+        ScheduledActionService.processScheduledBook(context, book)
     }
 
     /**
@@ -506,24 +507,12 @@ class GncXmlHandler(
      * We on purpose do not set the book active. Only import. Caller should handle activation
      */
     private fun saveToDatabase() {
-        holder!!.db.setForeignKeyConstraintsEnabled(true)
-        maybeClose() //close it after import
+        dbHelper.holder.db.setForeignKeyConstraintsEnabled(true)
+        close() //close it after import
     }
 
     override fun close() {
-        holder!!.close()
-    }
-
-    private fun maybeClose() {
-        var activeBookUID: String? = null
-        try {
-            activeBookUID = GnuCashApplication.activeBookUID
-        } catch (_: NoActiveBookFoundException) {
-        }
-        val newBookUID = book.uid
-        if (activeBookUID == null || activeBookUID != newBookUID) {
-            close()
-        }
+        dbHelper.close()
     }
 
     fun cancel() {
@@ -655,20 +644,19 @@ class GncXmlHandler(
     }
 
     private fun handleEndBook(localName: String) {
-        val book = book
-        val displayName = book.displayName
+        var book = book
+        populateName(context, booksDbAdapter, book)
         if (hasBookElement) {
             if (TAG_BOOK == localName) {
-                booksDbAdapter.replace(book)
+                book = booksDbAdapter.replace(book)
                 listener?.onBook(book)
                 importedBooks.add(book)
             }
         } else {
-            booksDbAdapter.replace(book)
+            book = booksDbAdapter.replace(book)
             listener?.onBook(book)
             importedBooks.add(book)
         }
-        book.displayName = displayName
     }
 
     private fun handleEndBudget() {
@@ -1064,25 +1052,43 @@ class GncXmlHandler(
             KEY_EXPORTED -> transaction?.isExported = slot.asString.toBoolean()
 
             KEY_SCHED_XACTION -> {
+                val transaction = this.transaction ?: return
                 val split = this.split ?: return
                 for (s in slot.asFrame) {
                     when (s.key) {
                         KEY_SPLIT_ACCOUNT_SLOT -> split.scheduledActionAccountUID = s.asGUID
 
-                        KEY_CREDIT_FORMULA -> handleEndSlotTemplateFormula(
-                            split,
-                            s.asString,
-                            TransactionType.CREDIT
-                        )
+                        KEY_CREDIT_FORMULA ->
+                            handleEndSlotTemplateFormula(
+                                transaction,
+                                split,
+                                s.asString,
+                                TransactionType.CREDIT
+                            )
 
                         KEY_CREDIT_NUMERIC ->
-                            handleEndSlotTemplateNumeric(split, s.asNumeric, TransactionType.CREDIT)
+                            handleEndSlotTemplateNumeric(
+                                transaction,
+                                split,
+                                s.asNumeric,
+                                TransactionType.CREDIT
+                            )
 
                         KEY_DEBIT_FORMULA ->
-                            handleEndSlotTemplateFormula(split, s.asString, TransactionType.DEBIT)
+                            handleEndSlotTemplateFormula(
+                                transaction,
+                                split,
+                                s.asString,
+                                TransactionType.DEBIT
+                            )
 
                         KEY_DEBIT_NUMERIC ->
-                            handleEndSlotTemplateNumeric(split, s.asNumeric, TransactionType.DEBIT)
+                            handleEndSlotTemplateNumeric(
+                                transaction,
+                                split,
+                                s.asNumeric,
+                                TransactionType.DEBIT
+                            )
                     }
                 }
             }
@@ -1106,6 +1112,7 @@ class GncXmlHandler(
      * @param value Parsed characters containing split amount
      */
     private fun handleEndSlotTemplateFormula(
+        transaction: Transaction,
         split: Split,
         value: String,
         splitType: TransactionType
@@ -1113,18 +1120,22 @@ class GncXmlHandler(
         if (value.isEmpty()) return
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 val amount = AmountParser.parse(value, Locale.ROOT)
                 var accountUID = split.scheduledActionAccountUID
                 if (accountUID.isNullOrEmpty()) {
                     accountUID = split.accountUID!!
                 }
                 val commodity = getCommodityForAccount(accountUID)
+                val price = pricesDbAdapter.getPrice(transaction.commodity, commodity)
 
                 split.value = Money(amount, commodity)
+                split.quantity = split.value * price
                 split.type = splitType
             }
         } catch (e: NumberFormatException) {
+            Timber.e(e, "Error parsing template split formula [%s]", value)
+        } catch (e: ParseException) {
             Timber.e(e, "Error parsing template split formula [%s]", value)
         }
     }
@@ -1135,20 +1146,23 @@ class GncXmlHandler(
      * @param value Parsed characters containing split amount
      */
     private fun handleEndSlotTemplateNumeric(
+        transaction: Transaction,
         split: Split,
         value: Numeric,
         splitType: TransactionType
     ) {
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.value.isAmountZero) {
+            if (split.value.isZero) {
                 var accountUID = split.scheduledActionAccountUID
                 if (accountUID.isNullOrEmpty()) {
                     accountUID = split.accountUID!!
                 }
                 val commodity = getCommodityForAccount(accountUID)
+                val price = pricesDbAdapter.getPrice(transaction.commodity, commodity)
 
                 split.value = Money(value, commodity)
+                split.quantity = split.value * price
                 split.type = splitType
             }
         } catch (e: NumberFormatException) {
@@ -1317,7 +1331,8 @@ class GncXmlHandler(
                 split.type =
                     if (value[0] == '-') TransactionType.CREDIT else TransactionType.DEBIT
                 val amount = parseSplitAmount(value)
-                split.value = Money(amount, Commodity.DEFAULT_COMMODITY)
+                val commodity = commoditiesDbAdapter.defaultCommodity
+                split.value = Money(amount, commodity)
             } catch (e: ParseException) {
                 val msg = "Invalid split quantity $value"
                 throw SAXException(msg, e)
@@ -1343,10 +1358,16 @@ class GncXmlHandler(
         }
     }
 
+    private fun handleStartRoot(uri: String) {
+        book.sourceUri = this.uri
+        isValidRoot = true
+    }
+
     private fun handleStartBook(uri: String) {
         if (NS_GNUCASH == uri) {
             hasBookElement = true
             book = Book()
+            book.sourceUri = this.uri
         }
     }
 

@@ -19,7 +19,6 @@ import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.math.numberOfTrailingZeros
 import timber.log.Timber
 import java.util.Currency
@@ -162,7 +161,7 @@ class Commodity @JvmOverloads constructor(
      *
      * Two commodities are considered equal if they have the same currency code
      *
-     * @param o Commodity instance to compare
+     * @param other Commodity instance to compare
      * @return `true` if both instances have same currency code, `false` otherwise
      */
     override fun equals(other: Any?): Boolean {
@@ -223,30 +222,6 @@ class Commodity @JvmOverloads constructor(
         val template = Commodity(TEMPLATE, TEMPLATE, TEMPLATE, 1).apply {
             cusip = TEMPLATE
             localSymbol = TEMPLATE
-        }
-
-        /**
-         * Returns an instance of commodity for the specified currencyCode
-         *
-         * @param currencyCode ISO 4217 currency code (3-letter)
-         * @return the commodity, or default commodity.
-         */
-        fun getInstance(currencyCode: String?): Commodity {
-            if (currencyCode.isNullOrEmpty()) {
-                return DEFAULT_COMMODITY
-            }
-            when (currencyCode) {
-                "AUD" -> return AUD
-                "CAD" -> return CAD
-                "CHF" -> return CHF
-                "EUR" -> return EUR
-                "GBP" -> return GBP
-                "JPY" -> return JPY
-                "USD" -> return USD
-            }
-
-            val adapter = CommoditiesDbAdapter.instance
-            return adapter?.getCurrency(currencyCode) ?: DEFAULT_COMMODITY
         }
 
         fun formatListItem(currencyCode: String, name: String?): String {

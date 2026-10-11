@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
@@ -47,13 +48,15 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     private var transaction: Transaction? = null
     private var account: Account? = null
 
-    private var transactionsDbAdapter = TransactionsDbAdapter.instance
-    private var accountsDbAdapter = AccountsDbAdapter.instance
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var scheduledActionDbAdapter: ScheduledActionDbAdapter
 
     private lateinit var binding: ActivityTransactionDetailBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val context: Context = this
 
         binding = ActivityTransactionDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -64,8 +67,10 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setDisplayShowTitleEnabled(false)
 
-        transactionsDbAdapter = TransactionsDbAdapter.instance
-        accountsDbAdapter = AccountsDbAdapter.instance
+        val holder = readableDatabaseHolder
+        transactionsDbAdapter = holder.transactionsDbAdapter
+        accountsDbAdapter = holder.accountsDbAdapter
+        scheduledActionDbAdapter = holder.scheduledActionDbAdapter
 
         handleIntent(intent)
     }
@@ -195,8 +200,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         if (actionUID.isNullOrEmpty()) {
             binding.rowTrnRecurrence.isVisible = false
         } else {
-            val scheduledAction =
-                ScheduledActionDbAdapter.instance.getRecord(actionUID)
+            val scheduledAction = scheduledActionDbAdapter.getRecord(actionUID)
             binding.trnRecurrence.text = scheduledAction.getRepeatString(context)
             binding.rowTrnRecurrence.isVisible = true
         }
@@ -218,12 +222,13 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     private fun editTransaction(transaction: Transaction, account: Account) {
-        val intent = Intent(this, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, account.uid)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transaction.uid)
-        startActivityForResult(intent, REQUEST_REFRESH)
+        FormActivity.showEditTransaction(
+            this,
+            bookUID,
+            account.uid,
+            transaction.uid,
+            REQUEST_REFRESH
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -326,6 +331,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         }
         val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
+            .putExtra(UxArgument.BOOK_UID, bookUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
         startActivityForResult(intent, REQUEST_REFRESH)
@@ -376,5 +382,20 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     companion object {
         // "ForResult" to force refresh afterward.
         private const val REQUEST_REFRESH = 0x0000
+
+        fun show(
+            caller: Fragment,
+            bookUID: String,
+            accountUID: String,
+            transactionUID: String,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, TransactionDetailActivity::class.java)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
     }
 }

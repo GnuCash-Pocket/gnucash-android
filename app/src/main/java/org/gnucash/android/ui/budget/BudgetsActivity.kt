@@ -15,16 +15,12 @@
  */
 package org.gnucash.android.ui.budget
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.view.View
 import androidx.annotation.ColorInt
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivityBudgetsBinding
 import org.gnucash.android.ui.common.BaseDrawerActivity
-import org.gnucash.android.ui.common.FormActivity
-import org.gnucash.android.ui.common.UxArgument
 
 /**
  * Activity for managing display and editing of budgets

@@ -118,7 +118,9 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
 
         preference = findPreference(getString(R.string.key_backup_location))!!
         preference.setOnPreferenceClickListener { _ ->
-            val bookName = BooksDbAdapter.instance.activeBookDisplayName
+            val booksDbAdapter = BooksDbAdapter.instance
+            val book = booksDbAdapter.activeBook
+            val bookName = book.displayName ?: "Book1"
             val fileName =
                 sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
 
@@ -135,7 +137,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             true
         }
 
-        val defaultBackupLocation = BackupManager.getBookBackupFileUri(context, activeBookUID!!)
+        val defaultBackupLocation = BackupManager.getBookBackupFileUri(context, activeBookUID)
         if (defaultBackupLocation != null) {
             preference.summary = defaultBackupLocation.getDocumentName(context)
         }

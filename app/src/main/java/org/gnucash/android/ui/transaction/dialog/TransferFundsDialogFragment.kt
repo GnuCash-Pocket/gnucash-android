@@ -24,19 +24,18 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import org.gnucash.android.R
+import org.gnucash.android.app.DatabaseDialogFragment
 import org.gnucash.android.databinding.DialogTransferFundsBinding
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.PriceSource
-import org.gnucash.android.quote.QuoteCallback
 import org.gnucash.android.quote.QuoteProvider
 import org.gnucash.android.quote.YahooJson
 import org.gnucash.android.ui.text.DefaultTextWatcher
 import org.gnucash.android.ui.text.TextInputResetError
 import org.gnucash.android.ui.transaction.OnTransferFundsListener
-import org.gnucash.android.ui.util.dialog.VolatileDialogFragment
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.AmountParser.parse
 import timber.log.Timber
@@ -49,7 +48,7 @@ import java.text.ParseException
  *
  * This is used whenever a multi-currency transaction is being created.
  */
-class TransferFundsDialogFragment : VolatileDialogFragment() {
+class TransferFundsDialogFragment : DatabaseDialogFragment() {
     // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private var originAmount: Money? = null
 
@@ -59,12 +58,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
     // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private var onTransferFundsListener: OnTransferFundsListener? = null
 
-    private var pricesDbAdapter = PricesDbAdapter.instance
+    private lateinit var pricesDbAdapter: PricesDbAdapter
     private var priceQuoted: Price? = null
 
-    override fun onStart() {
-        super.onStart()
-        pricesDbAdapter = PricesDbAdapter.instance
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val dbHolder = databaseHolder
+        pricesDbAdapter = dbHolder.pricesDbAdapter
     }
 
     private fun onCreateBinding(inflater: LayoutInflater): DialogTransferFundsBinding {
@@ -238,11 +238,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             try {
                 rate = parse(binding.inputExchangeRate.text.toString())
             } catch (_: ParseException) {
-                binding.exchangeRateTextInputLayout.error = getString(R.string.error_invalid_exchange_rate)
+                binding.exchangeRateTextInputLayout.error =
+                    getString(R.string.error_invalid_exchange_rate)
                 return
             }
             if (rate <= BigDecimal.ZERO) {
-                binding.exchangeRateTextInputLayout.error = getString(R.string.error_invalid_exchange_rate)
+                binding.exchangeRateTextInputLayout.error =
+                    getString(R.string.error_invalid_exchange_rate)
                 return
             }
             convertedAmount = (originAmount * rate).withCommodity(targetCommodity)
@@ -253,11 +255,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             try {
                 amount = parse(binding.inputConvertedAmount.text.toString())
             } catch (_: ParseException) {
-                binding.convertedAmountTextInputLayout.error = getString(R.string.error_invalid_amount)
+                binding.convertedAmountTextInputLayout.error =
+                    getString(R.string.error_invalid_amount)
                 return
             }
             if (amount < BigDecimal.ZERO) {
-                binding.convertedAmountTextInputLayout.error = getString(R.string.error_invalid_amount)
+                binding.convertedAmountTextInputLayout.error =
+                    getString(R.string.error_invalid_amount)
                 return
             }
             convertedAmount = Money(amount, targetCommodity)
@@ -288,11 +292,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
         binding.exchangeRateTextInputLayout.error = null
         if (!fromCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.error = context.getString(R.string.commodity_required)
+            binding.exchangeRateTextInputLayout.error =
+                context.getString(R.string.commodity_required)
             return
         }
         if (!targetCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.error = context.getString(R.string.commodity_required)
+            binding.exchangeRateTextInputLayout.error =
+                context.getString(R.string.commodity_required)
             return
         }
         val formatterRate = NumberFormat.getNumberInstance()

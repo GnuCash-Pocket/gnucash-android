@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Säljkurs"</string>
     <string name="gnucash_po_bid">"Köpkurs"</string>
     <string name="gnucash_po_commodity_currency">"Produkt/valuta"</string>
+    <string name="gnucash_po_create_automatically">"Skapa automatiskt"</string>
     <string name="gnucash_po_currencies">"Valutor"</string>
     <string name="gnucash_po_date">"Datum"</string>
     <string name="gnucash_po_description">"Beskrivning"</string>

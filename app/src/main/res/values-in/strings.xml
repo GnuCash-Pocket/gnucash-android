@@ -384,8 +384,6 @@
     <string name="label_export_transactions_since_date">Sejak</string>
     <string name="switch_export_transactions_from_all_time">Sepanjang waktu</string>
     <string name="label_recommend_app">Merekomendasikan di Play Store</string>
-    <string name="repeat_until_date">sampai %1$s</string>
-    <string name="repeat_x_times">untuk %1$d kali</string>
     <string name="menu_show_compact_view">Tampilan Sederhana</string>
     <string name="book_default_name">Buku %1$d</string>
     <string name="last_export_time_never">tdk pernah</string>
@@ -429,4 +427,5 @@
     <string name="title_progress_processing_schedules">Memproses jadwal</string>
     <string name="title_progress_processing_transactions">Memproses transaksi</string>
     <string name="title_tab_labels">Tampilkan tab dengan label</string>
+    <string name="execute">Jalankan</string>
 </resources>

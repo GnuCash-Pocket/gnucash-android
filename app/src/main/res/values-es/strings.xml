@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Desde</string>
     <string name="switch_export_transactions_from_all_time">Todos los tiempos</string>
     <string name="label_recommend_app">Recomendar en Play Store</string>
-    <string name="repeat_until_date">hasta %1$s</string>
-    <string name="repeat_x_times">%1$d veces</string>
     <string name="menu_show_compact_view">Vista compacta</string>
     <string name="book_default_name">Libro %1$d</string>
     <string name="last_export_time_never">nunca</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Procesamiento de los cronogramas</string>
     <string name="title_progress_processing_transactions">Procesamiento de las transacciones</string>
     <string name="title_tab_labels">Mostrar pestañas con etiquetas</string>
+    <string name="execute">Ejecutar</string>
 </resources>

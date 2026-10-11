@@ -38,13 +38,10 @@ import androidx.appcompat.app.ActionBar
 import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
-import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
 import org.gnucash.android.app.getActivity
@@ -53,8 +50,6 @@ import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.databinding.FragmentExportFormBinding
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.db.toTimestamp
 import org.gnucash.android.export.DropboxHelper.authenticateDropbox
 import org.gnucash.android.export.DropboxHelper.hasDropboxToken
@@ -65,6 +60,7 @@ import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.ExportTarget
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
+import org.gnucash.android.model.BaseModel.Companion.isNew
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.common.UxArgument
@@ -77,6 +73,7 @@ import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
 import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.transaction.TransactionFormFragment
 import org.gnucash.android.ui.util.RecurrenceParser
+import org.gnucash.android.ui.util.RecurrenceParser.parse
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
 import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment
@@ -94,24 +91,15 @@ import java.util.Calendar
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class ExportFormFragment : MenuFragment(),
+class ExportFormFragment : DatabaseFragment(),
     OnRecurrenceSetListener,
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
-    /**
-     * Event recurrence options
-     */
-    private val eventRecurrence = EventRecurrence()
-
-    /**
-     * Recurrence rule
-     */
-    private var recurrenceRule: String? = null
 
     private val exportStartCalendar: Calendar = Calendar.getInstance()
 
     private val exportParams = ExportParams()
-    private var scheduledAction: ScheduledAction? = null
+    private var scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
 
     /**
      * Flag to determine if export has been started.
@@ -208,9 +196,10 @@ class ExportFormFragment : MenuFragment(),
         }
         exportParams.exportFormat = exportFormat
 
-        var timestamp = getLastExportTime(context, activeBookUID!!)
+        var timestamp = getLastExportTime(context, bookUID)
         if (timestamp.time <= 0L) {
-            timestamp = TransactionsDbAdapter.instance.timestampOfFirstModification
+            val transactionsDbAdapter = readableDatabaseHolder.transactionsDbAdapter
+            timestamp = transactionsDbAdapter.timestampOfFirstModification
         }
         exportStartCalendar.timeInMillis = timestamp.time
         val isExportAll =
@@ -258,9 +247,10 @@ class ExportFormFragment : MenuFragment(),
             bindForm(binding, exportParams)
             return
         }
-        val scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
+        val scheduledActionDbAdapter = readableDatabaseHolder.scheduledActionDbAdapter
         val scheduledAction = scheduledActionDbAdapter.getRecordOrNull(scheduledUID)
         if (scheduledAction != null) {
+            this.scheduledAction = scheduledAction
             bindForm(binding, scheduledAction)
         } else {
             bindForm(binding, exportParams)
@@ -268,12 +258,9 @@ class ExportFormFragment : MenuFragment(),
     }
 
     private fun bindForm(binding: FragmentExportFormBinding, scheduledAction: ScheduledAction) {
-        this.scheduledAction = scheduledAction
         val exportParams = scheduledAction.getExportParams() ?: return
         bindForm(binding, exportParams)
-
-        val rrule = scheduledAction.ruleString
-        onRecurrenceSet(rrule)
+        bind(binding, scheduledAction)
     }
 
     private fun bindForm(binding: FragmentExportFormBinding, exportParams: ExportParams) {
@@ -362,7 +349,7 @@ class ExportFormFragment : MenuFragment(),
         val binding = binding ?: return
 
         Timber.i("Commencing async export of transactions")
-        val bookUID = activeBookUID ?: return
+        val bookUID = this.bookUID
 
         val activity: Context = binding.root.getActivity() ?: return
         ExportAsyncTask(activity, bookUID) { bookUri ->
@@ -373,18 +360,17 @@ class ExportFormFragment : MenuFragment(),
     }
 
     private fun bookExported(bookUID: String, exportParameters: ExportParams) {
-        if (recurrenceRule != null) {
+        val scheduledAction = this.scheduledAction
+        if (!scheduledAction.isEmpty()) {
+            scheduledAction.actionUID = bookUID
             var updateMethod = DatabaseAdapter.UpdateMethod.Replace
-            var scheduledAction = this.scheduledAction
-            if (scheduledAction == null) {
-                scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
-                scheduledAction.actionUID = bookUID
+            if (scheduledAction.isNew) {
+                scheduledAction.instanceCount = scheduledAction.instanceCount.coerceAtLeast(1)
                 updateMethod = DatabaseAdapter.UpdateMethod.Insert
             }
-            scheduledAction.setRecurrence(RecurrenceParser.parse(eventRecurrence))
             scheduledAction.setExportParams(exportParameters)
-            ScheduledActionDbAdapter.instance.addRecord(scheduledAction, updateMethod)
-            this.scheduledAction = scheduledAction
+            val scheduledActionDbAdapter = readableDatabaseHolder.scheduledActionDbAdapter
+            scheduledActionDbAdapter.addRecord(scheduledAction, updateMethod)
         }
 
         finish()
@@ -458,13 +444,13 @@ class ExportFormFragment : MenuFragment(),
 
         binding.exportStartDate.setOnClickListener {
             val dateMillis = exportStartCalendar.timeInMillis
-            DatePickerDialogFragment.newInstance(this@ExportFormFragment, dateMillis)
+            DatePickerDialogFragment.newInstance(dateMillis, this@ExportFormFragment)
                 .show(parentFragmentManager, "date_picker_fragment")
         }
 
         binding.exportStartTime.setOnClickListener {
             val timeMillis = exportStartCalendar.timeInMillis
-            TimePickerDialogFragment.newInstance(this@ExportFormFragment, timeMillis)
+            TimePickerDialogFragment.newInstance(timeMillis, this@ExportFormFragment)
                 .show(parentFragmentManager, "time_picker_dialog_fragment")
         }
 
@@ -491,9 +477,14 @@ class ExportFormFragment : MenuFragment(),
             exportParams.isCompressed = isChecked
         }
 
-        binding.inputRecurrence.setOnClickListener(
-            RecurrenceViewClickListener(parentFragmentManager, recurrenceRule, this)
-        )
+        binding.inputRecurrence.setOnClickListener {
+            val recurrenceRule = scheduledAction.ruleString
+            RecurrenceViewClickListener(
+                parentFragmentManager,
+                recurrenceRule,
+                this@ExportFormFragment
+            ).onClick(it)
+        }
 
         val formatAdapter = ArrayAdapter<ExportFormatItem>(
             context,
@@ -562,7 +553,9 @@ class ExportFormFragment : MenuFragment(),
      * Open a chooser for user to pick a file to export to
      */
     private fun selectExportFile() {
-        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val booksDbAdapter = BooksDbAdapter.instance
+        val book = booksDbAdapter.activeBook
+        val bookName = book.displayName ?: "Book"
         val exportFormat = exportParams.exportFormat
         val isCompressed = isCompressedForFormat(exportFormat, exportParams.isCompressed)
         val filename = buildExportFilename(exportFormat, isCompressed, bookName)
@@ -581,26 +574,25 @@ class ExportFormFragment : MenuFragment(),
 
     override fun onRecurrenceSet(rrule: String?) {
         Timber.i("Export reoccurs: %s", rrule)
-        val binding = binding ?: return
-        val context = binding.inputRecurrence.context
-        var repeatString: String? = null
-        if (!rrule.isNullOrEmpty()) {
+        if (rrule.isNullOrEmpty()) {
+            scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        } else {
             try {
-                eventRecurrence.parse(rrule)
-                recurrenceRule = rrule
-                repeatString = EventRecurrenceFormatter.getRepeatString(
-                    context,
-                    context.resources,
-                    eventRecurrence,
-                    true
-                )
+                val recurrence = parse(rrule)
+                scheduledAction.setRecurrence(recurrence)
             } catch (e: Exception) {
                 Timber.e(e, "Bad recurrence for [%s]", rrule)
             }
         }
-        if (repeatString.isNullOrEmpty()) {
-            repeatString = context.getString(R.string.label_tap_to_create_schedule)
-        }
+
+        val binding = binding ?: return
+        bind(binding, scheduledAction)
+    }
+
+    private fun bind(binding: FragmentExportFormBinding, scheduledAction: ScheduledAction) {
+        val context = binding.inputRecurrence.context
+        val repeatString = RecurrenceParser.format(context, scheduledAction.recurrence)
+            ?: context.getString(R.string.label_tap_to_create_schedule)
         binding.inputRecurrence.text = repeatString
     }
 
@@ -645,7 +637,7 @@ class ExportFormFragment : MenuFragment(),
     private fun isCompressedForFormat(exportFormat: ExportFormat, compressed: Boolean): Boolean {
         // Does QIF have multiple currencies that need to be zipped?
         if (!compressed && exportFormat == ExportFormat.QIF) {
-            val transactionsDbAdapter = TransactionsDbAdapter.instance
+            val transactionsDbAdapter = readableDatabaseHolder.transactionsDbAdapter
             val commodities =
                 transactionsDbAdapter.getAllCommoditiesInUse(false, exportParams.exportStartTime)
             return commodities.size > 1

@@ -31,8 +31,8 @@ import org.gnucash.android.ui.report.sheet.BalanceSheetFragment
  * in the system. When adding a new report, make sure to add a mapping in the constructor
  */
 enum class ReportType(
-    @StringRes val titleId: Int,
-    @ColorRes val colorId: Int,
+    @field:StringRes val titleId: Int,
+    @field:ColorRes val colorId: Int,
     val fragmentClass: Class<out BaseReportFragment<*>>
 ) {
     PIE_CHART(
@@ -61,8 +61,7 @@ enum class ReportType(
         ReportsOverviewFragment::class.java
     );
 
-    val fragment: BaseReportFragment<*>
-        get() = fragmentClass.newInstance()
+    fun fragment(): BaseReportFragment<*> = fragmentClass.newInstance()
 
     companion object {
         private val _values = values()

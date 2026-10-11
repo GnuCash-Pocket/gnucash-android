@@ -8,7 +8,7 @@ import org.gnucash.android.R
 class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
 
     override fun createAdapter(): ScheduledAdapter<*> {
-        return ScheduledTransactionsAdapter(this)
+        return ScheduledTransactionsAdapter(bookUID, scheduledActionDbAdapter, this)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

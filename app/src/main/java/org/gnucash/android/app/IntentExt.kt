@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.core.os.BundleCompat
+import androidx.fragment.app.Fragment
 import java.io.Serializable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -61,3 +62,15 @@ fun <T : Parcelable> Intent.getParcelableArrayListCompat(
 ): ArrayList<T>? {
     return extras?.getParcelableArrayListCompat(key, clazz)
 }
+
+fun <F : Fragment> F.withArguments(block: Bundle.() -> Unit): F {
+    arguments = Bundle().apply(block)
+    return this
+}
+
+fun <F : Fragment> F.withArguments(args: Bundle): F {
+    arguments = args
+    return this
+}
+
+fun resultBundle(block: Bundle.() -> Unit): Bundle = Bundle().apply(block)

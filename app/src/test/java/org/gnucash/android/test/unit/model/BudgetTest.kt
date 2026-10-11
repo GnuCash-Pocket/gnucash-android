@@ -55,15 +55,15 @@ class BudgetTest : GnuCashTest() {
     @Test
     fun shouldComputeAbsoluteAmountSum() {
         val budget = Budget("Test")
-        val accountAmount = Money("-20", "USD")
+        val accountAmount = Money("-20", Commodity.USD)
         val budgetAmount1 = BudgetAmount(accountAmount, "account1")
-        val budgetAmount2 = BudgetAmount(Money("10", "USD"), "account2")
+        val budgetAmount2 = BudgetAmount(Money("10", Commodity.USD), "account2")
 
         budget.addAmount(budgetAmount1)
         budget.addAmount(budgetAmount2)
 
         assertThat(budget.getAmount("account1")).isEqualTo(accountAmount.abs())
-        assertThat(budget.amountSum).isEqualTo(Money("30", "USD"))
+        assertThat(budget.amountSum).isEqualTo(Money("30", Commodity.USD))
     }
 
     /**
@@ -74,15 +74,15 @@ class BudgetTest : GnuCashTest() {
     fun shouldNotCompactBudgetAmountsWithDifferentAmounts() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
-        var budgetAmount = BudgetAmount(Money("10", "USD"), "test")
+        var budgetAmount = BudgetAmount(Money("10", Commodity.USD), "test")
         budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("15", "USD"), "test")
+        budgetAmount = BudgetAmount(Money("15", Commodity.USD), "test")
         budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("5", "USD"), "secondAccount")
+        budgetAmount = BudgetAmount(Money("5", Commodity.USD), "secondAccount")
         budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
@@ -104,23 +104,23 @@ class BudgetTest : GnuCashTest() {
     fun addingSameAmounts_shouldCompactOnRetrieval() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
-        var budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        var budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "EUR"), "second")
+        budgetAmount = BudgetAmount(Money("10", Commodity.EUR), "second")
         budgetAmount.periodIndex = 4
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("13", "EUR"), "third")
+        budgetAmount = BudgetAmount(Money("13", Commodity.EUR), "third")
         budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 
@@ -146,7 +146,7 @@ class BudgetTest : GnuCashTest() {
     fun addingNegativePeriodNum_shouldExpandOnRetrieval() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
-        val budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        val budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 
@@ -166,23 +166,23 @@ class BudgetTest : GnuCashTest() {
     fun testGetNumberOfAccounts() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
-        var budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        var budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "USD"), "first")
+        budgetAmount = BudgetAmount(Money("10", Commodity.USD), "first")
         budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("10", "EUR"), "second")
+        budgetAmount = BudgetAmount(Money("10", Commodity.EUR), "second")
         budgetAmount.periodIndex = 4
         budget.addAmount(budgetAmount)
 
-        budgetAmount = BudgetAmount(Money("13", "EUR"), "third")
+        budgetAmount = BudgetAmount(Money("13", Commodity.EUR), "third")
         budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 

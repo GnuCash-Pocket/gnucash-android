@@ -15,14 +15,16 @@
  */
 package org.gnucash.android.test.unit.db
 
-import junit.framework.TestCase.fail
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.NoActiveBookException
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.BooksDbAdapter.NoActiveBookFoundException
 import org.gnucash.android.model.Book
 import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.test.unit.export.BackupTest
+import org.gnucash.android.util.BookUtils
 import org.junit.Before
 import org.junit.Test
 
@@ -36,9 +38,9 @@ class BooksDbAdapterTest : GnuCashTest() {
     fun setUp() {
         booksDbAdapter = BooksDbAdapter.instance
         assertThat(booksDbAdapter.recordsCount).isOne() //there is always a default book after app start
-        assertThat(booksDbAdapter.activeBookUID).isNotNull()
+        assertThat(GnuCashApplication.activeBookUID).isNotEmpty()
 
-        booksDbAdapter.deleteAllRecords()
+        BookUtils.deleteRecords(booksDbAdapter)
         assertThat(booksDbAdapter.recordsCount).isZero()
     }
 
@@ -77,12 +79,11 @@ class BooksDbAdapterTest : GnuCashTest() {
         booksDbAdapter.insert(book1)
         booksDbAdapter.insert(book2)
 
-        booksDbAdapter.setActive(book1.uid)
+        GnuCashApplication.activeBookUID = book1.uid
+        assertThat(GnuCashApplication.activeBookUID).isEqualTo(book1.uid)
 
-        assertThat(booksDbAdapter.activeBookUID).isEqualTo(book1.uid)
-
-        booksDbAdapter.setActive(book2.uid)
-        assertThat(booksDbAdapter.isActive(book2.uid)).isTrue()
+        GnuCashApplication.activeBookUID = book2.uid
+        assertThat(GnuCashApplication.activeBookUID).isEqualTo(book2.uid)
         //setting book2 as active should disable book1 as active
         val book = booksDbAdapter.getRecord(book1.uid)
         assertThat(book.isActive).isFalse()
@@ -158,21 +159,16 @@ class BooksDbAdapterTest : GnuCashTest() {
     @Test
     fun recoverFromNoActiveBookFound() {
         val book1 = Book()
-        book1.isActive = false
         booksDbAdapter.insert(book1)
 
         val book2 = Book()
-        book2.isActive = false
         booksDbAdapter.insert(book2)
 
-        try {
-            booksDbAdapter.activeBookUID
-            fail("There shouldn't be any active book.")
-        } catch (_: NoActiveBookFoundException) {
-            booksDbAdapter.fixBooksDatabase()
-        }
+        assertThatThrownBy { GnuCashApplication.activeBookUID }
+            .isInstanceOf(NoActiveBookException::class.java)
+        booksDbAdapter.fixBooksDatabase()
 
-        assertThat(booksDbAdapter.activeBookUID).isEqualTo(book1.uid)
+        assertThat(GnuCashApplication.activeBookUID).isEqualTo(book2.uid)
     }
 
     /**
@@ -181,14 +177,15 @@ class BooksDbAdapterTest : GnuCashTest() {
     @Test
     fun recoverFromEmptyDatabase() {
         createNewBookWithDefaultAccounts()
-        booksDbAdapter.deleteAllRecords()
+        assertThat(booksDbAdapter.recordsCount).isOne()
+        BookUtils.deleteRecords(booksDbAdapter)
         assertThat(booksDbAdapter.recordsCount).isZero()
 
         booksDbAdapter.fixBooksDatabase()
 
         // Should've recovered the one from setUp() plus the one created above
         assertThat(booksDbAdapter.recordsCount).isEqualTo(2)
-        booksDbAdapter.activeBookUID // should not throw exception
+        GnuCashApplication.activeBookUID // should not throw exception
     }
 
     /**

@@ -22,9 +22,6 @@ import com.tech.freak.wizardpager.model.Page
 import com.tech.freak.wizardpager.model.PageList
 import com.tech.freak.wizardpager.model.SingleFixedChoicePage
 import org.gnucash.android.R
-import org.gnucash.android.model.Commodity
-import java.util.SortedSet
-import java.util.TreeSet
 
 /**
  * Wizard displayed upon first run of the application for setup
@@ -35,10 +32,9 @@ class FirstRunWizardModel(context: Context) : AbstractWizardModel(context) {
     var titleCurrency: String? = null
     var titleOtherCurrency: String? = null
     var optionCurrencyOther: String? = null
-    private var currencies: MutableMap<String, String>? = null
-    private var accounts: MutableMap<String, String>? = null
 
     var titleAccount: String? = null
+    var titleOtherAccount: String? = null
 
     var titleFeedback: String? = null
     var optionFeedbackSend: String? = null
@@ -66,21 +62,19 @@ class FirstRunWizardModel(context: Context) : AbstractWizardModel(context) {
         val feedbackPage = createFeedbackPage(context)
 
         titleAccount = context.getString(R.string.wizard_title_account_setup)
+        titleOtherAccount = context.getString(R.string.wizard_title_default_accounts)
         optionAccountDefault = context.getString(R.string.wizard_option_create_default_accounts)
         optionAccountImport = context.getString(R.string.wizard_option_import_my_accounts)
         optionAccountUser = context.getString(R.string.wizard_option_let_me_handle_it)
 
-        val otherAccountsPage = AccountsSelectPage(this, optionAccountDefault!!)
+        val otherAccountsPage = AccountsSelectPage(this, titleOtherAccount!!)
             .setChoices(context)
-        // Called before field initialized.
-        accounts = mutableMapOf<String, String>()
-        accounts!!.putAll(otherAccountsPage.accountsByLabel)
 
-        val accountsPage = BranchPage(this, titleAccount)
+        return BranchPage(this, titleAccount)
             .addBranch(optionAccountDefault, otherAccountsPage, feedbackPage)
             .addBranch(optionAccountImport, feedbackPage)
             .addBranch(optionAccountUser, feedbackPage)
-        return accountsPage.setRequired(true)
+            .setRequired(true)
     }
 
     private fun createCurrencyPage(context: Context): Page {
@@ -92,28 +86,14 @@ class FirstRunWizardModel(context: Context) : AbstractWizardModel(context) {
         optionCurrencyOther = context.getString(R.string.wizard_option_currency_other)
 
         val otherCurrencyPage = CurrencySelectPage(this, titleOtherCurrency!!)
+            .setChoices(context)
+
+        val currencyPage = DefaultCurrencyPage(this, titleCurrency!!)
             .setChoices()
-        // Called before field initialized.
-        currencies = mutableMapOf<String, String>()
-        currencies!!.putAll(otherCurrencyPage.currenciesByLabel)
-
-        val currenciesLabels: SortedSet<String> = TreeSet<String>()
-        val currencyDefault = addCurrency(Commodity.DEFAULT_COMMODITY)
-        currenciesLabels.add(currencyDefault)
-        currenciesLabels.add(addCurrency(Commodity.AUD))
-        currenciesLabels.add(addCurrency(Commodity.CAD))
-        currenciesLabels.add(addCurrency(Commodity.CHF))
-        currenciesLabels.add(addCurrency(Commodity.EUR))
-        currenciesLabels.add(addCurrency(Commodity.GBP))
-        currenciesLabels.add(addCurrency(Commodity.JPY))
-        currenciesLabels.add(addCurrency(Commodity.USD))
-
-        val currencyPage = BranchPage(this, titleCurrency)
-        for (code in currenciesLabels) {
-            currencyPage.addBranch(code, accountsPage)
+        for (currencyCode in currencyPage.currenciesByLabel.keys) {
+            currencyPage.addBranch(currencyCode, accountsPage)
         }
         currencyPage.addBranch(optionCurrencyOther, otherCurrencyPage, accountsPage)
-            .setValue(currencyDefault)
             .setRequired(true)
 
         return currencyPage
@@ -129,18 +109,23 @@ class FirstRunWizardModel(context: Context) : AbstractWizardModel(context) {
             .setRequired(true)
     }
 
-    private fun addCurrency(commodity: Commodity): String {
-        val code = commodity.currencyCode
-        val label = commodity.formatListItem()
-        currencies!![label] = code
-        return label
-    }
-
     fun getCurrencyByLabel(label: String?): String? {
-        return currencies!![label]
+        val pages = currentPageSequence
+
+        val page1 = pages.first { it is DefaultCurrencyPage } as DefaultCurrencyPage
+        val currency1 = page1.currenciesByLabel[label]
+        if (currency1 != null) return currency1
+
+        val page2 = pages.first { it is CurrencySelectPage } as CurrencySelectPage
+        val currency2 = page2.currenciesByLabel[label]
+        if (currency2 != null) return currency2
+
+        return null
     }
 
     fun getAccountsByLabel(label: String?): String? {
-        return accounts!![label]
+        val pages = currentPageSequence
+        val page = pages.first { it is AccountsSelectPage } as AccountsSelectPage
+        return page.accountsByLabel[label]
     }
 }

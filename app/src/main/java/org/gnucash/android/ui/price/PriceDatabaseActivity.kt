@@ -6,6 +6,7 @@ import android.os.Bundle
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivityPricesBinding
 import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.UxArgument
 
 class PriceDatabaseActivity : BaseDrawerActivity() {
 
@@ -36,8 +37,9 @@ class PriceDatabaseActivity : BaseDrawerActivity() {
     }
 
     companion object {
-        fun show(context: Context) {
+        fun show(context: Context, bookUID: String) {
             val intent = Intent(context, PriceDatabaseActivity::class.java)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
             context.startActivity(intent)
         }
     }

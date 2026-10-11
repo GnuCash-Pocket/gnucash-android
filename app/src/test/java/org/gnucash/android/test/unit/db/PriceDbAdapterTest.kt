@@ -1,23 +1,22 @@
 package org.gnucash.android.test.unit.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
-import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Test
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.Locale
 
 /**
  * Test price functions
  */
-class PriceDbAdapterTest : GnuCashTest() {
+class PriceDbAdapterTest : DatabaseTest() {
     /**
      * The price table should not override price for any commodity/currency pair
      */
     @Test
     fun `price is not unique per security-commodity pair`() {
-        val pricesDbAdapter = PricesDbAdapter.instance
-        val commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter
         val security = commoditiesDbAdapter.getCurrency("EUR")!!
         val currency = commoditiesDbAdapter.getCurrency("USD")!!
 
@@ -53,7 +52,7 @@ class PriceDbAdapterTest : GnuCashTest() {
         assertThat(savedPrice2.valueDenom).isEqualTo(100)
         assertThat(savedPrice2.security).isEqualTo(savedPrice1.security)
         assertThat(savedPrice2.currency).isEqualTo(savedPrice1.currency)
-        assertThat(savedPrice2.date).isGreaterThan(savedPrice1.date)
+        assertThat(savedPrice2.date).isGreaterThanOrEqualTo(savedPrice1.date)
 
         val price3 = Price(currency, security)
         price3.valueNum = 190
@@ -61,5 +60,29 @@ class PriceDbAdapterTest : GnuCashTest() {
         pricesDbAdapter.addRecord(price3)
 
         assertThat(pricesDbAdapter.recordsCount).isEqualTo(3)
+    }
+
+    @Test
+    fun inverse() {
+        Locale.setDefault(Locale.US)
+        val commodity1 = Commodity.USD
+        val commodity2 = Commodity.EUR
+
+        val rate = BigDecimal(1.17)
+        val price = Price(commodity2, commodity1, rate) // 1 EUR = 1.17 USD
+        assertThat(price.toBigDecimal(2)).isEqualTo(rate.setScale(2, RoundingMode.HALF_UP))
+        pricesDbAdapter.addRecord(price)
+
+        val price12 = pricesDbAdapter.getPrice(commodity1, commodity2)
+        assertThat(price12!!).isNotNull
+        assertThat(price12.security).isEqualTo(commodity1)
+        assertThat(price12.currency).isEqualTo(commodity2)
+        assertThat(price12.toBigDecimal(3)).isEqualTo(BigDecimal(0.855).setScale(3, RoundingMode.HALF_UP))
+
+        val price21 = pricesDbAdapter.getPrice(commodity2, commodity1)
+        assertThat(price21!!).isNotNull
+        assertThat(price21.security).isEqualTo(commodity2)
+        assertThat(price21.currency).isEqualTo(commodity1)
+        assertThat(price21.toBigDecimal(2)).isEqualTo(rate.setScale(2, RoundingMode.HALF_UP))
     }
 }

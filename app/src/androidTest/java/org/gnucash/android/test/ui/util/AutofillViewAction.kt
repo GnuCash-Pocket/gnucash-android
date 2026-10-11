@@ -1,6 +1,5 @@
 package org.gnucash.android.test.ui.util
 
-import android.os.Build
 import android.view.View
 import android.view.autofill.AutofillManager
 import androidx.test.espresso.UiController

@@ -11,16 +11,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.BaseModel.Companion.markNew
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.PriceSource
-import org.gnucash.android.quote.QuoteCallback
 import org.gnucash.android.quote.QuoteProvider
 import org.gnucash.android.quote.YahooJson
 import java.math.BigDecimal
 import java.util.Calendar
 
-class PriceFormViewModel : ViewModel() {
+class PriceFormViewModel(
+    private val pricesDbAdapter: PricesDbAdapter
+) : ViewModel() {
     private val _price = MutableStateFlow(Price())
     val price: StateFlow<Price> = _price
 
@@ -40,7 +42,6 @@ class PriceFormViewModel : ViewModel() {
     }
 
     fun loadPrice(priceUID: String?) {
-        val pricesDbAdapter = PricesDbAdapter.instance
         if (priceUID.isNullOrEmpty()) {
             _price.update { Price() }
         } else {
@@ -55,7 +56,6 @@ class PriceFormViewModel : ViewModel() {
             if (price.source == null) {
                 price = price.copy(source = PriceSource.PRICE_SOURCE_EDIT_DLG)
             }
-            val pricesDbAdapter = PricesDbAdapter.instance
             pricesDbAdapter.replace(price)
             _command.emit(Command.Done)
         }
@@ -64,7 +64,6 @@ class PriceFormViewModel : ViewModel() {
     fun onDeletePriceClick() {
         viewModelScope.launch {
             val price = _price.value
-            val pricesDbAdapter = PricesDbAdapter.instance
             pricesDbAdapter.deleteRecord(price)
             _command.emit(Command.Done)
         }
@@ -73,13 +72,11 @@ class PriceFormViewModel : ViewModel() {
     fun onDuplicatePriceClick() {
         viewModelScope.launch {
             val price = _price.value.copy(
-                id = 0L,
                 date = System.currentTimeMillis(),
                 source = PriceSource.PRICE_SOURCE_EDIT_DLG
             ).apply {
-                setUID(null)
+                markNew()
             }
-            val pricesDbAdapter = PricesDbAdapter.instance
             pricesDbAdapter.insert(price)
             _command.emit(Command.Done)
         }
@@ -155,15 +152,13 @@ class PriceFormViewModel : ViewModel() {
         _command.emit(Command.Error(""))
 
         val provider: QuoteProvider = YahooJson()
-        provider.get(security, currency, viewModelScope, object : QuoteCallback {
-            override suspend fun onQuote(quote: Price?) {
-                if (quote != null) {
-                    _price.update { quote }
-                } else {
-                    _command.emit(Command.Error(context.getString(R.string.error_invalid_exchange_rate)))
-                }
+        provider.get(security, currency, viewModelScope) { quote ->
+            if (quote != null) {
+                _price.update { quote }
+            } else {
+                _command.emit(Command.Error(context.getString(R.string.error_invalid_exchange_rate)))
             }
-        })
+        }
     }
 
     companion object {

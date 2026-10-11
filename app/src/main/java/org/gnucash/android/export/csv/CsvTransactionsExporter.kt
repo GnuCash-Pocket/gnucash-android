@@ -20,12 +20,13 @@ import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
 import com.opencsv.ICSVWriter.RFC4180_LINE_END
 import org.gnucash.android.R
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.forEach
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.parseSplit
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
@@ -104,7 +105,11 @@ class CsvTransactionsExporter(
         }
     }
 
-    private fun writeExport(writer: ICSVWriter, exportStartTime: Timestamp, isModifiedOnly: Boolean) {
+    private fun writeExport(
+        writer: ICSVWriter,
+        exportStartTime: Timestamp,
+        isModifiedOnly: Boolean
+    ) {
         val headers = context.resources.getStringArray(R.array.csv_transaction_headers)
         writer.writeNext(headers)
 
@@ -112,7 +117,7 @@ class CsvTransactionsExporter(
             transactionsDbAdapter.fetchTransactionsToExportSince(exportStartTime, isModifiedOnly)
         Timber.d("Exporting %d transactions to CSV", cursor.count)
         val fields = Array(headers.size) { "" }
-        cursor.forEach { cursor->
+        cursor.forEach { cursor ->
             cancellationSignal.throwIfCanceled()
             val transaction = transactionsDbAdapter.buildModelInstance(cursor)
             writeTransaction(writer, fields, transaction)
@@ -141,7 +146,7 @@ class CsvTransactionsExporter(
     }
 
     private fun formatRate(value: Money, quantity: Money): String {
-        if (quantity.isAmountZero) {
+        if (quantity.isZero) {
             return formatRate(1)
         }
         val precision = max(4, value.commodity.smallestFractionDigits)
@@ -202,13 +207,15 @@ class CsvTransactionsExporter(
          * @param splitCsvString String containing formatted split
          * @return Split instance parsed from the string
          */
-        fun parseSplit(splitCsvString: String): Split {
+        fun parseSplit(splitCsvString: String, commoditiesDbAdapter: CommoditiesDbAdapter): Split {
             //TODO: parse reconciled state and date
-            val tokens =
-                splitCsvString.split(SEPARATOR_CSV.toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
+            val tokens = splitCsvString.split(SEPARATOR_CSV.toRegex())
+                .dropLastWhile { it.isEmpty() }
+                .toTypedArray()
             return if (tokens.size < 8) { //old format splits
-                val amount = Money(tokens[0], tokens[1])
+                val currency = commoditiesDbAdapter.getCurrency(tokens[1])
+                    ?: Commodity.DEFAULT_COMMODITY
+                val amount = Money(tokens[0], currency)
                 val split = Split(amount, tokens[2])
                 split.transactionUID = tokens[3]
                 split.type = TransactionType.of(tokens[4])
@@ -219,12 +226,14 @@ class CsvTransactionsExporter(
             } else {
                 val valueNum = tokens[1].toLong()
                 val valueDenom = tokens[2].toLong()
-                val valueCurrencyCode = tokens[3]
+                val valueCurrency = commoditiesDbAdapter.getCurrency(tokens[3])
+                    ?: Commodity.DEFAULT_COMMODITY
                 val quantityNum = tokens[4].toLong()
                 val quantityDenom = tokens[5].toLong()
-                val qtyCurrencyCode = tokens[6]
-                val value = Money(valueNum, valueDenom, valueCurrencyCode)
-                val quantity = Money(quantityNum, quantityDenom, qtyCurrencyCode)
+                val qtyCurrency = commoditiesDbAdapter.getCurrency(tokens[6])
+                    ?: Commodity.DEFAULT_COMMODITY
+                val value = Money(valueNum, valueDenom, valueCurrency)
+                val quantity = Money(quantityNum, quantityDenom, qtyCurrency)
                 val split = Split(value, tokens[8])
                 split.setUID(tokens[0])
                 split.quantity = quantity

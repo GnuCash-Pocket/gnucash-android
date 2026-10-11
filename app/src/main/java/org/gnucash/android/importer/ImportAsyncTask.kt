@@ -35,7 +35,7 @@ import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager.backupActiveBook
 import org.gnucash.android.util.BookUtils
-import org.gnucash.android.util.getDocumentName
+import org.gnucash.android.util.BookUtils.populateName
 import org.gnucash.android.util.openStream
 import org.gnucash.android.util.set
 import timber.log.Timber
@@ -94,10 +94,10 @@ class ImportAsyncTask(
         val books: List<Book>
 
         try {
-            val accountInputStream = uri.openStream(context)!!
-            val importer = ImporterFactory.create(context, accountInputStream, listener)
+            val bookInputStream = uri.openStream(context)!!
+            val importer = ImporterFactory.create(context, bookInputStream, listener)
             this.importer = importer
-            books = importer.parse()
+            books = importer.parse(uri)
         } catch (e: Throwable) {
             Timber.e(e, "Error importing: %s", uri)
             return ImportProduct.failure(e)
@@ -112,23 +112,8 @@ class ImportAsyncTask(
         for (book in books) {
             bookUID = book.uid
             book.sourceUri = uri
-            var displayName = book.displayName
-            if (displayName.isNullOrEmpty()) {
-                var name = uri.getDocumentName(context)
-                if (name.isNotEmpty()) {
-                    // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
-                    val indexFileType = name.indexOf('.')
-                    if (indexFileType > 0) {
-                        name = name.take(indexFileType)
-                    }
-                    displayName = name
-                }
-                if (displayName.isNullOrEmpty()) {
-                    displayName = booksDbAdapter.generateDefaultBookName()
-                }
-                book.displayName = displayName
-            }
-            contentValues[BookEntry.COLUMN_DISPLAY_NAME] = displayName
+            populateName(context, booksDbAdapter, book)
+            contentValues[BookEntry.COLUMN_DISPLAY_NAME] = book.displayName
             booksDbAdapter.updateRecord(book.uid, contentValues)
         }
 
@@ -151,7 +136,7 @@ class ImportAsyncTask(
             val bookUID = result.getOrNull()
             if (!bookUID.isNullOrEmpty()) {
                 context.snackLong(R.string.toast_success_importing_accounts)
-                BookUtils.loadBook(context, bookUID)
+                BookUtils.showBook(context, bookUID)
             } else {
                 context.snackLong(R.string.toast_error_importing_accounts)
             }

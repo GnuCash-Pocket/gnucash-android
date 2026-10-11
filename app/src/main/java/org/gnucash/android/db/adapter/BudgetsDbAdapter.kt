@@ -17,7 +17,6 @@ package org.gnucash.android.db.adapter
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
@@ -190,12 +189,5 @@ class BudgetsDbAdapter
         private const val INDEX_COLUMN_DESCRIPTION = INDEX_COLUMN_NAME + 1
         private const val INDEX_COLUMN_RECURRENCE_UID = INDEX_COLUMN_DESCRIPTION + 1
         private const val INDEX_COLUMN_NUM_PERIODS = INDEX_COLUMN_RECURRENCE_UID + 1
-
-        /**
-         * Returns an instance of the budget database adapter
-         *
-         * @return BudgetsDbAdapter instance
-         */
-        val instance: BudgetsDbAdapter get() = GnuCashApplication.budgetDbAdapter!!
     }
 }

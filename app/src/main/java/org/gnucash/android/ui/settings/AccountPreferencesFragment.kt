@@ -23,9 +23,9 @@ import android.os.Bundle
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.getActivity
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.export.ExportAsyncTask
@@ -46,20 +46,19 @@ import java.util.concurrent.ExecutionException
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-class AccountPreferencesFragment : GnuPreferenceFragment() {
-    private var commoditiesDbAdapter = CommoditiesDbAdapter.instance
+class AccountPreferencesFragment : BookPreferencesFragment() {
+    private lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
     private val currencyEntries = mutableListOf<CharSequence>()
     private val currencyEntryValues = mutableListOf<String>()
 
     override val titleId: Int = R.string.title_account_preferences
 
-    override fun onStart() {
-        super.onStart()
-        commoditiesDbAdapter = CommoditiesDbAdapter.instance
+    override fun initDatabase(dbHolder: DatabaseHolder) {
+        commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.setSharedPreferencesName(activeBookUID)
+        super.onCreatePreferences(savedInstanceState, rootKey)
         addPreferencesFromResource(R.xml.fragment_account_preferences)
 
         currencyEntries.clear()
@@ -119,7 +118,9 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
      * Open a chooser for user to pick a file to export to
      */
     private fun selectExportFile() {
-        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val booksDbAdapter = BooksDbAdapter.instance
+        val book = booksDbAdapter.activeBook
+        val bookName = book.displayName ?: "Book 1"
         val filename = buildExportFilename(ExportFormat.CSVA, false, bookName)
 
         val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
@@ -156,7 +157,7 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
                     exportTarget = ExportTarget.URI
                     exportLocation = data.data
                 }
-                val exportTask = ExportAsyncTask(activity, activeBookUID!!)
+                val exportTask = ExportAsyncTask(activity, bookUID)
 
                 try {
                     exportTask.execute(exportParams)

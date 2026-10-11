@@ -74,8 +74,8 @@ class PieChartFragment : BaseReportFragment<PieData>() {
     private fun getData(context: Context): PieData {
         val dataSet = PieDataSet(null, "")
         val colors = mutableListOf<Int>()
-        val startTime = reportPeriodStart?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
-        val endTime = reportPeriodEnd?.toMillis() ?: AccountsDbAdapter.Companion.ALWAYS
+        val startTime = reportPeriodStart?.toMillis() ?: AccountsDbAdapter.ALWAYS
+        val endTime = reportPeriodEnd?.toMillis() ?: AccountsDbAdapter.ALWAYS
         val commodity = this.commodity
 
         val where = (AccountEntry.COLUMN_TYPE + "=?"

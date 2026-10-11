@@ -26,9 +26,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.app.resultBundle
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.databinding.DialogAccountDeleteBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
@@ -57,18 +61,25 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
 
     private var transactionCount: Long = 0
     private var subAccountCount: Long = 0
-    private val accountsDbAdapter = AccountsDbAdapter.instance
-    private val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
-    private val splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var splitsDbAdapter: SplitsDbAdapter
     private var accountNameAdapterTransactionsDestination: QualifiedAccountNameAdapter? = null
     private var accountNameAdapterAccountsDestination: QualifiedAccountNameAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val accountUID = requireArguments().getString(UxArgument.SELECTED_ACCOUNT_UID)!!
+        val args = requireArguments()
+        val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)!!
         originAccountUID = accountUID
+
+        val dbHolder = databaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        transactionsDbAdapter = dbHolder.transactionsDbAdapter
+        splitsDbAdapter = dbHolder.splitsDbAdapter
+
         subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
-        transactionCount = transactionsDbAdapter.getTransactionsCount(accountUID).toLong()
+        transactionCount = transactionsDbAdapter.getCountByAccount(accountUID).toLong()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -96,7 +107,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return binding!!.root
     }
 
@@ -258,8 +269,9 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
 
         WidgetConfigurationActivity.updateAllWidgets(context)
 
-        val result = Bundle()
-        result.putBoolean(Refreshable.EXTRA_REFRESH, true)
+        val result = resultBundle {
+            putBoolean(Refreshable.EXTRA_REFRESH, true)
+        }
         fm.setFragmentResult(TAG, result)
     }
 
@@ -273,11 +285,9 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
          * @return New instance of the delete confirmation dialog
          */
         fun newInstance(accountUID: String): DeleteAccountDialogFragment {
-            val args = Bundle()
-            args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            val fragment = DeleteAccountDialogFragment()
-            fragment.arguments = args
-            return fragment
+            return DeleteAccountDialogFragment().withArguments {
+                putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            }
         }
     }
 }

@@ -9,12 +9,13 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.test.unit.BookHelperTest
+import org.gnucash.android.util.BookUtils
 import org.junit.Test
 
 class BooksTest : BookHelperTest() {
     @Test
     fun `duplicate accounts`() {
-        booksDbAdapter.deleteAllRecords()
+        BookUtils.deleteRecords(booksDbAdapter)
 
         val bookUID = importGnuCashXml("common_1.gnucash")
         assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")

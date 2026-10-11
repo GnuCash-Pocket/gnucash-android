@@ -19,7 +19,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.WindowManager
-import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.app.arguments
+import org.gnucash.android.db.DatabaseActivity
 import org.gnucash.android.ui.passcode.PasscodeHelper.getPasscode
 import org.gnucash.android.ui.passcode.PasscodeHelper.isPasscodeEnabled
 import org.gnucash.android.ui.passcode.PasscodeHelper.isSessionActive
@@ -32,7 +33,7 @@ import timber.log.Timber
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-open class PasscodeLockActivity : GnuCashActivity() {
+open class PasscodeLockActivity : DatabaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ThemeHelper.apply(this)
@@ -59,13 +60,12 @@ open class PasscodeLockActivity : GnuCashActivity() {
 
         if (isPassEnabled && !skipPasscode && !isSessionActive() && !passCode.isNullOrEmpty()) {
             Timber.v("Show passcode screen")
-            var args = intent.extras ?: Bundle()
             val intent = Intent(this, PasscodeLockScreenActivity::class.java)
                 .setAction(intent.action)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .putExtras(intent.arguments())
                 .putExtra(PasscodeFragment.PASSCODE_CLASS_CALLER, this.javaClass.getName())
-                .putExtras(args)
             startActivity(intent)
         }
     }

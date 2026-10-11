@@ -95,5 +95,13 @@ abstract class BaseModel {
         fun generateUID(): String {
             return UUID.randomUUID().toString().replace("-", "")
         }
+
+        val BaseModel.isNew: Boolean get() = id == 0L
+
+        fun <T : BaseModel> T.markNew(): T {
+            id = 0
+            setUID(null)
+            return this
+        }
     }
 }

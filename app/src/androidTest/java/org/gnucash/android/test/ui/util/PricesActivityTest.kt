@@ -14,9 +14,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import kotlinx.coroutines.runBlocking
 import org.gnucash.android.R
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.PricesDbAdapter
-import org.gnucash.android.test.ui.GnuAndroidTest
+import org.gnucash.android.test.ui.DatabaseTest
 import org.gnucash.android.ui.price.PriceDatabaseActivity
 import org.gnucash.android.ui.price.PriceViewHolder
 import org.hamcrest.Matchers.allOf
@@ -25,7 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class PricesActivityTest : GnuAndroidTest() {
+class PricesActivityTest : DatabaseTest() {
 
     @Before
     fun setUp() {
@@ -52,8 +50,8 @@ class PricesActivityTest : GnuAndroidTest() {
             onView(withId(android.R.id.list))
                 .check(matches(isDisplayed()))
 
-            val currencyJPY = CommoditiesDbAdapter.instance.getCurrency("JPY")!!
-            val currencyUSD = CommoditiesDbAdapter.instance.getCurrency("USD")!!
+            val currencyJPY = commoditiesDbAdapter.getCurrency("JPY")!!
+            val currencyUSD = commoditiesDbAdapter.getCurrency("USD")!!
             onView(
                 allOf(
                     withId(android.R.id.list),
@@ -68,9 +66,9 @@ class PricesActivityTest : GnuAndroidTest() {
     fun common_prices_edit() {
         importGnuCash("common_1.gnucash")
 
-        val currencyUSD = CommoditiesDbAdapter.instance.getCurrency("USD")!!
-        val currencyEUR = CommoditiesDbAdapter.instance.getCurrency("EUR")!!
-        val priceBefore = PricesDbAdapter.instance.getPrice(currencyUSD, currencyEUR)!!
+        val currencyUSD = commoditiesDbAdapter.getCurrency("USD")!!
+        val currencyEUR = commoditiesDbAdapter.getCurrency("EUR")!!
+        val priceBefore = pricesDbAdapter.getPrice(currencyUSD, currencyEUR)!!
         assertEquals(93L, priceBefore.valueNum)
         assertEquals(100L, priceBefore.valueDenom)
 
@@ -110,7 +108,7 @@ class PricesActivityTest : GnuAndroidTest() {
                     .performClick()
             }
 
-            val priceAfter = PricesDbAdapter.instance.getPrice(currencyUSD, currencyEUR)!!
+            val priceAfter = pricesDbAdapter.getPrice(currencyUSD, currencyEUR)!!
             assertEquals(123L, priceAfter.valueNum)
             assertEquals(100L, priceAfter.valueDenom)
         }

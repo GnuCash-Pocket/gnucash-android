@@ -11,12 +11,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
 import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.BaseModel.Companion.markNew
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.PriceSource
 
 typealias PriceCallback = (Price) -> Unit
 
-class PriceListViewModel : ViewModel() {
+class PriceListViewModel(
+    private val pricesDbAdapter: PricesDbAdapter
+) : ViewModel() {
     private val _prices = MutableStateFlow<Cursor?>(null)
     val prices: StateFlow<Cursor?> = _prices
 
@@ -42,7 +45,7 @@ class PriceListViewModel : ViewModel() {
         }
     }
 
-    private fun loadImpl(pricesDbAdapter: PricesDbAdapter = PricesDbAdapter.instance) {
+    private fun loadImpl() {
         val cursor = pricesDbAdapter.fetchAllRecords(
             null,
             null,
@@ -72,22 +75,20 @@ class PriceListViewModel : ViewModel() {
 
     fun onDeletePriceClick(price: Price) {
         viewModelScope.launch(Dispatchers.IO) {
-            val pricesDbAdapter = PricesDbAdapter.instance
             pricesDbAdapter.deleteRecord(price)
-            loadImpl(pricesDbAdapter)
+            loadImpl()
         }
     }
 
     fun onDuplicatePriceClick(price: Price) {
         viewModelScope.launch(Dispatchers.IO) {
             val priceNew = price.copy().apply {
-                setUID(null)
+                markNew()
                 date = System.currentTimeMillis()
                 source = PriceSource.PRICE_SOURCE_EDIT_DLG
             }
-            val pricesDbAdapter = PricesDbAdapter.instance
             pricesDbAdapter.insert(priceNew)
-            loadImpl(pricesDbAdapter)
+            loadImpl()
         }
     }
 

@@ -16,13 +16,11 @@
 package org.gnucash.android.db.adapter
 
 import android.content.ContentValues
-import android.content.SharedPreferences
 import android.database.Cursor
 import android.database.DatabaseUtils
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
-import org.gnucash.android.db.BookDbHelper.Companion.getBookPreferences
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.CommonColumns
 import org.gnucash.android.db.forEach
@@ -69,11 +67,6 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         Replace
     }
 
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param holder Database holder
-     */
     init {
         val db = holder.db
         this.db = db
@@ -284,7 +277,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         }
         sql.append(CommonColumns.COLUMN_UID)
             .append(") VALUES (")
-        for (i in 0 until columnsCount) {
+        repeat(columnsCount) {
             sql.append("?,")
         }
         sql.append("?)")
@@ -343,7 +336,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         }
         sql.append(CommonColumns.COLUMN_UID)
             .append(") VALUES (")
-        for (i in 0 until columnsCount) {
+        repeat(columnsCount) {
             sql.append("?,")
         }
         sql.append("?)")
@@ -541,8 +534,9 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     @Throws(SQLException::class)
     open fun deleteRecord(rowId: Long): Boolean {
         Timber.d("Deleting record with id %d from %s", rowId, tableName)
-        val where = CommonColumns.COLUMN_ID + "=" + rowId
-        return db.delete(tableName, where, null) > 0
+        val where = CommonColumns.COLUMN_ID + "=?"
+        val whereArgs = arrayOf(rowId.toString())
+        return db.delete(tableName, where, whereArgs) > 0
     }
 
     /**
@@ -550,6 +544,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      *
      * @return Number of deleted records
      */
+    @Throws(SQLException::class)
     open fun deleteAllRecords(): Int {
         cache.clear()
         return db.delete(tableName, null, null)
@@ -576,14 +571,12 @@ abstract class DatabaseAdapter<Model : BaseModel>(
             null, null, null
         )
         val result: Long
-        try {
+        cursor.use { cursor ->
             if (cursor.moveToFirst()) {
                 result = cursor.getLong(0)
             } else {
                 throw IllegalArgumentException("Record not found in $tableName")
             }
-        } finally {
-            cursor.close()
         }
         return result
     }
@@ -744,23 +737,17 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      */
     @Throws(SQLException::class)
     open fun deleteRecord(uid: String): Boolean {
+        Timber.d("Deleting record with uid %s from %s", uid, tableName)
+        val where = CommonColumns.COLUMN_UID + "=?"
+        val whereArgs = arrayOf(uid)
+        val result = db.delete(tableName, where, whereArgs)
         if (isCached) cache.remove(uid)
-        try {
-            return deleteRecord(getID(uid))
-        } catch (e: IllegalArgumentException) {
-            Timber.e(e)
-            return false
-        }
+        return result > 0
     }
 
     @Throws(SQLException::class)
-    fun deleteRecord(model: Model): Boolean {
-        if (deleteRecord(model.id)) {
-            if (isCached) cache.remove(model.uid)
-            model.id = 0L
-            return true
-        }
-        return false
+    open fun deleteRecord(model: Model): Boolean {
+        return deleteRecord(model.uid)
     }
 
     /**
@@ -901,15 +888,11 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         return model.uid
     }
 
-    /**
-     * Return the [SharedPreferences] for a specific book
-     *
-     * @return Shared preferences
-     */
-    val bookPreferences: SharedPreferences
-        get() = getBookPreferences(holder)
-
     internal fun allColumnsPrefix(prefix: String): Array<String> {
         return allColumns.map { prefix + it }.toTypedArray()
+    }
+
+    open fun clearCache() {
+        cache.clear()
     }
 }

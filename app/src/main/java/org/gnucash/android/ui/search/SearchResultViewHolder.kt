@@ -28,6 +28,7 @@ enum class SearchResultAction {
 typealias SearchResultCallback = (Transaction, SearchResultAction) -> Unit
 
 class SearchResultViewHolder(
+    private val accountsDbAdapter: AccountsDbAdapter,
     binding: CardviewTransactionBinding,
     private val isDoubleEntry: Boolean = true,
     private val callback: SearchResultCallback
@@ -43,9 +44,7 @@ class SearchResultViewHolder(
     private val editTransaction: ImageView = binding.editTransaction
 
     private var transaction: Transaction? = null
-    private val accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
-    private val transactionsDbAdapter: TransactionsDbAdapter =
-        accountsDbAdapter.transactionsDbAdapter
+    private val transactionsDbAdapter: TransactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
 
     @ColorInt
     private val colorBalanceZero: Int = transactionAmount.currentTextColor
@@ -116,9 +115,10 @@ class SearchResultViewHolder(
             if (splits.size == 2) {
                 val accountUID = transaction.defaultAccountUID
                 if (accountUID != null) {
+                    val account = accountsDbAdapter.getRecord(accountUID)
                     text = accountsDbAdapter.getFullyQualifiedAccountName(accountUID)
 
-                    val amount = transaction.getBalance(accountUID)
+                    val amount = transaction.getBalance(account, true)
                     transactionAmount.displayBalance(amount, colorBalanceZero)
                     transactionAmount.isVisible = true
                 }

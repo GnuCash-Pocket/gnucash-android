@@ -16,7 +16,7 @@ import org.gnucash.android.model.Commodity
 
 class CommoditiesAdapter(
     context: Context,
-    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.instance,
+    private val adapter: CommoditiesDbAdapter,
     private val scope: CoroutineScope
 ) : SpinnerArrayAdapter<Commodity>(context) {
 
@@ -25,11 +25,9 @@ class CommoditiesAdapter(
 
     constructor(
         context: Context,
+        adapter: CommoditiesDbAdapter,
         lifecycleOwner: LifecycleOwner
-    ) : this(
-        context = context,
-        scope = lifecycleOwner.lifecycleScope
-    )
+    ) : this(context, adapter, lifecycleOwner.lifecycleScope)
 
     fun getCommodity(position: Int): Commodity? {
         return getItem(position)?.value

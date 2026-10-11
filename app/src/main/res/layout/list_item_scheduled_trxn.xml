@@ -36,7 +36,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:text="@string/label_transaction_name"
-            app:layout_constraintEnd_toEndOf="@id/secondary_text"
+            app:layout_constraintEnd_toStartOf="@id/enabled_switch"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,7 +48,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:singleLine="false"
-            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintEnd_toEndOf="@id/primary_text"
             app:layout_constraintStart_toStartOf="@id/primary_text"
             app:layout_constraintTop_toBottomOf="@id/primary_text"
             tools:text="@tools:sample/lorem/random" />
@@ -65,6 +65,17 @@
             app:layout_constraintTop_toBottomOf="@id/secondary_text"
             tools:text="@tools:sample/lorem" />
 
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/enabled_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:padding="4dp"
+            android:textOff="@string/switch_off"
+            android:textOn="@string/switch_on"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <ImageView
             android:id="@+id/options_menu"
             android:layout_width="48dp"
@@ -78,6 +89,7 @@
             android:src="@drawable/ic_more_vert"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/enabled_switch"
             tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,9 +18,10 @@ package org.gnucash.android.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.getSerializableCompat
 import org.gnucash.android.app.isNullOrEmpty
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.parseSplit
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
@@ -65,8 +66,11 @@ class TransactionRecorder : BroadcastReceiver() {
             Timber.w("Transaction name required")
             return
         }
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
-        val commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter
+
+        val bookUID = GnuCashApplication.activeBookUID
+        val dbHelper = DatabaseHelper(context, bookUID)
+        val transactionsDbAdapter = dbHelper.holder.transactionsDbAdapter
+        val commoditiesDbAdapter = dbHelper.holder.commoditiesDbAdapter
 
         val notes = args.getString(Intent.EXTRA_TEXT)
 
@@ -83,10 +87,11 @@ class TransactionRecorder : BroadcastReceiver() {
             return
         }
 
-        val transaction = Transaction(name)
-        transaction.datePosted = System.currentTimeMillis()
-        transaction.notes = notes.orEmpty()
-        transaction.commodity = commodity
+        val transaction = Transaction(name).apply {
+            datePosted = System.currentTimeMillis()
+            this.notes = notes.orEmpty()
+            this.commodity = commodity
+        }
 
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
         val accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID)
@@ -115,7 +120,7 @@ class TransactionRecorder : BroadcastReceiver() {
             try {
                 line = bufferedReader.readLine()
                 while (line != null) {
-                    val split = parseSplit(line)
+                    val split = parseSplit(line, commoditiesDbAdapter)
                     transaction.addSplit(split)
                     line = bufferedReader.readLine()
                 }
@@ -127,5 +132,7 @@ class TransactionRecorder : BroadcastReceiver() {
         transactionsDbAdapter.insert(transaction)
 
         WidgetConfigurationActivity.updateAllWidgets(context)
+
+        dbHelper.close()
     }
 }

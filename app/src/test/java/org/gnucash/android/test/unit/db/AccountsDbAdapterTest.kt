@@ -16,20 +16,11 @@
 package org.gnucash.android.test.unit.db
 
 import android.graphics.Color
+import android.net.Uri
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Index
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.DatabaseHelper
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
-import org.gnucash.android.db.adapter.BudgetsDbAdapter
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.PricesDbAdapter
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
-import org.gnucash.android.db.adapter.SplitsDbAdapter
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
@@ -44,9 +35,7 @@ import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.test.unit.GnuCashTest
-import org.junit.After
-import org.junit.Before
+import org.gnucash.android.util.BookUtils
 import org.junit.Test
 import org.xml.sax.SAXException
 import timber.log.Timber
@@ -54,56 +43,7 @@ import java.io.IOException
 import java.math.BigDecimal
 import javax.xml.parsers.ParserConfigurationException
 
-class AccountsDbAdapterTest : GnuCashTest() {
-    private lateinit var accountsDbAdapter: AccountsDbAdapter
-    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
-    private lateinit var splitsDbAdapter: SplitsDbAdapter
-    private lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
-
-    @Before
-    fun setUp() {
-        initAdapters(null)
-    }
-
-    @After
-    fun after() {
-        accountsDbAdapter.close()
-        commoditiesDbAdapter.close()
-        splitsDbAdapter.close()
-        transactionsDbAdapter.close()
-    }
-
-    @After
-    fun tearDown() {
-        accountsDbAdapter.deleteAllRecords()
-    }
-
-    /**
-     * Initialize database adapters for a specific book.
-     * This method should be called everytime a new book is loaded into the database
-     *
-     * @param bookUID GUID of the GnuCash book
-     */
-    private fun initAdapters(bookUID: String?) {
-        if (bookUID == null) {
-            commoditiesDbAdapter = CommoditiesDbAdapter.instance
-            splitsDbAdapter = SplitsDbAdapter.instance
-            transactionsDbAdapter = TransactionsDbAdapter.instance
-            accountsDbAdapter = AccountsDbAdapter.instance
-        } else {
-            val databaseHelper = DatabaseHelper(context, bookUID)
-            val dbHolder = databaseHelper.holder
-            commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder)
-            splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
-            transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
-            accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
-            val b1 = GnuCashApplication.booksDbAdapter
-            val b2 = BooksDbAdapter.instance
-            assertThat(b1).isEqualTo(b2)
-            b2.setActive(bookUID)
-        }
-    }
-
+class AccountsDbAdapterTest : DatabaseTest() {
     /**
      * Test that the list of accounts is always returned sorted alphabetically
      */
@@ -277,10 +217,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account2)
 
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
-        scheduledAction.actionUID = "Test-uid"
-        scheduledAction.setRecurrence(Recurrence(PeriodType.WEEK))
-        val scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT) {
+            actionUID = "Test-uid"
+            setRecurrence(Recurrence(PeriodType.WEEK))
+        }
 
         scheduledActionDbAdapter.addRecord(scheduledAction)
 
@@ -288,7 +228,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val budgetAmount = BudgetAmount(createZeroInstance(account.commodity), account.uid)
         budget.addAmount(budgetAmount)
         budget.recurrence = Recurrence(PeriodType.MONTH)
-        BudgetsDbAdapter.instance.addRecord(budget)
+        budgetsDbAdapter.addRecord(budget)
 
         accountsDbAdapter.deleteAllRecords()
 
@@ -296,10 +236,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(transactionsDbAdapter.recordsCount).isZero()
         assertThat(splitsDbAdapter.recordsCount).isZero()
         assertThat(scheduledActionDbAdapter.recordsCount).isZero()
-        assertThat(BudgetAmountsDbAdapter.instance.recordsCount).isZero()
-        assertThat(BudgetsDbAdapter.instance.recordsCount).isZero()
-        assertThat(PricesDbAdapter.instance.recordsCount).isZero() //prices should remain
-        assertThat(CommoditiesDbAdapter.instance!!.recordsCount).isGreaterThan(50) //commodities should remain
+        assertThat(budgetAmountsDbAdapter.recordsCount).isZero()
+        assertThat(budgetsDbAdapter.recordsCount).isZero()
+        assertThat(pricesDbAdapter.recordsCount).isZero() //prices should remain
+        assertThat(commoditiesDbAdapter.recordsCount).isGreaterThan(50) //commodities should remain
     }
 
     @Test
@@ -318,28 +258,28 @@ class AccountsDbAdapterTest : GnuCashTest() {
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("4.99", "USD"), account)
+        split = Split(Money("4.99", Commodity.USD), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("1.19", "USD"), account)
+        split = Split(Money("1.19", Commodity.USD), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.CREDIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("3.49", "EUR"), account)
+        split = Split(Money("3.49", Commodity.EUR), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("8.39", "USD"), transferAcct)
+        split = Split(Money("8.39", Commodity.USD), transferAcct)
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
 
         //balance computation ignores the currency of the split
         val balance = accountsDbAdapter.getAccountBalance(account)
-        val expectedBalance = Money("17.29", "USD") //EUR splits should be ignored
+        val expectedBalance = Money("17.29", Commodity.USD) //EUR splits should be ignored
 
         assertThat(balance).isEqualTo(expectedBalance)
     }
@@ -425,18 +365,17 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
     @Test
     fun shouldCreateImbalanceAccountOnDemand() {
-        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
+        assertThat(accountsDbAdapter.recordsCount).isOne()
 
         val usd = commoditiesDbAdapter.getCurrency("USD")!!
         var imbalanceUID = accountsDbAdapter.getImbalanceAccountUID(context, usd)
         assertThat(imbalanceUID).isNull()
-        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
+        assertThat(accountsDbAdapter.recordsCount).isOne()
 
         imbalanceUID = accountsDbAdapter.getOrCreateImbalanceAccountUID(context, usd)
         assertThat(imbalanceUID).isNotNull().isNotEmpty()
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(2)
     }
-
 
     @Test
     fun editingAccountShouldNotDeleteTemplateSplits() {
@@ -509,10 +448,12 @@ class AccountsDbAdapterTest : GnuCashTest() {
     @Test
     fun importingXml_shouldSetDefaultCurrencyFromXml() {
         GnuCashApplication.defaultCurrencyCode = "JPY"
+        commoditiesDbAdapter.setDefaultCurrencyCode("JPY")
 
         var defaultCurrency = GnuCashApplication.defaultCurrencyCode
         assertThat(defaultCurrency).isEqualTo("JPY")
         assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.JPY)
+        assertThat(commoditiesDbAdapter.defaultCommodity).isEqualTo(Commodity.JPY)
 
         accountsDbAdapter.deleteAllRecords()
         val bookUID = loadDefaultAccounts()
@@ -568,13 +509,15 @@ class AccountsDbAdapterTest : GnuCashTest() {
      * Loads the default accounts from file resource
      */
     private fun loadDefaultAccounts(): String {
-        try {
+        return try {
             val bookUID = GncXmlImporter.parse(
                 context,
+                Uri.EMPTY,
                 context.resources.openRawResource(R.raw.default_accounts)
             )
             initAdapters(bookUID)
-            return bookUID
+            BookUtils.activateBook(context, bookUID)
+            bookUID
         } catch (e: ParserConfigurationException) {
             Timber.e(e)
             throw RuntimeException("Could not create default accounts")

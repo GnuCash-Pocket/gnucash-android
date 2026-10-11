@@ -31,6 +31,7 @@ import org.gnucash.android.R
 import org.gnucash.android.databinding.FragmentReportSummaryBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.piechart.PieChartFragment
@@ -44,8 +45,8 @@ import org.joda.time.LocalDateTime
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class ReportsOverviewFragment : BaseReportFragment<PieData>() {
-    private var assetsBalance: Money = Money.createZeroInstance(commodity)
-    private var liabilitiesBalance: Money = Money.createZeroInstance(commodity)
+    private var assetsBalance = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY)
+    private var liabilitiesBalance = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY)
 
     private var binding: FragmentReportSummaryBinding? = null
 
@@ -68,6 +69,12 @@ class ReportsOverviewFragment : BaseReportFragment<PieData>() {
         return false
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        assetsBalance = Money.createZeroInstance(commodity)
+        liabilitiesBalance = Money.createZeroInstance(commodity)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = binding!!
@@ -81,7 +88,7 @@ class ReportsOverviewFragment : BaseReportFragment<PieData>() {
         binding.btnLineChart.setOnClickListener(this::onClickChartTypeButton)
         binding.btnBalanceSheet.setOnClickListener(this::onClickChartTypeButton)
 
-        val chartLayout = binding.chartLayout!!
+        val chartLayout = binding.chartLayout
         chartLayout.selectedChartSlice.setText(R.string.label_last_3_months_expenses)
     }
 

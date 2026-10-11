@@ -210,7 +210,7 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
                 else -> Unit
             }
 
-            if (balance.isAmountZero) {
+            if (balance.isZero) {
                 i++
                 x++
                 continue

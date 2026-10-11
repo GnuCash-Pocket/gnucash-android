@@ -24,7 +24,7 @@ class QualifiedAccountNameAdapter(
     context: Context,
     private val where: String? = null,
     private val whereArgs: Array<String?>? = null,
-    var adapter: AccountsDbAdapter = AccountsDbAdapter.instance,
+    var adapter: AccountsDbAdapter,
     private val scope: CoroutineScope
 ) : SpinnerArrayAdapter<Account>(context) {
 
@@ -66,17 +66,6 @@ class QualifiedAccountNameAdapter(
         whereArgs = whereArgs,
         adapter = adapter,
         scope = lifecycleOwner.lifecycleScope
-    )
-
-    constructor(
-        context: Context,
-        lifecycleOwner: LifecycleOwner
-    ) : this(
-        context = context,
-        where = null,
-        whereArgs = null,
-        adapter = AccountsDbAdapter.instance,
-        lifecycleOwner = lifecycleOwner
     )
 
     override fun hasStableIds(): Boolean {

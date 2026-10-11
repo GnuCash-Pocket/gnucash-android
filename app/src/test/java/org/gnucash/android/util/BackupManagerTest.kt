@@ -1,15 +1,17 @@
 package org.gnucash.android.util
 
-import junit.framework.TestCase.fail
+import android.net.Uri
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.NoActiveBookException
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Before
 import org.junit.Test
-import timber.log.Timber
+import java.lang.Thread.sleep
 
 class BackupManagerTest : GnuCashTest() {
     private lateinit var booksDbAdapter: BooksDbAdapter
@@ -17,13 +19,10 @@ class BackupManagerTest : GnuCashTest() {
     @Before
     fun setUp() {
         booksDbAdapter = BooksDbAdapter.instance
-        booksDbAdapter.deleteAllRecords()
+        BookUtils.deleteRecords(booksDbAdapter)
         assertThat(booksDbAdapter.recordsCount).isZero()
-        try {
-            val activeBookUID = GnuCashApplication.activeBookUID
-            assertThat(activeBookUID).isNull()
-        } catch (_: BooksDbAdapter.NoActiveBookFoundException) {
-        }
+        assertThatThrownBy { GnuCashApplication.activeBookUID }
+            .isInstanceOf(NoActiveBookException::class.java)
     }
 
     @Test
@@ -46,7 +45,7 @@ class BackupManagerTest : GnuCashTest() {
         BookUtils.activateBook(bookUID)
 
         assertThat(BackupManager.backupActiveBook()).isTrue()
-        Thread.sleep(1000) // FIXME: Use Mockito to get a different date in Exporter.buildExportFilename
+        sleep(1000) // FIXME: Use Mockito to get a different date in Exporter.buildExportFilename
         assertThat(BackupManager.backupActiveBook()).isTrue()
 
         assertThat(BackupManager.getBackupList(context, bookUID)).hasSize(2)
@@ -67,15 +66,10 @@ class BackupManagerTest : GnuCashTest() {
      * @throws RuntimeException if the new books could not be created
      */
     private fun createNewBookWithDefaultAccounts(): String {
-        try {
-            return GncXmlImporter.parse(
-                context,
-                context.resources.openRawResource(R.raw.default_accounts)
-            )
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-        fail("Could not create default accounts")
-        return ""
+        return GncXmlImporter.parse(
+            context,
+            Uri.EMPTY,
+            context.resources.openRawResource(R.raw.default_accounts)
+        )
     }
 }

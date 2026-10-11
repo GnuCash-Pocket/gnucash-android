@@ -26,7 +26,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withInputType
 import androidx.test.rule.ActivityTestRule
 import org.gnucash.android.R
-import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.test.ui.util.SoftwareKeyboard.isKeyboardOpen
@@ -42,20 +41,15 @@ import org.junit.Rule
 import org.junit.Test
 
 // TODO: Find out how to press the keys in the KeyboardView.
-class CalculatorEditTextTest : GnuAndroidTest() {
-    private lateinit var accountsDbAdapter: AccountsDbAdapter
-    private lateinit var transactionsActivity: TransactionsActivity
-
+class CalculatorEditTextTest : DatabaseTest() {
     @Rule
     @JvmField
-    val activityRule = ActivityTestRule(TransactionsActivity::class.java, true, false)
+    val activityRule = ActivityTestRule(TransactionsActivity::class.java, false, false)
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
-        val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
         val commodity = commoditiesDbAdapter.getCurrency(CURRENCY_CODE)!!
 
         val account = Account(DUMMY_ACCOUNT_NAME, commodity)
@@ -67,17 +61,15 @@ class CalculatorEditTextTest : GnuAndroidTest() {
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account2)
 
-        val intent = Intent(Intent.ACTION_VIEW)
+        val intent = Intent(Intent.ACTION_MAIN)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, DUMMY_ACCOUNT_UID)
+            .putExtra(UxArgument.BOOK_UID, bookUID)
         activityRule.launchActivity(intent)
-        transactionsActivity = activityRule.activity
     }
 
     @After
     fun tearDown() {
-        if (::transactionsActivity.isInitialized) {
-            transactionsActivity.finish()
-        }
+        activityRule.finishActivity()
     }
 
     /**

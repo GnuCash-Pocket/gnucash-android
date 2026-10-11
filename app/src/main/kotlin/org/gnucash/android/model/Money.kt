@@ -48,7 +48,7 @@ class Money(
     /**
      * Amount value held by this object
      */
-    private var amount: BigDecimal = BigDecimal.ZERO,
+    private val amount: BigDecimal = BigDecimal.ZERO,
     /**
      * Currency of the account
      */
@@ -59,18 +59,6 @@ class Money(
      * Defaults to [RoundingMode.HALF_UP]
      */
     private var roundingMode = RoundingMode.HALF_UP
-
-    /**
-     * Constructs a new money amount given the numerator and denominator of the amount.
-     * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
-     *
-     * @param amount    Value of the amount
-     * @param currencyCode 3-character currency code string
-     */
-    constructor(amount: BigDecimal, currencyCode: String) : this(
-        amount,
-        Commodity.getInstance(currencyCode)
-    )
 
     /**
      * Creates a new money amount
@@ -84,50 +72,12 @@ class Money(
      * Overloaded constructor.
      * Accepts strings as arguments and parses them to create the Money object
      *
-     * @param amount       Numerical value of the Money
-     * @param currencyCode Currency code as specified by ISO 4217
-     */
-    constructor(amount: String?, currencyCode: String) : this(
-        BigDecimal(amount),
-        currencyCode
-    )
-
-    /**
-     * Overloaded constructor.
-     * Accepts strings as arguments and parses them to create the Money object
-     *
-     * @param amount       Numerical value of the Money
-     * @param currencyCode Currency code as specified by ISO 4217
-     */
-    constructor(amount: Double, currencyCode: String) : this(
-        BigDecimal(amount),
-        currencyCode
-    )
-
-    /**
-     * Overloaded constructor.
-     * Accepts strings as arguments and parses them to create the Money object
-     *
      * @param amount    Numerical value of the Money
      * @param commodity Commodity of the money
      */
     constructor(amount: String?, commodity: Commodity) : this(
         BigDecimal(amount),
         commodity
-    )
-
-    /**
-     * Constructs a new money amount given the numerator and denominator of the amount.
-     * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
-     *
-     * @param numerator    Numerator as integer
-     * @param denominator  Denominator as integer
-     * @param currencyCode 3-character currency code string
-     */
-    //FIXME beware of 64-bit overflow - only use BigInteger for numerator
-    constructor(numerator: Long, denominator: Long, currencyCode: String) : this(
-        toBigDecimal(numerator, denominator),
-        currencyCode
     )
 
     /**
@@ -253,6 +203,10 @@ class Money(
         return amount.toByte()
     }
 
+    @Deprecated(
+        "Direct conversion to Char is deprecated. Use toInt().toChar() or Char constructor instead.\nIf you override toChar() function in your Number inheritor, it's recommended to gradually deprecate the overriding function and then remove it.\nSee https://youtrack.jetbrains.com/issue/KT-46465 for details about the migration",
+        replaceWith = ReplaceWith("this.toInt().toChar()")
+    )
     override fun toChar(): Char {
         return amount.toInt().toChar()
     }
@@ -349,12 +303,10 @@ class Money(
     @Throws(CurrencyMismatchException::class)
     operator fun plus(addend: Money?): Money {
         if (addend == null) return this
-        if (isAmountZero) return addend
-        if (addend.isAmountZero) return this
-        if (commodity != addend.commodity) throw CurrencyMismatchException(
-            commodity,
-            addend.commodity
-        )
+        if (isZero) return addend
+        if (addend.isZero) return this
+        if (commodity != addend.commodity)
+            throw CurrencyMismatchException(commodity, addend.commodity)
         val amount = amount.add(addend.amount)
         return Money(amount, commodity)
     }
@@ -387,8 +339,8 @@ class Money(
     @Throws(CurrencyMismatchException::class)
     operator fun minus(subtrahend: Money?): Money {
         if (subtrahend == null) return this
-        if (isAmountZero) return -subtrahend
-        if (subtrahend.isAmountZero) return this
+        if (isZero) return -subtrahend
+        if (subtrahend.isZero) return this
         if (commodity != subtrahend.commodity) throw CurrencyMismatchException(
             commodity,
             subtrahend.commodity
@@ -426,7 +378,7 @@ class Money(
      */
     @Throws(CurrencyMismatchException::class)
     operator fun div(divisor: Money): Money {
-        if (isAmountZero) return createZeroInstance(divisor.commodity)
+        if (isZero) return createZeroInstance(divisor.commodity)
         if (commodity != divisor.commodity) throw CurrencyMismatchException(
             commodity,
             divisor.commodity
@@ -469,8 +421,8 @@ class Money(
      */
     @Throws(CurrencyMismatchException::class)
     operator fun times(factor: Money): Money {
-        if (isAmountZero) return this
-        if (factor.isAmountZero) return factor
+        if (isZero) return this
+        if (factor.isZero) return factor
         if (commodity != factor.commodity) throw CurrencyMismatchException(
             commodity,
             factor.commodity
@@ -510,8 +462,8 @@ class Money(
         return times(BigDecimal(factor))
     }
 
-    operator fun times(price: Price): Money {
-        return withCommodity(price.currency) * price.toBigDecimal()
+    operator fun times(price: Price?): Money {
+        return if (price != null) withCommodity(price.currency) * price.toBigDecimal() else this
     }
 
     /**
@@ -596,7 +548,7 @@ class Money(
      *
      * @return `true` if this money amount is zero, `false` otherwise
      */
-    val isAmountZero: Boolean
+    val isZero: Boolean
         get() = amount.isZero
 
     constructor(parcel: Parcel) : this(
@@ -619,17 +571,6 @@ class Money(
     }
 
     companion object {
-        /**
-         * Creates a new Money instance with 0 amount and the `currencyCode`
-         *
-         * @param currencyCode Currency to use for this money instance
-         * @return Money object with value 0 and currency `currencyCode`
-         */
-        fun createZeroInstance(currencyCode: String): Money {
-            val commodity = Commodity.getInstance(currencyCode)
-            return createZeroInstance(commodity)
-        }
-
         /**
          * Creates a new Money instance with 0 amount and the `currencyCode`
          *
@@ -673,5 +614,5 @@ fun Money?.isNullOrZero(): Boolean {
         returns(false) implies (this@isNullOrZero != null)
     }
 
-    return this == null || this.isAmountZero
+    return this == null || this.isZero
 }

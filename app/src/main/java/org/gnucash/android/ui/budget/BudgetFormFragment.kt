@@ -34,11 +34,12 @@ import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
 import org.gnucash.android.R
-import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.DatabaseFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentBudgetFormBinding
+import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Budget
@@ -59,12 +60,13 @@ import java.util.Calendar
 /**
  * Fragment for creating or editing Budgets
  */
-class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
+class BudgetFormFragment : DatabaseFragment(), OnRecurrenceSetListener,
     DatePickerDialog.OnDateSetListener {
     var eventRecurrence: EventRecurrence = EventRecurrence()
     var recurrenceRule: String? = null
 
-    private var budgetsDbAdapter: BudgetsDbAdapter = BudgetsDbAdapter.instance
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var budgetsDbAdapter: BudgetsDbAdapter
 
     private var budget: Budget? = null
     private val startDate: Calendar = Calendar.getInstance()
@@ -75,7 +77,9 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        budgetsDbAdapter = BudgetsDbAdapter.instance
+        val dbHolder = databaseHolder
+        accountsDbAdapter = dbHolder.accountsDbAdapter
+        budgetsDbAdapter = dbHolder.budgetDbAdapter
         budgetAmounts = emptyList()
     }
 
@@ -113,7 +117,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
             TransactionFormFragment.DATE_FORMATTER.print(startDate.timeInMillis)
 
         val context = binding.root.context
-        accountNameAdapter = QualifiedAccountNameAdapter(context, viewLifecycleOwner)
+        accountNameAdapter = QualifiedAccountNameAdapter(context, accountsDbAdapter, viewLifecycleOwner)
             .load()
         binding.budgetAmountLayout.inputBudgetAccountSpinner.adapter = accountNameAdapter
 
@@ -140,7 +144,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         val recurrenceRuleString = budget.recurrence.ruleString
         recurrenceRule = recurrenceRuleString
         eventRecurrence.parse(recurrenceRuleString)
-        binding.inputRecurrence.text = budget.recurrence.getRepeatString(context)
+        binding.inputRecurrence.text = budget.recurrence.formatRepeatString(context)
 
         budgetAmounts = budget.compactedBudgetAmounts
         toggleAmountInputVisibility(binding)
@@ -258,19 +262,18 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
     }
 
     private fun onClickBudgetStartDate() {
-        DatePickerDialogFragment.newInstance(this, startDate.timeInMillis)
+        DatePickerDialogFragment.newInstance(startDate.timeInMillis, this)
             .show(parentFragmentManager, "date_picker_fragment")
     }
 
     private fun onOpenBudgetAmountEditor(v: View) {
         budgetAmounts = extractBudgetAmounts(binding!!)
-        val intent = Intent(v.context, FormActivity::class.java)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET_AMOUNT_EDITOR.name)
-            .putParcelableArrayListExtra(
-                UxArgument.BUDGET_AMOUNT_LIST,
-                ArrayList<BudgetAmount>(budgetAmounts)
-            )
-        startActivityForResult(intent, REQUEST_EDIT_BUDGET_AMOUNTS)
+        FormActivity.showEditBudgetAmount(
+            this,
+            bookUID,
+            budgetAmounts,
+            REQUEST_EDIT_BUDGET_AMOUNTS
+        )
     }
 
     override fun onRecurrenceSet(rrule: String?) {

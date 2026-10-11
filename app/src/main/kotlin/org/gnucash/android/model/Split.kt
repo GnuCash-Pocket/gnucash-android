@@ -2,9 +2,7 @@ package org.gnucash.android.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.model.Split.Companion.CREATOR
-import org.gnucash.android.model.Split.Companion.getFormattedAmount
+import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.gnucash.android.util.NEVER
 
 /**
@@ -139,15 +137,16 @@ class Split : BaseModel, Parcelable {
      * maintain the one from source
      */
     fun copy(generateUID: Boolean = true): Split {
-        val clone = Split(value, quantity, accountUID)
-        if (!generateUID) {
-            clone.setUID(uid)
+        val original = this
+        return Split(value, quantity, accountUID).apply {
+            if (!generateUID) {
+                setUID(original.uid)
+            }
+            memo = original.memo
+            scheduledActionAccountUID = original.scheduledActionAccountUID
+            transactionUID = original.transactionUID
+            type = original.type
         }
-        clone.memo = memo
-        clone.scheduledActionAccountUID = scheduledActionAccountUID
-        clone.transactionUID = transactionUID
-        clone.type = type
-        return clone
     }
 
     /**
@@ -158,6 +157,28 @@ class Split : BaseModel, Parcelable {
         set(value) {
             field = value.abs()
         }
+
+    operator fun plus(rhs: Split): Split {
+        val split = copy()
+        split += rhs
+        return split
+    }
+
+    /**
+     * Combines [rhs] into this split in place.
+     *
+     * Amounts of the same type are added; opposite types cancel.
+     * For example: CREDIT of $499.00 + DEBIT of $99.00 becomes CREDIT of $400.00
+     */
+    @Throws(CurrencyMismatchException::class)
+    operator fun plusAssign(rhs: Split) {
+        val valueNew = plus(value, type, rhs.value, rhs.type)
+        value = valueNew
+        quantity = plus(quantity, type, rhs.quantity, rhs.type)
+        if (valueNew.isNegative) {
+            type = !type
+        }
+    }
 
     /**
      * Creates a split which is a pair of this instance.
@@ -170,7 +191,7 @@ class Split : BaseModel, Parcelable {
      */
     fun createPair(accountUID: String): Split {
         val pair = Split(value, accountUID)
-        pair.type = type.invert()
+        pair.type = !type
         pair.memo = memo
         pair.transactionUID = transactionUID
         pair.quantity = quantity
@@ -200,30 +221,12 @@ class Split : BaseModel, Parcelable {
      * @return whether the two splits are a pair
      */
     fun isPairOf(other: Split): Boolean {
-        return value == other.value && type.invert() == other.type
+        return value == other.value && type.opposite == other.type
     }
-
-    /**
-     * Returns the formatted amount (with or without negation sign) for the split value
-     *
-     * @return Money amount of value
-     * @see getFormattedAmount
-     */
-    val formattedValue: Money
-        get() = getFormattedAmount(value, accountUID, type)
 
     fun getFormattedValue(account: Account): Money {
         return getFormattedAmount(value, account, type)
     }
-
-    /**
-     * Returns the formatted amount (with or without negation sign) for the quantity
-     *
-     * @return Money amount of quantity
-     * @see getFormattedAmount
-     */
-    val formattedQuantity: Money
-        get() = getFormattedAmount(quantity, accountUID, type)
 
     fun getFormattedQuantity(account: Account): Money {
         return getFormattedAmount(quantity, account, type)
@@ -267,7 +270,7 @@ class Split : BaseModel, Parcelable {
         if (transactionUID != split.transactionUID) return false
         if (accountUID != split.accountUID) return false
         if (type !== split.type) return false
-        return if (memo != null) memo == split.memo else split.memo == null
+        return memo == split.memo
     }
 
     /**
@@ -342,6 +345,16 @@ class Split : BaseModel, Parcelable {
     }
 
     companion object {
+        @Throws(CurrencyMismatchException::class)
+        private fun plus(
+            amount1: Money,
+            type1: TransactionType,
+            amount2: Money,
+            type2: TransactionType
+        ): Money {
+            return if (type1 == type2) amount1 + amount2 else amount1 - amount2
+        }
+
         /**
          * Flag indicating that the split has been reconciled
          */
@@ -356,28 +369,6 @@ class Split : BaseModel, Parcelable {
          * Flag indicating that the split has been cleared, but not reconciled
          */
         const val RECONCILED_CLEARED = 'c'
-
-        /**
-         * Splits are saved as absolute values to the database, with no negative numbers.
-         * The type of movement the split causes to the balance of an account determines
-         * its sign, and that depends on the split type and the account type
-         *
-         * @param amount     Money amount to format
-         * @param accountUID GUID of the account
-         * @param splitType  Transaction type of the split
-         * @return -`amount` if the amount would reduce the balance of
-         * `account`, otherwise +`amount`
-         */
-        private fun getFormattedAmount(
-            amount: Money,
-            accountGUID: String?,
-            splitType: TransactionType
-        ): Money {
-            val accountUID = accountGUID ?: return Money.createZeroInstance(amount.commodity)
-            val account = AccountsDbAdapter.instance.getRecordOrNull(accountUID)
-                ?: return Money.createZeroInstance(amount.commodity)
-            return getFormattedAmount(amount, account, splitType)
-        }
 
         /**
          * Splits are saved as absolute values to the database, with no negative numbers.

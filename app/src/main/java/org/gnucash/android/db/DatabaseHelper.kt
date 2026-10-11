@@ -17,9 +17,11 @@ package org.gnucash.android.db
 
 import android.content.Context
 import android.database.DatabaseUtils
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
@@ -30,10 +32,11 @@ import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
-import org.gnucash.android.db.MigrationHelper.importCommodities
+import org.gnucash.android.db.MigrationHelper.importCurrencies
 import org.gnucash.android.db.MigrationHelper.migrate
 import org.gnucash.android.model.Commodity
 import timber.log.Timber
+import java.io.IOException
 
 /**
  * Helper class for managing the SQLite database.
@@ -42,7 +45,9 @@ import timber.log.Timber
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class DatabaseHelper(private val context: Context, databaseName: String) :
-    SQLiteOpenHelper(context, databaseName, null, DatabaseSchema.DATABASE_VERSION) {
+    SQLiteOpenHelper(context, databaseName, null, DatabaseSchema.DATABASE_VERSION),
+    AutoCloseable
+{
     override fun onCreate(db: SQLiteDatabase) {
         val holder = DatabaseHolder(context, db)
         createDatabaseTables(holder)
@@ -125,7 +130,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         createResetBalancesTriggers(db)
 
         try {
-            importCommodities(holder)
+            importCurrencies(holder)
         } catch (e: Exception) {
             val msg = "Error loading currencies into the database"
             Timber.e(e, msg)
@@ -133,11 +138,38 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         }
     }
 
+    private var _holder: DatabaseHolder? = null
     val holder: DatabaseHolder
-        get() = DatabaseHolder(context, writableDatabase, databaseName)
+        get() {
+            var result = _holder
+            if (result == null) {
+                result = DatabaseHolder(context, writableDatabase, databaseName)
+                _holder = result
+            }
+            return result
+        }
 
     val readableHolder: DatabaseHolder
-        get() = DatabaseHolder(context, readableDatabase, databaseName)
+        get() {
+            var result = _holder
+            if (result == null) {
+                result = DatabaseHolder(context, readableDatabase, databaseName)
+                _holder = result
+            }
+            return result
+        }
+
+    val bookUID: String = databaseName
+
+    @Throws(IOException::class, SQLException::class)
+    override fun close() {
+        super.close()
+        _holder?.close()
+    }
+
+    fun clearCache() {
+        _holder?.clearCache()
+    }
 
     companion object {
         /**
@@ -245,22 +277,23 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + ");"
                     )
 
-        private const val COMMODITIES_TABLE_CREATE = ("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
-                + CommodityEntry.COLUMN_ID + " integer primary key autoincrement, "
-                + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-                + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
-                + CommodityEntry.COLUMN_FULLNAME + " varchar(255) not null, "
-                + CommodityEntry.COLUMN_MNEMONIC + " varchar(255) not null, "
-                + CommodityEntry.COLUMN_LOCAL_SYMBOL + " varchar(255) not null default '', "
-                + CommodityEntry.COLUMN_CUSIP + " varchar(255), "
-                + CommodityEntry.COLUMN_SMALLEST_FRACTION + " integer not null, "
-                + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint not null default 0, "
-                + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255), "
-                + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100), "
-                + CommodityEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-                + CommodityEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
-                + ");"
-                )
+        private const val COMMODITIES_TABLE_CREATE =
+            ("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
+                    + CommodityEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
+                    + CommodityEntry.COLUMN_FULLNAME + " varchar(255) not null, "
+                    + CommodityEntry.COLUMN_MNEMONIC + " varchar(255) not null, "
+                    + CommodityEntry.COLUMN_LOCAL_SYMBOL + " varchar(255) not null default '', "
+                    + CommodityEntry.COLUMN_CUSIP + " varchar(255), "
+                    + CommodityEntry.COLUMN_SMALLEST_FRACTION + " integer not null, "
+                    + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint not null default 0, "
+                    + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255), "
+                    + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100), "
+                    + CommodityEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + CommodityEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+                    + ");"
+                    )
 
         /**
          * SQL statement to create the commodity prices table
@@ -314,17 +347,18 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     )
 
 
-        private const val RECURRENCE_TABLE_CREATE = ("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
-                + RecurrenceEntry.COLUMN_ID + " integer primary key autoincrement, "
-                + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-                + RecurrenceEntry.COLUMN_MULTIPLIER + " integer not null default 1, "
-                + RecurrenceEntry.COLUMN_PERIOD_TYPE + " varchar(255) not null, "
-                + RecurrenceEntry.COLUMN_BYDAY + " varchar(255), "
-                + RecurrenceEntry.COLUMN_PERIOD_START + " timestamp not null, "
-                + RecurrenceEntry.COLUMN_PERIOD_END + " timestamp, "
-                + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-                + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
-                )
+        private const val RECURRENCE_TABLE_CREATE =
+            ("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
+                    + RecurrenceEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + RecurrenceEntry.COLUMN_MULTIPLIER + " integer not null default 1, "
+                    + RecurrenceEntry.COLUMN_PERIOD_TYPE + " varchar(255) not null, "
+                    + RecurrenceEntry.COLUMN_BYDAY + " varchar(255), "
+                    + RecurrenceEntry.COLUMN_PERIOD_START + " timestamp not null, "
+                    + RecurrenceEntry.COLUMN_PERIOD_END + " timestamp, "
+                    + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
+                    )
 
         /**
          * Creates an update trigger to update the updated_at column for all records in the database.
@@ -424,6 +458,16 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 }
             }
             return result
+        }
+
+        fun deleteFiles(context: Context) {
+            GnuCashApplication.activeBookUID = ""
+
+            // Delete all the databases.
+            context.databaseList().forEach { dbName ->
+                val dbPath = context.getDatabasePath(dbName)
+                dbPath.delete()
+            }
         }
     }
 }

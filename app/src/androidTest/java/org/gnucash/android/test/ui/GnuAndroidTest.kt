@@ -2,7 +2,9 @@ package org.gnucash.android.test.ui
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import android.os.Build
+import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
@@ -18,6 +20,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import org.gnucash.android.R
@@ -28,17 +31,20 @@ import org.gnucash.android.test.ui.util.WaitAction
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.util.BookUtils
 import org.gnucash.android.util.applyLocale
+import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.io.File
 import java.io.InputStream
 import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SdkSuppress(minSdkVersion = 30)// SDK 30+ for Java 11
 abstract class GnuAndroidTest {
 
     protected val context: Context = GnuCashApplication.appContext
@@ -159,6 +165,11 @@ abstract class GnuAndroidTest {
             .perform(WaitAction.waitForView(viewId))
     }
 
+    fun waitForView(viewMatcher: Matcher<View>): ViewInteraction {
+        return onView(viewMatcher)
+            .perform(WaitAction.waitForView(viewMatcher))
+    }
+
     protected fun setDoubleEntryEnabled(enabled: Boolean) {
         GnuCashApplication.getBookPreferences(context).edit {
             putBoolean(context.getString(R.string.key_use_double_entry), enabled)
@@ -170,8 +181,9 @@ abstract class GnuAndroidTest {
     }
 
     protected fun importGnuCash(filename: String): String {
+        val uri = Uri.fromFile(File(filename))
         val inputStream = getInputStream(openAssetStream(contextTest, filename))
-        val bookUID = GncXmlImporter.parse(context, inputStream)
+        val bookUID = GncXmlImporter.parse(context, uri, inputStream)
         BookUtils.activateBook(bookUID)
         return bookUID
     }
@@ -181,7 +193,7 @@ abstract class GnuAndroidTest {
         const val BUTTON_NEGATIVE = android.R.id.button2
 
         /**
-         * Prevents the first-run dialogs (Whats new, Create accounts etc) from being displayed when testing
+         * Prevents the first-run dialogs (What's new, Create accounts, etc.) from being displayed when testing
          *
          * @param context Application context
          */

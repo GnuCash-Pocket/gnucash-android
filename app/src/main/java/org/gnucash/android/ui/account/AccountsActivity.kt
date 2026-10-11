@@ -37,11 +37,12 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupForImport
 import org.gnucash.android.databinding.ActivityAccountsBinding
+import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseSchema
-import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.importer.ImportAsyncTask
 import org.gnucash.android.importer.ImportBookCallback
 import org.gnucash.android.service.ScheduledActionService.Companion.schedulePeriodic
@@ -49,6 +50,7 @@ import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.common.UxArgument.EXTRA_TAB_INDEX
 import org.gnucash.android.ui.transaction.TransactionsActivity
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity
@@ -138,13 +140,18 @@ class AccountsActivity : BaseDrawerActivity(),
     override val titleRes: Int = R.string.title_accounts
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // In case the activity was started from main launcher.
+        val bookUID = intent.getStringExtra(UxArgument.BOOK_UID)
+        if (bookUID.isNullOrEmpty() && (intent.action == Intent.ACTION_MAIN)) {
+            intent.putExtra(UxArgument.BOOK_UID, activeBookUID)
+        }
+
         super.onCreate(savedInstanceState)
 
-        handleOpenFileIntent(intent)
         init()
 
         val tabLayout = binding.tabLayout
-        (0 until NUM_PAGES).forEach { _ ->
+        repeat(NUM_PAGES) {
             tabLayout.addTab(tabLayout.newTab())
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
@@ -205,7 +212,7 @@ class AccountsActivity : BaseDrawerActivity(),
         val context: Context = this
         PreferenceManager.setDefaultValues(
             context,
-            activeBookUID,
+            bookUID,
             MODE_PRIVATE,
             R.xml.fragment_transaction_preferences,
             true
@@ -213,7 +220,7 @@ class AccountsActivity : BaseDrawerActivity(),
 
         val firstRun = preferences.getBoolean(getString(R.string.key_first_run), true)
         if (firstRun) {
-            startActivity(Intent(context, FirstRunWizardActivity::class.java))
+            FirstRunWizardActivity.show(context)
             finish()
             return
         }
@@ -277,11 +284,7 @@ class AccountsActivity : BaseDrawerActivity(),
             Timber.w("Account UID required")
             return
         }
-        val intent = Intent(this, TransactionsActivity::class.java)
-            .setAction(Intent.ACTION_VIEW)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
-        startActivityForResult(intent, REQUEST_REFRESH)
+        TransactionsActivity.show(this, bookUID, accountUID, isShowHiddenAccounts, REQUEST_REFRESH)
     }
 
     override fun accountChanged(accountUID: String) = Unit
@@ -417,17 +420,10 @@ class AccountsActivity : BaseDrawerActivity(),
         const val LAST_OPEN_TAB_INDEX: String = "last_open_tab"
 
         /**
-         * Key for putting argument for tab into bundle arguments
-         */
-        const val EXTRA_TAB_INDEX: String = BuildConfig.APPLICATION_ID + ".extra.TAB_INDEX"
-
-        /**
          * Displays the dialog for exporting transactions
          */
-        fun openExportFragment(context: Context) {
-            val intent = Intent(context, FormActivity::class.java)
-                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
-            context.startActivity(intent)
+        fun openExportFragment(context: Context, bookUID: String) {
+            FormActivity.showExport(context, bookUID)
         }
 
         /**
@@ -482,15 +478,20 @@ class AccountsActivity : BaseDrawerActivity(),
             callback: ImportBookCallback?
         ) {
             ImportAsyncTask(activity) { bookUID ->
-                if (!currencyCode.isNullOrEmpty()) {
-                    val accountsDbAdapter = AccountsDbAdapter.instance
-                    val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
+                if (!bookUID.isNullOrEmpty() && !currencyCode.isNullOrEmpty()) {
+                    activeBookUID = bookUID
+                    val dbHelper = DatabaseHelper(activity, bookUID)
+                    val dbHolder = dbHelper.holder
+                    val accountsDbAdapter = dbHolder.accountsDbAdapter
+                    val commoditiesDbAdapter = dbHolder.commoditiesDbAdapter
                     val currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode)
                     accountsDbAdapter.updateAllAccounts(
                         DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID,
                         currencyUID
                     )
+                    GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode)
                     commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode)
+                    dbHelper.close()
                 }
                 callback?.invoke(bookUID)
             }.execute(uri)
@@ -542,17 +543,18 @@ class AccountsActivity : BaseDrawerActivity(),
          * Starts the AccountsActivity and clears the activity stack
          *
          * @param context  Application context
+         * @param bookUID the book UID.
          * @param tabIndex the initial tab index to select.
          */
-        /**
-         * Starts the AccountsActivity and clears the activity stack
-         *
-         * @param context Application context
-         */
-        fun start(context: Context, tabIndex: Int = INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT) {
+        fun start(
+            context: Context,
+            bookUID: String,
+            tabIndex: Int = INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT
+        ) {
             val intent = Intent(context, AccountsActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
                 .putExtra(EXTRA_TAB_INDEX, tabIndex)
             context.startActivity(intent)
         }

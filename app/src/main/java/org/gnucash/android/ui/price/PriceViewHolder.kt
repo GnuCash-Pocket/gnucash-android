@@ -17,6 +17,7 @@ import org.gnucash.android.util.formatMediumDate
 
 class PriceViewHolder(
     binding: CardviewPriceBinding,
+    private val pricesDbAdapter: PricesDbAdapter,
     private val useAbsoluteDate: Boolean,
     private val onEditPriceClick: PriceCallback,
     private val onDeletePriceClick: PriceCallback,
@@ -28,7 +29,6 @@ class PriceViewHolder(
     private val amountText: TextView = binding.amount
     private val optionsMenu: ImageView = binding.optionsMenu
 
-    private val pricesDbAdapter = PricesDbAdapter.instance
     private var price: Price? = null
 
     fun bind(cursor: Cursor) {

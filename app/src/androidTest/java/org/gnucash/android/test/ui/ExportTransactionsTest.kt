@@ -23,34 +23,29 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.model.Account
-import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.account.AccountsActivity
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 
-class ExportTransactionsTest : GnuAndroidTest() {
-    private lateinit var accountsDbAdapter: AccountsDbAdapter
-
+class ExportTransactionsTest : DatabaseTest() {
     @Rule
     @JvmField
-    val activityRule = ActivityTestRule(AccountsActivity::class.java)
+    val activityRule = ActivityTestRule(AccountsActivity::class.java, false, false)
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
-        @Suppress("unused") val currencyCode = GnuCashApplication.defaultCurrencyCode
-        Commodity.DEFAULT_COMMODITY = CommoditiesDbAdapter.instance.getCurrency(currencyCode)!!
+        val currencyCode = GnuCashApplication.defaultCurrencyCode
+        val currency = commoditiesDbAdapter.getCurrency(currencyCode)!!
 
         val account = Account("Exportable")
         accountsDbAdapter.insert(account)
@@ -58,25 +53,29 @@ class ExportTransactionsTest : GnuAndroidTest() {
         val transaction = Transaction("Pizza")
         transaction.notes = "What up?"
         transaction.datePosted = System.currentTimeMillis()
-        val split = Split(Money("8.99", currencyCode), account)
+        val split = Split(Money("8.99", currency), account)
         split.memo = "Hawaii is the best!"
         transaction.addSplit(split)
         transaction.addSplit(
             split.createPair(
-                accountsDbAdapter.getOrCreateImbalanceAccountUID(
-                    context,
-                    Commodity.DEFAULT_COMMODITY
-                )
+                accountsDbAdapter.getOrCreateImbalanceAccountUID(context, currency)
             )
         )
 
-        val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
         transactionsDbAdapter.insert(transaction)
+
+        activityRule.launchActivity(null)
+    }
+
+    @After
+    fun tearDown() {
+        activityRule.finishActivity()
     }
 
     @Test
     fun testCreateBackup() {
         val activity = activityRule.activity
+
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo())

@@ -38,7 +38,7 @@ class SqliteExporterTest : BookHelperTest() {
 
         close()
         val inputStream = file.inputStream()
-        val bookUID2 = importGnuCashSqlite(inputStream)
+        val bookUID2 = importGnuCashSqlite(uri, inputStream)
         assertThat(bookUID).isEqualTo(bookUID2)
         testCommon1(
             bookUID,

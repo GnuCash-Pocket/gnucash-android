@@ -15,16 +15,19 @@
  */
 package org.gnucash.android.ui.common
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
-import org.gnucash.android.app.isNullOrEmpty
+import org.gnucash.android.app.requireArguments
 import org.gnucash.android.databinding.ActivityFormBinding
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.model.BudgetAmount
+import org.gnucash.android.model.Split
 import org.gnucash.android.ui.account.AccountFormFragment
 import org.gnucash.android.ui.budget.BudgetAmountEditorFragment
 import org.gnucash.android.ui.budget.BudgetFormFragment
@@ -33,7 +36,6 @@ import org.gnucash.android.ui.passcode.PasscodeLockActivity
 import org.gnucash.android.ui.search.SearchFormFragment
 import org.gnucash.android.ui.transaction.SplitEditorFragment
 import org.gnucash.android.ui.transaction.TransactionFormFragment
-import org.gnucash.android.util.BookUtils.activateBook
 import timber.log.Timber
 
 /**
@@ -59,21 +61,10 @@ class FormActivity : PasscodeLockActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val context: Context = this
+
         binding = ActivityFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val args = intent.extras
-        if (args.isNullOrEmpty()) {
-            Timber.e("Arguments required")
-            finish()
-            return
-        }
-
-        //if a parameter was passed to open an account within a specific book, then switch
-        val bookUID = args.getString(UxArgument.BOOK_UID)
-        if (bookUID != null && bookUID != activeBookUID) {
-            activateBook(this, bookUID)
-        }
 
         setSupportActionBar(binding.toolbarLayout.toolbar)
 
@@ -81,13 +72,15 @@ class FormActivity : PasscodeLockActivity() {
         actionBar?.setHomeButtonEnabled(true)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
+        val args = requireArguments()
         var accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)
         if (accountUID.isNullOrEmpty()) {
             accountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID)
         }
         if (!accountUID.isNullOrEmpty()) {
+            val accountsDbAdapter = readableDatabaseHolder.accountsDbAdapter
             @ColorInt val accountColor =
-                AccountsDbAdapter.instance.getActiveAccountColor(this, accountUID)
+                accountsDbAdapter.getActiveAccountColor(context, accountUID)
             setTitlesColor(accountColor)
         }
 
@@ -210,6 +203,181 @@ class FormActivity : PasscodeLockActivity() {
         } else {
             setResult(RESULT_CANCELED)
             finish()
+        }
+    }
+
+    companion object {
+        fun showExport(context: Context, bookUID: String) {
+            //TODO add argument do enable recurrence
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormType.EXPORT.name)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            context.startActivity(intent)
+        }
+
+        fun showEditExport(context: Context, bookUID: String, scheduledActionUID: String) {
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormType.EXPORT.name)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledActionUID)
+            context.startActivity(intent)
+        }
+
+        fun showEditTransaction(
+            caller: Fragment,
+            bookUID: String,
+            accountUID: String,
+            transactionUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.TRANSACTION.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showEditTransaction(
+            caller: Activity,
+            bookUID: String,
+            accountUID: String,
+            transactionUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.TRANSACTION.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showEditTransaction(
+            context: Context,
+            bookUID: String,
+            accountUID: String,
+            transactionUID: String
+        ) {
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.TRANSACTION.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            context.startActivity(intent)
+        }
+
+        fun showNewAccount(
+            caller: Fragment,
+            bookUID: String,
+            parentAccountUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.ACCOUNT.name)
+                .putExtra(UxArgument.PARENT_ACCOUNT_UID, parentAccountUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        /**
+         * Opens a new activity for creating or editing an account.
+         * If the `accountUID` is empty, then create else edit the account.
+         *
+         * @param accountUID Unique ID of account to be edited. Pass `null` to create a new account.
+         */
+        fun showEditAccount(
+            caller: Fragment,
+            bookUID: String,
+            accountUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.ACCOUNT.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showEditAccount(
+            caller: Activity,
+            bookUID: String,
+            accountUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.ACCOUNT.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showEditBudget(
+            caller: Fragment,
+            bookUID: String,
+            budgetUID: String?,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormType.BUDGET.name)
+                .putExtra(UxArgument.BUDGET_UID, budgetUID)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showSearch(context: Context, bookUID: String) {
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormType.SEARCH.name)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+            context.startActivity(intent)
+        }
+
+        fun showEditSplits(
+            caller: Fragment,
+            bookUID: String,
+            accountUID: String,
+            baseAmountString: String,
+            splits: List<Split>,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                .putExtra(UxArgument.AMOUNT_STRING, baseAmountString)
+                .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, ArrayList(splits))
+            caller.startActivityForResult(intent, requestCode)
+        }
+
+        fun showEditBudgetAmount(
+            caller: Fragment,
+            bookUID: String,
+            budgetAmounts: List<BudgetAmount>,
+            requestCode: Int
+        ) {
+            val context: Context = caller.requireContext()
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormType.BUDGET_AMOUNT_EDITOR.name)
+                .putExtra(UxArgument.BOOK_UID, bookUID)
+                .putParcelableArrayListExtra(
+                    UxArgument.BUDGET_AMOUNT_LIST,
+                    ArrayList<BudgetAmount>(budgetAmounts)
+                )
+            caller.startActivityForResult(intent, requestCode)
         }
     }
 }

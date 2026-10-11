@@ -27,6 +27,7 @@ import org.gnucash.android.export.ofx.OfxHelper
 import org.gnucash.android.export.ofx.OfxHelper.APP_ID
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
@@ -51,7 +52,7 @@ class OfxExporterTest : BookHelperTest() {
         val exporter = OfxExporter(
             context,
             exportParameters,
-            GnuCashApplication.activeBookUID!!
+            GnuCashApplication.activeBookUID
         )
         assertThrows(ExportException::class.java) { exporter.export() }
     }
@@ -63,7 +64,7 @@ class OfxExporterTest : BookHelperTest() {
     fun testGenerateOFXExport() {
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(createZeroInstance("EUR"), account))
+        transaction.addSplit(Split(createZeroInstance(Commodity.EUR), account))
 
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)
@@ -72,7 +73,7 @@ class OfxExporterTest : BookHelperTest() {
         val exporter = OfxExporter(
             context,
             exportParameters,
-            GnuCashApplication.activeBookUID!!
+            GnuCashApplication.activeBookUID
         )
         val exportedFile = exporter.export()
 
@@ -152,7 +153,7 @@ class OfxExporterTest : BookHelperTest() {
         val transaction = Transaction("One transaction")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
         transaction.datePosted = date
-        transaction.addSplit(Split(Money(123.45, "EUR"), account))
+        transaction.addSplit(Split(Money(123.45, Commodity.EUR), account))
 
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)
@@ -161,7 +162,7 @@ class OfxExporterTest : BookHelperTest() {
         val exporter = OfxExporter(
             context,
             exportParameters,
-            GnuCashApplication.activeBookUID!!
+            GnuCashApplication.activeBookUID
         )
         val exportedFile = exporter.export()
 
@@ -191,7 +192,7 @@ class OfxExporterTest : BookHelperTest() {
         val transaction = Transaction("Food")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
         transaction.datePosted = date
-        val split = Split(Money(123.45, "USD"), accountExpense)
+        val split = Split(Money(123.45, Commodity.USD), accountExpense)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(accountCash))
 
@@ -222,7 +223,7 @@ class OfxExporterTest : BookHelperTest() {
         val transaction = Transaction("One transaction")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
         transaction.datePosted = date
-        transaction.addSplit(Split(Money(123.45, "EUR"), account))
+        transaction.addSplit(Split(Money(123.45, Commodity.EUR), account))
 
         accountsDbAdapter.addRecord(account)
         transactionsDbAdapter.addRecord(transaction)
@@ -231,7 +232,7 @@ class OfxExporterTest : BookHelperTest() {
         val exporter = OfxExporter(
             context,
             exportParameters,
-            GnuCashApplication.activeBookUID!!
+            GnuCashApplication.activeBookUID
         )
         val exportedFile = exporter.export()
 

@@ -15,9 +15,14 @@
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_item_books"
+        android:icon="@drawable/ic_book"
+        android:title="@string/menu_manage_books" />
+    <item
         android:id="@+id/nav_item_open"
         android:icon="@drawable/ic_folder_open"
         android:title="@string/nav_menu_open" />
+
     <item
         android:id="@+id/nav_section_accounts"
         android:title="@string/title_accounts">

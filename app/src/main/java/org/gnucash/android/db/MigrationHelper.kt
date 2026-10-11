@@ -47,11 +47,11 @@ import javax.xml.parsers.SAXParserFactory
  */
 object MigrationHelper {
     /**
-     * Imports commodities into the database from XML resource file
+     * Imports currencies into the database from XML resource file
      */
     @VisibleForTesting
     @Throws(SAXException::class, ParserConfigurationException::class, IOException::class)
-    fun importCommodities(holder: DatabaseHolder) {
+    fun importCurrencies(holder: DatabaseHolder) {
         val parserFactory = SAXParserFactory.newInstance()
         val parser = parserFactory.newSAXParser()
         val reader = parser.xmlReader
@@ -254,7 +254,7 @@ object MigrationHelper {
 
         try {
             val holder = DatabaseHolder(context, db)
-            importCommodities(holder)
+            importCurrencies(holder)
         } catch (e: SAXException) {
             val msg = "Error loading currencies into the database"
             Timber.e(e, msg)
