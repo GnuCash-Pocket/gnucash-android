@@ -387,8 +387,7 @@
     <string name="label_export_transactions_since_date">Sedan</string>
     <string name="switch_export_transactions_from_all_time">All tid</string>
     <string name="label_recommend_app">Rekommendera i Play Store</string>
-    <string name="repeat_until_date">tills %1$s</string>
-    <string name="repeat_x_times">för %1$d gånger</string>
+
     <string name="menu_show_compact_view">Kompakt vy</string>
     <string name="book_default_name">Bokföring %1$d</string>
     <string name="last_export_time_never">aldrig</string>
@@ -432,4 +431,5 @@
     <string name="title_progress_processing_schedules">Bearbetning av scheman</string>
     <string name="title_progress_processing_transactions">Bearbetning av transaktioner</string>
     <string name="title_tab_labels">Visa flikar med etiketter</string>
+    <string name="execute">Utför</string>
 </resources>

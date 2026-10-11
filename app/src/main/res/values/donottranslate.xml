@@ -362,4 +362,6 @@
     <string name="title_search">@string/menu_search_accounts</string>
     <string name="type" translatable="false">@string/gnucash_po_type</string>
     <string name="unknown" translatable="false">@string/gnucash_po_unknown</string>
+    <string name="schedule_auto_create" translatable="false">@string/gnucash_po_create_automatically</string>
+    <string name="menu_run" translatable="false">@string/execute</string>
 </resources>

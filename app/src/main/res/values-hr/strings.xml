@@ -390,8 +390,6 @@
     <string name="label_export_transactions_since_date">Od</string>
     <string name="switch_export_transactions_from_all_time">Svo vrijeme</string>
     <string name="label_recommend_app">Preporuči na Play Store stranici</string>
-    <string name="repeat_until_date">do %1$s</string>
-    <string name="repeat_x_times">%1$d puta</string>
     <string name="menu_show_compact_view">Kompaktni prikaz</string>
     <string name="book_default_name">Knjiga %1$d</string>
     <string name="last_export_time_never">nikad</string>
@@ -435,4 +433,5 @@
     <string name="title_progress_processing_schedules">Obrada rasporedi</string>
     <string name="title_progress_processing_transactions">Obrada transakcija</string>
     <string name="title_tab_labels">Prikaži kartice s natpisima</string>
+    <string name="execute">Izvrši</string>
 </resources>

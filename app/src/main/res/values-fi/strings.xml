@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Since</string>
     <string name="switch_export_transactions_from_all_time">All time</string>
     <string name="label_recommend_app">Recommend in Play Store</string>
-    <string name="repeat_until_date">until %1$s</string>
-    <string name="repeat_x_times">for %1$d times</string>
     <string name="menu_show_compact_view">Compact View</string>
     <string name="book_default_name">Book %1$d</string>
     <string name="last_export_time_never">never</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Aikataulujen käsittely</string>
     <string name="title_progress_processing_transactions">Transaktioiden käsittely</string>
     <string name="title_tab_labels">Näytä välilehdet otsikoilla</string>
+    <string name="execute">Suorita</string>
 </resources>

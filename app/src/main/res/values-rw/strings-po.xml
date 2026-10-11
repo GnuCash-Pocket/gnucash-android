@@ -6,6 +6,7 @@
     <string name="gnucash_po_all_non_currency">"Ifaranga Umutekano"</string>
     <string name="gnucash_po_amount_num">"ingano"</string>
     <string name="gnucash_po_commodity_currency">"Ifaranga"</string>
+    <string name="gnucash_po_create_automatically">"(Byuzuye in ku buryo bwikora"</string>
     <string name="gnucash_po_currencies">"amafaranga/amadovize"</string>
     <string name="gnucash_po_date">"Itariki"</string>
     <string name="gnucash_po_description">"Insobanuramiterere"</string>

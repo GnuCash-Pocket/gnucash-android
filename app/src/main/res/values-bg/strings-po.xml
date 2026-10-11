@@ -1,12 +1,13 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="gnucash_po_account_code">"Код на сметка"</string>
-    <string name="gnucash_po_account_color">"_Цвят на сметка:"</string>
+    <string name="gnucash_po_account_color">"Цвят на сметка:"</string>
     <string name="gnucash_po_account_name">"Име на сметка"</string>
     <string name="gnucash_po_action">"Действие"</string>
-    <string name="gnucash_po_add">"_Адрес"</string>
+    <string name="gnucash_po_add">"Адрес"</string>
     <string name="gnucash_po_all_non_currency">"Избор на валута"</string>
     <string name="gnucash_po_amount_num">"Дължима сума"</string>
     <string name="gnucash_po_commodity_currency">"Обща валута"</string>
+    <string name="gnucash_po_create_automatically">"Автоматично създаване"</string>
     <string name="gnucash_po_currencies">"Валути"</string>
     <string name="gnucash_po_date">"Дата"</string>
     <string name="gnucash_po_description">"Описание"</string>

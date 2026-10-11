@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Beri</string>
     <string name="switch_export_transactions_from_all_time">Tüm zaman</string>
     <string name="label_recommend_app">Play Store\'da Beğen</string>
-    <string name="repeat_until_date">%1$s kadar</string>
-    <string name="repeat_x_times">%1$d kere</string>
     <string name="menu_show_compact_view">Sıkı Görünüm</string>
     <string name="book_default_name">Kitap %1$d</string>
     <string name="last_export_time_never">hiç</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Takvimlerin işlenmesi</string>
     <string name="title_progress_processing_transactions">İşlemlerin işlenmesi</string>
     <string name="title_tab_labels">Etiketli sekmeleri göster</string>
+    <string name="execute">Yürüt</string>
 </resources>

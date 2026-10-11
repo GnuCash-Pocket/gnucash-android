@@ -384,8 +384,6 @@
     <string name="label_export_transactions_since_date">開始</string>
     <string name="switch_export_transactions_from_all_time">全期間</string>
     <string name="label_recommend_app">Play ストア でお勧め</string>
-    <string name="repeat_until_date">%1$s まで</string>
-    <string name="repeat_x_times">%1$d 回</string>
     <string name="menu_show_compact_view">コンパクト表示</string>
     <string name="book_default_name">帳簿 %1$d</string>
     <string name="last_export_time_never">しない</string>
@@ -429,4 +427,5 @@
     <string name="title_progress_processing_schedules">スケジュール処理</string>
     <string name="title_progress_processing_transactions">取引処理</string>
     <string name="title_tab_labels">ラベル付きタブを表示</string>
+    <string name="execute">実行</string>
 </resources>

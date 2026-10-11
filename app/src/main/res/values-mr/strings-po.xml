@@ -3,13 +3,14 @@
     <string name="gnucash_po_account_color">"खात्याचा रंग"</string>
     <string name="gnucash_po_account_name">"खाते नाव"</string>
     <string name="gnucash_po_action">"कृती"</string>
-    <string name="gnucash_po_add">"_पत्ता"</string>
+    <string name="gnucash_po_add">"पत्ता"</string>
     <string name="gnucash_po_all_non_currency">"चलन निवडा"</string>
     <string name="gnucash_po_amount_num">"येणे बाकी"</string>
     <string name="gnucash_po_amount_with_sym">"प्रति सह चिन्ह"</string>
     <string name="gnucash_po_ask">"विचारा"</string>
     <string name="gnucash_po_bid">"बोली"</string>
     <string name="gnucash_po_commodity_currency">"सामान्य चलन"</string>
+    <string name="gnucash_po_create_automatically">"स्वयंचलितपणे तयार करा"</string>
     <string name="gnucash_po_currencies">"चलने"</string>
     <string name="gnucash_po_date">"तारीख"</string>
     <string name="gnucash_po_description">"विवरण"</string>

@@ -113,7 +113,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         } else {
             binding.listItem2Lines.secondaryText.isVisible = false
         }
-        binding.budgetRecurrence.text = budget.recurrence.getRepeatString(context)
+        binding.budgetRecurrence.text = budget.recurrence.formatRepeatString(context)
 
         binding.list.adapter = BudgetAmountAdapter(budgetUID!!)
     }
@@ -214,7 +214,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
             budgetLeft.text = projectedAmount.minus(spentAmountAbs).formattedString()
 
             var budgetProgress = 0f
-            if (!projectedAmount.isAmountZero) {
+            if (!projectedAmount.isZero) {
                 budgetProgress = spentAmount.toBigDecimal().divide(
                     projectedAmount.toBigDecimal(),
                     spentAmount.commodity.smallestFractionDigits,

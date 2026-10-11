@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">自從</string>
     <string name="switch_export_transactions_from_all_time">全部時間</string>
     <string name="label_recommend_app">在 Play Store 推薦</string>
-    <string name="repeat_until_date">直到 %1$s</string>
-    <string name="repeat_x_times">%1$d 次</string>
     <string name="menu_show_compact_view">精簡檢視</string>
     <string name="book_default_name">帳簿 %1$d</string>
     <string name="last_export_time_never">從未</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">處理時間表</string>
     <string name="title_progress_processing_transactions">處理交易</string>
     <string name="title_tab_labels">顯示帶標籤的分頁</string>
+    <string name="execute">執行</string>
 </resources>

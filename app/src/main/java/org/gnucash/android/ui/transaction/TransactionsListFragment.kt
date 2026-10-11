@@ -274,12 +274,12 @@ class TransactionsListFragment : MenuFragment(),
      */
     private class TransactionsCursorLoader(context: Context, private val accountUID: String) :
         DatabaseCursorLoader<TransactionsDbAdapter>(context) {
+        init {
+            this.databaseAdapter = TransactionsDbAdapter.instance
+        }
+
         override fun loadInBackground(): Cursor? {
-            val databaseAdapter = TransactionsDbAdapter.instance
-            this.databaseAdapter = databaseAdapter
-            val c = databaseAdapter.fetchTransactionsForAccount(accountUID)
-            registerContentObserver(c)
-            return c
+            return databaseAdapter?.fetchTransactionsForAccount(accountUID, false)
         }
     }
 
@@ -306,6 +306,7 @@ class TransactionsListFragment : MenuFragment(),
         //these views are not used in the compact view, hence the nullability
         private val transactionDate: TextView = binding.transactionDate
         private val editTransaction: ImageView = binding.editTransaction
+        private val iconRepeating: ImageView = binding.repeating
 
         private var transaction: Transaction? = null
 
@@ -369,6 +370,7 @@ class TransactionsListFragment : MenuFragment(),
             val transactionUID = transaction.uid
 
             primaryText.text = transaction.description
+            iconRepeating.isVisible = !transaction.scheduledActionUID.isNullOrEmpty()
 
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
@@ -456,6 +458,7 @@ class TransactionsListFragment : MenuFragment(),
             transactionsAdapter?.notifyItemRemoved(position)
         }
         updateAllWidgets(context)
+        refresh()
     }
 
     private fun duplicateTransaction(transactionUID: String) {

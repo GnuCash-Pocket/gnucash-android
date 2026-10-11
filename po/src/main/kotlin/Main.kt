@@ -3,7 +3,7 @@ package org.gnucash
 import java.io.File
 
 fun main(vararg args: String) {
-    var folderPotPath = "C:/GitHub/Gnucash/gnucash/po"
+    var folderPotPath = "/GitHub/Gnucash/gnucash/po"
     var folderResPath = "./app/src/main/res"
 
     if (args.isNotEmpty()) {

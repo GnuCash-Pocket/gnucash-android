@@ -198,19 +198,19 @@ class MoneyTest : GnuCashTest() {
         val money = createZeroInstance(Commodity.DEFAULT_COMMODITY)
         var addend = Money(0.0, Commodity.USD)
         var sum = money + addend
-        assertThat(sum.isAmountZero).isTrue()
+        assertThat(sum.isZero).isTrue()
         assertThat(sum.toDouble()).isEqualTo(0.0)
         assertThat(sum.commodity).isEqualTo(Commodity.USD)
 
         addend = Money(123.45, Commodity.USD)
         sum = money + addend
-        assertThat(sum.isAmountZero).isFalse()
+        assertThat(sum.isZero).isFalse()
         assertThat(sum.toDouble()).isEqualTo(123.45)
         assertThat(sum.commodity).isEqualTo(Commodity.USD)
 
         addend = Money(0.0, Commodity.EUR)
         sum = money + addend
-        assertThat(sum.isAmountZero).isTrue()
+        assertThat(sum.isZero).isTrue()
         assertThat(sum.toDouble()).isEqualTo(0.0)
         assertThat(sum.commodity).isEqualTo(Commodity.EUR)
 

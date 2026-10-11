@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.ui.common
 
+import org.gnucash.android.BuildConfig
+
 /**
  * Collection of constants which are passed across multiple pieces of the UI (fragments, activities, dialogs)
  *
@@ -100,4 +102,9 @@ object UxArgument {
      * Key for passing the price unique ID as argument to UI
      */
     const val SELECTED_PRICE_UID: String = "price_uid"
+
+    /**
+     * Key for putting argument for tab into bundle arguments
+     */
+    const val EXTRA_TAB_INDEX: String = BuildConfig.APPLICATION_ID + ".extra.TAB_INDEX"
 }

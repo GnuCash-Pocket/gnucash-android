@@ -439,7 +439,7 @@ class AccountsDbAdapter(
      * @return String unique ID of the account
      */
     fun getOrCreateImbalanceAccountUID(context: Context, commodity: Commodity): String {
-        return getOrCreateImbalanceAccount(context, commodity)!!.uid
+        return getOrCreateImbalanceAccount(context, commodity).uid
     }
 
     /**
@@ -476,6 +476,17 @@ class AccountsDbAdapter(
     fun getImbalanceAccountUID(context: Context, commodity: Commodity): String? {
         val imbalanceAccountName: String = getImbalanceAccountName(context, commodity)
         return findAccountUidByFullName(imbalanceAccountName)
+    }
+
+    fun isImbalanceAccount(context: Context, accountUID: String): Boolean {
+        val account = getRecord(accountUID)
+        if (account.type != AccountType.BANK) {
+            return false
+        }
+        if (account.parentUID != rootAccountUID) {
+            return false
+        }
+        return getImbalanceAccountUID(context, account.commodity) == accountUID
     }
 
     /**
@@ -550,20 +561,21 @@ class AccountsDbAdapter(
                 }
             }
         }
-        val c = db.query(
+        val projection = arrayOf<String?>(AccountEntry.COLUMN_UID)
+        val where = AccountEntry.COLUMN_FULL_NAME + "= ?"
+        val whereArgs = arrayOf(fullName)
+        val cursor = db.query(
             tableName,
-            arrayOf<String?>(AccountEntry.COLUMN_UID),
-            AccountEntry.COLUMN_FULL_NAME + "= ?", arrayOf<String?>(fullName),
+            projection,
+            where, whereArgs,
             null, null, null, "1"
         )
-        try {
-            if (c.moveToNext()) {
-                return c.getString(0)
+        return cursor.use { cursor ->
+            if (cursor.moveToNext()) {
+                cursor.getString(0)
             } else {
-                return null
+                null
             }
-        } finally {
-            c.close()
         }
     }
 
@@ -793,7 +805,7 @@ class AccountsDbAdapter(
                 val child = getRecord(childUID)
                 val childCommodity = child.commodity
                 val childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
-                if (childBalance.isAmountZero) continue
+                if (childBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
                 balance += childBalance * price
             }
@@ -879,16 +891,16 @@ class AccountsDbAdapter(
         var balance = createZeroInstance(currency)
         if ((startTimestamp == ALWAYS) && (endTimestamp == ALWAYS)) { // Use cached balances.
             for (account in accounts) {
-                var accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false)
-                if (accountBalance.isAmountZero) continue
+                val accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false)
+                if (accountBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
         } else {
             val balances = getAccountsBalances(accounts, startTimestamp, endTimestamp)
             for (account in accounts) {
-                var accountBalance = balances[account.uid]
-                if ((accountBalance == null) || accountBalance.isAmountZero) continue
+                val accountBalance = balances[account.uid]
+                if ((accountBalance == null) || accountBalance.isZero) continue
                 val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
@@ -1152,36 +1164,6 @@ class AccountsDbAdapter(
     /**
      * Returns the default transfer account record ID for the account with UID `accountUID`
      *
-     * @param accountID Database ID of the account record
-     * @return Record ID of default transfer account
-     */
-    fun getDefaultTransferAccountID(accountID: Long): Long {
-        if (isCached) {
-            for (account in cache.values) {
-                if (account.id == accountID) {
-                    val uid = account.defaultTransferAccountUID
-                    return if (uid.isNullOrEmpty()) 0 else getID(uid)
-                }
-            }
-        }
-        val cursor = db.query(
-            tableName,
-            arrayOf<String?>(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID),
-            AccountEntry.COLUMN_ID + " = " + accountID,
-            null, null, null, null
-        )
-        cursor.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val uid = cursor.getString(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
-                return if (uid.isNullOrEmpty()) 0 else getID(uid)
-            }
-        }
-        return 0
-    }
-
-    /**
-     * Returns the default transfer account record ID for the account with UID `accountUID`
-     *
      * @param account The main account
      * @return Record of default transfer account
      */
@@ -1337,7 +1319,7 @@ class AccountsDbAdapter(
             val openingTransactions = mutableListOf<Transaction>()
             for (account in accounts) {
                 val balance = computeSplitsBalance(account, ALWAYS, ALWAYS)
-                if (balance.isAmountZero) continue
+                if (balance.isZero) continue
 
                 val transaction =
                     Transaction(context.getString(R.string.account_name_opening_balances))

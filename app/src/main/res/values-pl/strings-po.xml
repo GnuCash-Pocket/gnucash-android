@@ -9,6 +9,7 @@
     <string name="gnucash_po_ask">"Zapytaj"</string>
     <string name="gnucash_po_bid">"Licytacja"</string>
     <string name="gnucash_po_commodity_currency">"Typ środków/Waluta"</string>
+    <string name="gnucash_po_create_automatically">"Utwórz automatycznie"</string>
     <string name="gnucash_po_currencies">"Waluty"</string>
     <string name="gnucash_po_date">"Data"</string>
     <string name="gnucash_po_description">"Opis"</string>

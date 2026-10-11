@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Seit</string>
     <string name="switch_export_transactions_from_all_time">Zeitlich unbegrenzt</string>
     <string name="label_recommend_app">Im Play Store empfehlen</string>
-    <string name="repeat_until_date">bis %1$s</string>
-    <string name="repeat_x_times">für %1$d Mal</string>
     <string name="menu_show_compact_view">Kompakte Ansicht</string>
     <string name="book_default_name">Buch %1$d</string>
     <string name="last_export_time_never">nie</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Terminplanung</string>
     <string name="title_progress_processing_transactions">Transaktionsverwaltung</string>
     <string name="title_tab_labels">Registerkarten mit Beschriftungen anzeigen</string>
+    <string name="execute">Ausführen</string>
 </resources>

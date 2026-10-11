@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"売り気配呼値"</string>
     <string name="gnucash_po_bid">"買い気配呼値"</string>
     <string name="gnucash_po_commodity_currency">"商品・通貨"</string>
+    <string name="gnucash_po_create_automatically">"自動的に作成する"</string>
     <string name="gnucash_po_currencies">"通貨"</string>
     <string name="gnucash_po_date">"日付"</string>
     <string name="gnucash_po_description">"説明"</string>

@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"கேள்"</string>
     <string name="gnucash_po_bid">"ஏலம்"</string>
     <string name="gnucash_po_commodity_currency">"பொருள்/நாணயம்"</string>
+    <string name="gnucash_po_create_automatically">"தானாக உருவாக்கு"</string>
     <string name="gnucash_po_currencies">"நாணயங்கள்"</string>
     <string name="gnucash_po_date">"தேதி"</string>
     <string name="gnucash_po_description">"விளக்கம்"</string>

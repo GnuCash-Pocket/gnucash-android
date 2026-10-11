@@ -94,4 +94,88 @@ class SplitTest : GnuCashTest() {
         assertThat(split.type).isEqualTo(TransactionType.DEBIT)
         assertThat(split.memo).isEqualTo("Didn't you get the memo?")
     }
+
+    @Test
+    fun `plusAssign - credit and credit`() {
+        val split1 = Split(Money("100", "USD"), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("50", "USD"), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("150", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("150", "USD"))
+    }
+
+    @Test
+    fun `plusAssign - debit and debit`() {
+        val split1 = Split(Money("100", "USD"), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("50", "USD"), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("150", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("150", "USD"))
+    }
+
+    @Test
+    fun `plusAssign - credit and debit`() {
+        val split1 = Split(Money("499", "USD"), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("99", "USD"), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("400", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("400", "USD"))
+    }
+
+    @Test
+    fun `plusAssign - credit and big debit`() {
+        val split1 = Split(Money("499", "USD"), "imbalance")
+        split1.type = TransactionType.CREDIT
+        val split2 = Split(Money("599", "USD"), "imbalance")
+        split2.type = TransactionType.DEBIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("100", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("100", "USD"))
+    }
+
+    @Test
+    fun `plusAssign - debit and credit`() {
+        val split1 = Split(Money("499", "USD"), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("99", "USD"), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(split1.value).isEqualTo(Money("400", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("400", "USD"))
+    }
+
+    @Test
+    fun `plusAssign - debit and big credit`() {
+        val split1 = Split(Money("499", "USD"), "imbalance")
+        split1.type = TransactionType.DEBIT
+        val split2 = Split(Money("599", "USD"), "imbalance")
+        split2.type = TransactionType.CREDIT
+
+        split1 += split2
+
+        assertThat(split1.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(split1.value).isEqualTo(Money("100", "USD"))
+        assertThat(split1.quantity).isEqualTo(Money("100", "USD"))
+    }
 }

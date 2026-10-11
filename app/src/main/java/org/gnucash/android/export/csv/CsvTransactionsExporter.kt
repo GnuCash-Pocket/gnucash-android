@@ -23,7 +23,6 @@ import org.gnucash.android.R
 import org.gnucash.android.db.forEach
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.parseSplit
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
@@ -141,7 +140,7 @@ class CsvTransactionsExporter(
     }
 
     private fun formatRate(value: Money, quantity: Money): String {
-        if (quantity.isAmountZero) {
+        if (quantity.isZero) {
             return formatRate(1)
         }
         val precision = max(4, value.commodity.smallestFractionDigits)

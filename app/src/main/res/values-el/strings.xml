@@ -387,8 +387,6 @@
     <string name="label_export_transactions_since_date">Από</string>
     <string name="switch_export_transactions_from_all_time">Από την αρχή</string>
     <string name="label_recommend_app">Προτείνετε στο Play Store</string>
-    <string name="repeat_until_date">μέχρι %1$s</string>
-    <string name="repeat_x_times">για %1$d φορές</string>
     <string name="menu_show_compact_view">Συμπαγής προβολή</string>
     <string name="book_default_name">Βιβλίο %1$d</string>
     <string name="last_export_time_never">ποτέ</string>
@@ -432,4 +430,5 @@
     <string name="title_progress_processing_schedules">Επεξεργασία χρονοδιαγραμμάτων</string>
     <string name="title_progress_processing_transactions">Επεξεργασία συναλλαγών</string>
     <string name="title_tab_labels">Εμφάνιση καρτελών με ετικέτες</string>
+    <string name="execute">Εκτέλεση</string>
 </resources>

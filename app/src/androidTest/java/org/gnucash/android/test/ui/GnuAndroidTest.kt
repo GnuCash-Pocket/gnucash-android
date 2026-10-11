@@ -3,6 +3,7 @@ package org.gnucash.android.test.ui
 import android.app.Activity
 import android.content.Context
 import android.os.Build
+import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
@@ -28,6 +29,7 @@ import org.gnucash.android.test.ui.util.WaitAction
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.util.BookUtils
 import org.gnucash.android.util.applyLocale
+import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
@@ -159,6 +161,11 @@ abstract class GnuAndroidTest {
             .perform(WaitAction.waitForView(viewId))
     }
 
+    fun waitForView(viewMatcher: Matcher<View>): ViewInteraction {
+        return onView(viewMatcher)
+            .perform(WaitAction.waitForView(viewMatcher))
+    }
+
     protected fun setDoubleEntryEnabled(enabled: Boolean) {
         GnuCashApplication.getBookPreferences(context).edit {
             putBoolean(context.getString(R.string.key_use_double_entry), enabled)
@@ -181,7 +188,7 @@ abstract class GnuAndroidTest {
         const val BUTTON_NEGATIVE = android.R.id.button2
 
         /**
-         * Prevents the first-run dialogs (Whats new, Create accounts etc) from being displayed when testing
+         * Prevents the first-run dialogs (What's new, Create accounts, etc.) from being displayed when testing
          *
          * @param context Application context
          */

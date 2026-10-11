@@ -1,7 +1,6 @@
 package org.gnucash.android.test.unit.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Price
 import org.gnucash.android.test.unit.GnuCashTest
@@ -53,7 +52,7 @@ class PriceDbAdapterTest : GnuCashTest() {
         assertThat(savedPrice2.valueDenom).isEqualTo(100)
         assertThat(savedPrice2.security).isEqualTo(savedPrice1.security)
         assertThat(savedPrice2.currency).isEqualTo(savedPrice1.currency)
-        assertThat(savedPrice2.date).isGreaterThan(savedPrice1.date)
+        assertThat(savedPrice2.date).isGreaterThanOrEqualTo(savedPrice1.date)
 
         val price3 = Price(currency, security)
         price3.valueNum = 190

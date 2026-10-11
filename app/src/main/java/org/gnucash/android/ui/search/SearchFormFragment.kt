@@ -31,11 +31,9 @@ import org.gnucash.android.ui.adapter.SpinnerItem
 import org.gnucash.android.ui.search.SearchResultsFragment.Companion.EXTRA_FORM
 import org.gnucash.android.ui.text.DefaultTextWatcher
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
-import org.gnucash.android.ui.util.widget.CalculatorEditText.OnValueChangedListener
 import org.gnucash.android.util.toMillis
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import java.math.BigDecimal
 
 class SearchFormFragment : Fragment() {
     private val viewModel by viewModels<SearchFormViewModel>()
@@ -249,7 +247,7 @@ class SearchFormFragment : Fragment() {
                 binding.dateText.text = dateFormatter.print(criterion.value!!)
             }
             val dateMillis = criterion.value?.toMillis() ?: System.currentTimeMillis()
-            DatePickerDialogFragment.newInstance(listener, dateMillis)
+            DatePickerDialogFragment.newInstance(dateMillis, listener)
                 .show(parentFragmentManager, "date_fragment")
         }
         binding.deleteBtn.setOnClickListener {
@@ -299,11 +297,9 @@ class SearchFormFragment : Fragment() {
         }
         binding.inputSplitAmount.setValue(criterion.value, true)
         binding.inputSplitAmount.bindKeyboard(bindingRoot.calculatorKeyboard)
-        binding.inputSplitAmount.addValueChangedListener(object : OnValueChangedListener {
-            override fun onValueChanged(value: BigDecimal?) {
-                criterion.value = value
-            }
-        })
+        binding.inputSplitAmount.addValueChangedListener {
+            criterion.value = it
+        }
         binding.deleteBtn.setOnClickListener {
             viewModel.remove(criterion)
             removeItem(binding.root)
