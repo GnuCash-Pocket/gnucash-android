@@ -1,5 +1,5 @@
 [versions]
-activity = "1.13.0"
+activity = "1.11.0"
 agp = "9.4.1"
 android-test-core = "1.7.0"
 android-test-espresso = "3.7.0"
@@ -8,13 +8,13 @@ android-test-rules = "1.7.0"
 android-test-runner = "1.7.0"
 android-test-uiautomator = "2.4.0"
 apache-http = "3.1"
-appcompat = "1.8.0"
+appcompat = "1.7.0"
 assertj = "3.27.7"
 betterpickers = "3.1.0"
 cardview = "1.0.0"
 chart = "v3.1.0"
 compose-bom = "2026.09.00"
-core = "1.19.1"
+core = "1.17.0"
 crashlytics = "20.1.1"
 crashlytics-plugin = "3.0.8"
 drawerlayout = "1.2.0"
@@ -39,7 +39,7 @@ robolectric = "4.16.1"
 timber = "5.0.1"
 times-square = "1.7.11"
 wizardpager = "1.0.3"
-work-runtime = "2.12.0"
+work-runtime = "2.9.1"
 
 [libraries]
 android-test-core = { module = "androidx.test:core-ktx", version.ref = "android-test-core" }
@@ -64,7 +64,7 @@ androidx-drawerlayout = { module = "androidx.drawerlayout:drawerlayout", version
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
-androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime" }
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work-runtime" }
 apache-http = { module = "commons-httpclient:commons-httpclient", version.ref = "apache-http" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 betterpickers = { module = "com.code-troopers.betterpickers:library", version.ref = "betterpickers" }
