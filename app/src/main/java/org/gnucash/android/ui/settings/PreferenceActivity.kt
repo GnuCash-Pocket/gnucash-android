@@ -17,7 +17,7 @@ package org.gnucash.android.ui.settings
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build.VERSION.SDK_INT
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
@@ -57,7 +57,7 @@ class PreferenceActivity : PasscodeLockActivity(),
         actionBar?.setHomeButtonEnabled(true)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        if (SDK_INT >= 33) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     handleBackPressed()

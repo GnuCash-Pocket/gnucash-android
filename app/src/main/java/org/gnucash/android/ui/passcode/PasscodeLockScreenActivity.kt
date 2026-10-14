@@ -16,11 +16,14 @@
 package org.gnucash.android.ui.passcode
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.app.arguments
+import org.gnucash.android.app.withArguments
 import org.gnucash.android.ui.settings.ThemeHelper
 
 /**
@@ -34,11 +37,10 @@ class PasscodeLockScreenActivity : GnuCashActivity() {
         ThemeHelper.apply(this)
         setContentView(R.layout.passcode_lockscreen)
 
-        val args = Bundle()
-        args.putAll(intent.extras ?: Bundle())
-        args.putString(PasscodeFragment.EXTRA_ACTION, intent.action)
-        val fragment = PasscodeFragment()
-        fragment.arguments = args
+        val fragment = PasscodeFragment().withArguments {
+            putAll(intent.arguments())
+            putString(PasscodeFragment.EXTRA_ACTION, intent.action)
+        }
 
         supportFragmentManager
             .beginTransaction()
@@ -56,5 +58,13 @@ class PasscodeLockScreenActivity : GnuCashActivity() {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         finish()
+    }
+
+    companion object {
+        fun show(caller: GnuCashActivity, requestCode: Int) {
+            val context: Context = caller
+            val intent = Intent(context, PasscodeLockScreenActivity::class.java)
+            caller.startActivityForResult(intent, requestCode)
+        }
     }
 }

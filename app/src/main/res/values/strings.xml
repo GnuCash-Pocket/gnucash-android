@@ -338,28 +338,7 @@
         <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
-    <!-- Passcode lock -->
-    <string name="digit_one">1</string>
-    <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text" />
-    <string name="digit_two">2</string>
-    <string name="digit_two_text">ABC</string>
-    <string name="digit_three">3</string>
-    <string name="digit_three_text">DEF</string>
-    <string name="digit_four">4</string>
-    <string name="digit_four_text">GHI</string>
-    <string name="digit_five">5</string>
-    <string name="digit_five_text">JKL</string>
-    <string name="digit_six">6</string>
-    <string name="digit_six_text">MNO</string>
-    <string name="digit_seven">7</string>
-    <string name="digit_seven_text">PQRS</string>
-    <string name="digit_eight">8</string>
-    <string name="digit_eight_text">TUV</string>
-    <string name="digit_nine">9</string>
-    <string name="digit_nine_text">WXYZ</string>
-    <string name="digit_zero">0</string>
-    <string name="digit_zero_text">+</string>
+
     <string name="title_manage_books">Manage Books</string>
     <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>

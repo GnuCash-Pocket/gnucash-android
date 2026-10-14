@@ -59,14 +59,7 @@ open class PasscodeLockActivity : GnuCashActivity() {
 
         if (isPassEnabled && !skipPasscode && !isSessionActive() && !passCode.isNullOrEmpty()) {
             Timber.v("Show passcode screen")
-            var args = intent.extras ?: Bundle()
-            val intent = Intent(this, PasscodeLockScreenActivity::class.java)
-                .setAction(intent.action)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                .putExtra(PasscodeFragment.PASSCODE_CLASS_CALLER, this.javaClass.getName())
-                .putExtras(args)
-            startActivity(intent)
+            PasscodeLockScreenActivity.show(this, 0)
         }
     }
 

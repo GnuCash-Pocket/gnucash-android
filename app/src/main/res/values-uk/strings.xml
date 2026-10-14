@@ -339,28 +339,6 @@
         <item>Інший інтервал…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
-    <!-- Passcode lock -->
-    <string name="digit_one">1</string>
-    <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text" />
-    <string name="digit_two">2</string>
-    <string name="digit_two_text">АБВГҐ</string>
-    <string name="digit_three">3</string>
-    <string name="digit_three_text">ДЕЄЖЗ</string>
-    <string name="digit_four">4</string>
-    <string name="digit_four_text">ИІЇЙКЛ</string>
-    <string name="digit_five">5</string>
-    <string name="digit_five_text">МНОП</string>
-    <string name="digit_six">6</string>
-    <string name="digit_six_text">РСТУ</string>
-    <string name="digit_seven">7</string>
-    <string name="digit_seven_text">ФХЦЧ</string>
-    <string name="digit_eight">8</string>
-    <string name="digit_eight_text">ШЩ</string>
-    <string name="digit_nine">9</string>
-    <string name="digit_nine_text">ЬЮЯ</string>
-    <string name="digit_zero">0</string>
-    <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Керування книгами</string>
     <string name="menu_manage_books">Керування книгами</string>
     <string name="select_chart_to_view_details">Торкніться елемента діаграми, шоб отримати докладну інформацію</string>

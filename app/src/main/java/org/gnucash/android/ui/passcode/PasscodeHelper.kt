@@ -13,7 +13,7 @@ object PasscodeHelper {
     /**
      * Lifetime of passcode session
      */
-    const val SESSION_TIMEOUT = 5 * DateUtils.SECOND_IN_MILLIS
+    const val SESSION_TIMEOUT = 10 * DateUtils.SECOND_IN_MILLIS
 
     /**
      * Init time of passcode session
