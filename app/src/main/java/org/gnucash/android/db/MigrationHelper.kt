@@ -103,6 +103,9 @@ object MigrationHelper {
         if (oldVersion < 30) {
             migrateTo30(db)
         }
+        if (oldVersion < 31) {
+            migrateTo31(db)
+        }
     }
 
     /**
@@ -371,6 +374,26 @@ object MigrationHelper {
         } finally {
             db.endTransaction()
         }
+    }
+
+    /**
+     * Upgrade the database to version 31.
+     *
+     * Clears all cached balance columns so that the new balance aggregation rules
+     * are applied immediately for existing users.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo31(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 31")
+
+        db.execSQL(
+            "UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                    + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL"
+        )
     }
 
     private class AccountCurrency(
