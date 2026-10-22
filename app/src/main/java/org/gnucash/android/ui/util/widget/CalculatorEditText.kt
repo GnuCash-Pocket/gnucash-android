@@ -50,6 +50,10 @@ import java.util.concurrent.CopyOnWriteArrayList
  * After the view is inflated, make sure to call [.bindKeyboard]
  * with the view from your layout where the calculator keyboard should be displayed.
  *
+ * If [bindKeyboard] is never called, this view behaves like a plain numeric EditText:
+ * the system soft keyboard is used and the text is never automatically re-evaluated
+ * or reformatted.
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class CalculatorEditText @JvmOverloads constructor(
@@ -90,15 +94,49 @@ class CalculatorEditText @JvmOverloads constructor(
         setInputType(InputType.TYPE_NULL)
         setRawInputType(InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
 
+        // Locale-aware input filter: accepts the locale's decimal separator (e.g. ',' in de/ro).
+        // Deliberately applies to *all* instances, bound or not - this is what keeps the
+        // decimal-separator fixes for #37, #88 and #417 working on fields that use the
+        // native numeric keyboard instead of the calculator one.
         addFilter(filter)
-
-        // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
-        setShowSoftInputOnFocus(false)
 
         addTextChangedListener(DefaultTextWatcher { s ->
             isContentModified = originalText != s.toString()
         })
 
+        // NOTE: all calculator-specific behavior - suppressing the native soft keyboard,
+        // showing the calculator on focus, re-evaluating on focus loss - intentionally
+        // lives in bindKeyboard(). An instance that never binds a keyboard must behave
+        // like a plain EditText: native soft input, text never reformatted. Setting these
+        // globally in init left keyboardless instances (Transfer Funds dialog, #523/#466)
+        // with no input method at all, and re-evaluating them silently rounded their
+        // values on focus loss.
+
+        registerBackPressed()
+    }
+
+    private fun bindKeyboard(calculatorKeyboard: CalculatorKeyboard?) {
+        keyboard = calculatorKeyboard
+
+        // The calculator keyboard replaces the native one, so suppress the system soft
+        // keyboard for bound fields only. Doing this globally in init left instances
+        // without a calculator keyboard (Transfer Funds dialog, #523/#466) with no input
+        // method at all.
+        // This also prevents the system keyboard appearing on long-press, but for some
+        // reason, this prevents the text selection from working.
+        setShowSoftInputOnFocus(false)
+
+        // Although this handler doesn't make sense, if removed, the standard keyboard
+        // shows up in addition to the calculator one when the EditText gets a touch event.
+        @SuppressLint("ClickableViewAccessibility")
+        setOnTouchListener { _, event ->
+            onTouchEvent(event)
+            return@setOnTouchListener false
+        }
+
+        // Re-evaluating (and thus reformatting to `commodity` precision) is only correct
+        // for bound fields. For unbound ones it would silently round values behind the
+        // user's back, which then got saved - e.g. exchange rates rounded from 6 to 2 digits.
         setOnEditorActionListener(object : OnEditorActionListener {
             override fun onEditorAction(v: TextView, actionId: Int, event: KeyEvent?): Boolean {
                 if ((actionId and EditorInfo.IME_MASK_ACTION) > EditorInfo.IME_ACTION_NONE) {
@@ -121,20 +159,6 @@ class CalculatorEditText @JvmOverloads constructor(
                 }
             }
         }
-
-        registerBackPressed()
-    }
-
-    private fun bindKeyboard(calculatorKeyboard: CalculatorKeyboard?) {
-        keyboard = calculatorKeyboard
-
-        // Although this handler doesn't make sense, if removed, the standard keyboard
-        // shows up in addition to the calculator one when the EditText gets a touch event.
-        @SuppressLint("ClickableViewAccessibility")
-        setOnTouchListener { _, event ->
-            onTouchEvent(event)
-            return@setOnTouchListener false
-        }
     }
 
     /**
@@ -156,7 +180,8 @@ class CalculatorEditText @JvmOverloads constructor(
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (CalculatorKeyboard.onKeyDown(keyCode, event)) {
+        // Expression evaluation is a calculator feature; unbound instances must stay inert.
+        if (keyboard != null && CalculatorKeyboard.onKeyDown(keyCode, event)) {
             evaluate()
             return true
         }

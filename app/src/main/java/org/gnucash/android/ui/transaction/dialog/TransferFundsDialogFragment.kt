@@ -20,6 +20,7 @@ import android.content.Context
 import android.database.SQLException
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.WindowManager
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -77,6 +78,18 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
         val fromCommodity = fromAmount.commodity
         val targetCommodity = this.targetCommodity!!
+
+        // The exchange rate is not an amount in the target currency: it needs the full
+        // precision used when storing prices (see SCALE_RATE and PriceFormFragment.RATE_FRACTION).
+        // CalculatorEditText reformats its text to `commodity.smallestFractionDigits` whenever
+        // evaluate() runs, so with the default commodity (USD, 2 digits) an exact rate like
+        // 4.975421 would be rounded to 4.98 and silently saved.
+        binding.inputExchangeRate.commodity = targetCommodity.copy(smallestFraction = RATE_FRACTION)
+
+        // The converted amount *is* an amount in the target currency and keeps that
+        // currency's own precision (2 digits for EUR, 0 for JPY, ...).
+        binding.inputConvertedAmount.commodity = targetCommodity
+
         val formatterAmount = NumberFormat.getNumberInstance()
         formatterAmount.minimumFractionDigits = targetCommodity.smallestFractionDigits
         formatterAmount.maximumFractionDigits = targetCommodity.smallestFractionDigits
@@ -205,7 +218,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = onCreateBinding(layoutInflater)
         val context = binding.root.context
-        return AlertDialog.Builder(context, theme)
+        val dialog = AlertDialog.Builder(context, theme)
             .setTitle(R.string.title_transfer_funds)
             .setView(binding.root)
             .setNegativeButton(R.string.btn_cancel) { _, _ ->
@@ -215,6 +228,12 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
                 transferFunds(originAmount!!.commodity, targetCommodity!!, binding)
             }
             .create()
+        // The exchange rate field is focused on open (see onCreateBinding), but this dialog is
+        // usually opened to just confirm an already saved rate. Do not raise the soft keyboard
+        // together with the dialog - it may cover the dialog buttons. The keyboard appears
+        // only when the user taps an input field.
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+        return dialog
     }
 
     /**
@@ -316,6 +335,11 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
     companion object {
         private const val SCALE_RATE = 6
+
+        /**
+         * 10^SCALE_RATE - matches the fraction used for rates in PriceFormFragment (RATE_FRACTION).
+         */
+        private const val RATE_FRACTION = 1_000_000
 
         fun getInstance(
             transactionAmount: Money,
