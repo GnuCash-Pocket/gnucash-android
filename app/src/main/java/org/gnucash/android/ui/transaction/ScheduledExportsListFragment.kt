@@ -17,7 +17,8 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = binding!!
-        binding.empty.setText(R.string.label_no_scheduled_exports_to_display)
+        val context = binding.list.context
+        binding.empty.setContentDescription(context.getText(R.string.label_no_scheduled_exports_to_display))
         binding.fabAdd.setOnClickListener {
             addExport(it.context)
         }
