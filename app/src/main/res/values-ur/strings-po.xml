@@ -3,12 +3,13 @@
     <string name="gnucash_po_account_color">"اكاؤنٹ رنگ"</string>
     <string name="gnucash_po_account_name">"اكاؤنٹ نام"</string>
     <string name="gnucash_po_action">"عمل"</string>
-    <string name="gnucash_po_add">"_ایڈریس"</string>
+    <string name="gnucash_po_add">"ایڈریس"</string>
     <string name="gnucash_po_all_non_currency">"كرنسی منتخب كرو"</string>
     <string name="gnucash_po_amount_num">"بقایا رقم"</string>
     <string name="gnucash_po_amount_with_sym">"كو Sym کے ساتھ"</string>
     <string name="gnucash_po_ask">"پوچھیں"</string>
     <string name="gnucash_po_commodity_currency">"عام كرنسی"</string>
+    <string name="gnucash_po_create_automatically">"خود كار طریقہ سے تخلیق"</string>
     <string name="gnucash_po_currencies">"كرنسیز"</string>
     <string name="gnucash_po_date">"تاریخ"</string>
     <string name="gnucash_po_description">"وضاحت"</string>

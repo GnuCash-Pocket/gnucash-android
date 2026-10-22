@@ -17,7 +17,6 @@ package org.gnucash.android.test.unit.export
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.export.xml.GncXmlHelper
 import org.gnucash.android.export.xml.GncXmlHelper.formatDateTime
 import org.gnucash.android.export.xml.GncXmlHelper.formatNumeric
 import org.gnucash.android.export.xml.GncXmlHelper.formatSplitAmount
@@ -156,8 +155,8 @@ class GncXmlHelperTest : GnuCashTest() {
 
         override fun run() {
             try {
-                for (i in 0..999) {
-                    assertThat(GncXmlHelper.formatDateTime(calendar)).isEqualTo(expected)
+                repeat(1000) {
+                    assertThat(formatDateTime(calendar)).isEqualTo(expected)
                     try {
                         Thread.sleep(1)
                     } catch (_: InterruptedException) {

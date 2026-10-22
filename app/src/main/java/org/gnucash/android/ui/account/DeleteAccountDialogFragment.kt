@@ -68,7 +68,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
         val accountUID = requireArguments().getString(UxArgument.SELECTED_ACCOUNT_UID)!!
         originAccountUID = accountUID
         subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
-        transactionCount = transactionsDbAdapter.getTransactionsCount(accountUID).toLong()
+        transactionCount = transactionsDbAdapter.getCountByAccount(accountUID).toLong()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

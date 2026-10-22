@@ -3,12 +3,13 @@
     <string name="gnucash_po_account_color">"Hesap Rengi"</string>
     <string name="gnucash_po_account_name">"Hesap Adı"</string>
     <string name="gnucash_po_action">"İşlem"</string>
-    <string name="gnucash_po_add">"_Ekle"</string>
+    <string name="gnucash_po_add">"Ekle"</string>
     <string name="gnucash_po_all_non_currency">"Para birimi seçin"</string>
     <string name="gnucash_po_amount_num">"Tutar"</string>
     <string name="gnucash_po_ask">"Sor"</string>
     <string name="gnucash_po_bid">"Teklif"</string>
     <string name="gnucash_po_commodity_currency">"Ortak Para Birimi"</string>
+    <string name="gnucash_po_create_automatically">"Otomatik oluştur"</string>
     <string name="gnucash_po_currencies">"Döviz"</string>
     <string name="gnucash_po_date">"Tarih"</string>
     <string name="gnucash_po_description">"Açıklama"</string>

@@ -19,7 +19,6 @@ import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.toCsv
-import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.formatShortDate
 import java.math.BigDecimal
 import java.sql.Timestamp
@@ -89,19 +88,22 @@ class Transaction : BaseModel {
      * The export flag and the template flag are not copied from the old transaction to the new.
      *
      * @param generateNewUID Flag to determine if new UID should be assigned or not
-     * @param time The date posted.
+     * @param datePosted The date posted.
      */
     fun copy(generateNewUID: Boolean = true, datePosted: Long? = null): Transaction {
-        val clone = Transaction(description)
-        if (!generateNewUID) {
-            clone.setUID(uid)
+        val original = this
+        return Transaction(description).apply {
+            if (!generateNewUID) {
+                setUID(original.uid)
+            }
+            commodity = original.commodity
+            notes = original.notes
+            number = original.number
+            scheduledActionUID = null
+            splits = original.splits.map { it.copy(generateNewUID) }
+            isTemplate = original.isTemplate
+            this.datePosted = datePosted ?: original.datePosted
         }
-        clone.commodity = commodity
-        clone.notes = notes
-        clone.number = number
-        clone.splits = splits.map { it.copy(generateNewUID) }
-        clone.datePosted = datePosted ?: this.datePosted
-        return clone
     }
 
     /**
@@ -125,7 +127,7 @@ class Transaction : BaseModel {
      */
     fun createAutoBalanceSplit(): Split? {
         val imbalance = imbalance //returns imbalance of 0 for multi-currency transactions
-        if (!imbalance.isAmountZero) {
+        if (!imbalance.isZero) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
             val split = Split(imbalance, accountUID = commodity.uid)
@@ -142,8 +144,9 @@ class Transaction : BaseModel {
      */
     override fun setUID(uid: String?) {
         super.setUID(uid)
+        val uidNew = uid ?: this.uid
         for (split in splits) {
-            split.transactionUID = uid
+            split.transactionUID = uidNew
         }
     }
 
@@ -155,6 +158,7 @@ class Transaction : BaseModel {
     var splits: List<Split>
         get() = _splits
         set(value) {
+            if (_splits === value) return
             _splits.clear()
             for (split in value) {
                 addSplit(split)
@@ -202,10 +206,10 @@ class Transaction : BaseModel {
      *
      * @param accountUID Unique Identifier of the account
      * @return Money balance of the transaction for the specified account
-     * @see computeBalance
+     * @see computeAccountBalance
      */
     fun getBalance(accountUID: String): Money {
-        return computeBalance(accountUID, splits, true)
+        return computeAccountBalance(accountUID, splits, true)
     }
 
     /**
@@ -215,10 +219,10 @@ class Transaction : BaseModel {
      *
      * @param account The account
      * @return Money balance of the transaction for the specified account
-     * @see computeBalance
+     * @see computeAccountBalance
      */
     fun getBalance(account: Account, display: Boolean): Money {
-        return computeBalance(account, splits, display)
+        return computeAccountBalance(account, splits, display)
     }
 
     /**
@@ -319,6 +323,7 @@ class Transaction : BaseModel {
     // Prefer DEBIT over CREDIT
     val defaultAccountUID: String? get() = getDefaultAccountUID(TransactionType.DEBIT)
 
+
     companion object {
         /**
          * Mime type for transactions in GnuCash.
@@ -375,10 +380,10 @@ class Transaction : BaseModel {
          * @param splits  List of splits
          * @return Money list of splits
          */
-        fun computeBalance(accountUID: String, splits: List<Split>, display: Boolean): Money {
+        fun computeAccountBalance(accountUID: String, splits: List<Split>, display: Boolean): Money {
             val accountsDbAdapter = AccountsDbAdapter.instance
             val account = accountsDbAdapter.getRecord(accountUID)
-            return computeBalance(account, splits, display)
+            return computeAccountBalance(account, splits, display)
         }
 
         /**
@@ -390,9 +395,9 @@ class Transaction : BaseModel {
          *
          * @param account The account
          * @param splits  List of splits
-         * @return Money list of splits
+         * @return Money The balance.
          */
-        fun computeBalance(account: Account, splits: List<Split>, display: Boolean = false): Money {
+        fun computeAccountBalance(account: Account, splits: List<Split>, display: Boolean = false): Money {
             val accountUID = account.uid
             val accountType = account.type
             val accountCommodity = account.commodity
@@ -403,7 +408,11 @@ class Transaction : BaseModel {
             }
             var balance = Money.createZeroInstance(accountCommodity)
             for (split in splits) {
-                if (split.accountUID != accountUID) continue
+                var splitAccountUID = split.accountUID
+                if (!split.scheduledActionAccountUID.isNullOrEmpty()) {
+                    splitAccountUID = split.scheduledActionAccountUID
+                }
+                if (splitAccountUID != accountUID) continue
                 val amount: Money = if (split.value.commodity == accountCommodity) {
                     split.value
                 } else { //if this split belongs to the account, then either its value or quantity is in the account currency

@@ -29,9 +29,7 @@ import org.gnucash.android.ui.transaction.TransactionFormFragment.Companion.DATE
 import org.gnucash.android.ui.transaction.TransactionFormFragment.Companion.TIME_FORMATTER
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
 import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment
-import org.gnucash.android.ui.util.widget.CalculatorEditText
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
-import java.math.BigDecimal
 
 class PriceFormFragment : MenuFragment() {
 
@@ -178,7 +176,7 @@ class PriceFormFragment : MenuFragment() {
         binding.inputDate.setOnClickListener {
             val price = viewModel.price.value
             val dateMillis = price.date
-            DatePickerDialogFragment.newInstance(dateListener, dateMillis)
+            DatePickerDialogFragment.newInstance(dateMillis, dateListener)
                 .show(parentFragmentManager, "date_picker_dialog")
         }
 
@@ -188,16 +186,13 @@ class PriceFormFragment : MenuFragment() {
         binding.inputTime.setOnClickListener {
             val price = viewModel.price.value
             val timeMillis = price.date
-            TimePickerDialogFragment.newInstance(timeListener, timeMillis)
+            TimePickerDialogFragment.newInstance(timeMillis, timeListener)
                 .show(parentFragmentManager, "time_picker_dialog")
         }
 
-        binding.inputExchangeRate.addValueChangedListener(object :
-            CalculatorEditText.OnValueChangedListener {
-            override fun onValueChanged(value: BigDecimal?) {
-                viewModel.onPriceChanged(value)
-            }
-        })
+        binding.inputExchangeRate.addValueChangedListener {
+            viewModel.onPriceChanged(it)
+        }
 
         binding.fetchExchangeRate.setOnClickListener {
             binding.fetchExchangeRate.isEnabled = false

@@ -46,7 +46,6 @@ import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
-import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.databinding.CardviewBookBinding
 import org.gnucash.android.databinding.FragmentBookListBinding
 import org.gnucash.android.db.BookDbHelper

@@ -342,7 +342,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         assertThat(accountsDbAdapter.recordsCount).isOne()
 
         val accounts = accountsDbAdapter.allRecords
-        assertThat(accounts).hasSize(0) //root account is never returned
+        assertThat(accounts).isEmpty() //root account is never returned
     }
 
     @Test
@@ -483,6 +483,7 @@ class AccountsActivityTest : GnuAndroidTest() {
     private fun refreshAccountsList() {
         try {
             activityRule.runOnUiThread { accountsActivity.refresh() }
+            sleep(1000)  // for animations
             waitForView(android.R.id.list)
         } catch (_: Throwable) {
             System.err.println("Failed to refresh accounts")

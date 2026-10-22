@@ -223,6 +223,26 @@
                     android:text="@string/label_tap_to_create_schedule" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/recurrence_auto_row"
+                style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_timer_play" />
+
+                <Switch
+                    android:id="@+id/recurrence_auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:padding="4dp"
+                    android:text="@string/schedule_auto_create"
+                    android:textAppearance="?android:textAppearanceSmall"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

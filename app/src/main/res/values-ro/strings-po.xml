@@ -7,6 +7,7 @@
     <string name="gnucash_po_all_non_currency">"Selectează monedă"</string>
     <string name="gnucash_po_amount_num">"Suma datorată"</string>
     <string name="gnucash_po_commodity_currency">"Valuta comună"</string>
+    <string name="gnucash_po_create_automatically">"Creează în mod automat"</string>
     <string name="gnucash_po_currencies">"Valute"</string>
     <string name="gnucash_po_date">"Data"</string>
     <string name="gnucash_po_description">"Descriere"</string>

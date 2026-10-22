@@ -56,12 +56,12 @@ class TimePickerDialogFragment : DialogFragment() {
         /**
          * Create a new instance.
          *
-         * @param listener   [OnTimeSetListener] to notify when the time has been set
          * @param timeMillis Time in milliseconds to initialize the dialog to
+         * @param listener   [OnTimeSetListener] to notify when the time has been set
          */
         fun newInstance(
-            listener: TimePickerDialog.OnTimeSetListener,
-            timeMillis: Long
+            timeMillis: Long,
+            listener: TimePickerDialog.OnTimeSetListener
         ): TimePickerDialogFragment {
             val fragment = TimePickerDialogFragment()
             fragment.listener = listener

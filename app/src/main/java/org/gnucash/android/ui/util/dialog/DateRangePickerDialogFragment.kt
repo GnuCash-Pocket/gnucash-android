@@ -78,7 +78,7 @@ class DateRangePickerDialogFragment : VolatileDialogFragment() {
         }
     }
 
-    interface OnDateRangeSetListener {
+    fun interface OnDateRangeSetListener {
         fun onDateRangeSet(startDate: LocalDate, endDate: LocalDate)
     }
 

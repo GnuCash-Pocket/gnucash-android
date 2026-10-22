@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Vragen"</string>
     <string name="gnucash_po_bid">"Bied"</string>
     <string name="gnucash_po_commodity_currency">"Effect/valuta/munt"</string>
+    <string name="gnucash_po_create_automatically">"Automatisch aanmaken"</string>
     <string name="gnucash_po_currencies">"Valuta"</string>
     <string name="gnucash_po_date">"Datum"</string>
     <string name="gnucash_po_description">"Omschrijving"</string>
@@ -18,7 +19,7 @@
     <string name="gnucash_po_hidden">"Verborgen"</string>
     <string name="gnucash_po_last">"Laatste"</string>
     <string name="gnucash_po_memo">"Notitie"</string>
-    <string name="gnucash_po_namespace">"Naamruimte"</string>
+    <string name="gnucash_po_namespace">"Categorie"</string>
     <string name="gnucash_po_net_asset_value">"Nettowaarde"</string>
     <string name="gnucash_po_notes">"Toelichting"</string>
     <string name="gnucash_po_number">"Nummer"</string>
@@ -29,7 +30,7 @@
     <string name="gnucash_po_rate_price">"Koers/prijs"</string>
     <string name="gnucash_po_reconcile_date">"Datum van afstemming"</string>
     <string name="gnucash_po_reconcile">"Afstemmen"</string>
-    <string name="gnucash_po_remove_old_prices">"_Oude koersen verwijderen"</string>
+    <string name="gnucash_po_remove_old_prices">"Oude koersen verwijderen"</string>
     <string name="gnucash_po_security">"Fonds"</string>
     <string name="gnucash_po_symbol">"Symbool"</string>
     <string name="gnucash_po_tax_info">"Fiscale informatie"</string>

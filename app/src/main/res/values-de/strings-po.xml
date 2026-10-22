@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"Briefkurs (Ihr Kauf)"</string>
     <string name="gnucash_po_bid">"Geldkurs (Ihr Verkauf)"</string>
     <string name="gnucash_po_commodity_currency">"Währung/Wertpapier"</string>
+    <string name="gnucash_po_create_automatically">"Automatisch erstellen"</string>
     <string name="gnucash_po_currencies">"Währungen"</string>
     <string name="gnucash_po_date">"Datum"</string>
     <string name="gnucash_po_description">"Beschreibung"</string>

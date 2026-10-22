@@ -10,6 +10,7 @@
     <string name="gnucash_po_ask">"委賣價"</string>
     <string name="gnucash_po_bid">"委買價"</string>
     <string name="gnucash_po_commodity_currency">"商品 / 貨幣"</string>
+    <string name="gnucash_po_create_automatically">"自動建立"</string>
     <string name="gnucash_po_currencies">"貨幣"</string>
     <string name="gnucash_po_date">"日期"</string>
     <string name="gnucash_po_description">"描述"</string>

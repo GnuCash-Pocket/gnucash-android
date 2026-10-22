@@ -49,6 +49,7 @@ import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.common.UxArgument.EXTRA_TAB_INDEX
 import org.gnucash.android.ui.transaction.TransactionsActivity
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity
@@ -144,7 +145,7 @@ class AccountsActivity : BaseDrawerActivity(),
         init()
 
         val tabLayout = binding.tabLayout
-        (0 until NUM_PAGES).forEach { _ ->
+        repeat(NUM_PAGES) {
             tabLayout.addTab(tabLayout.newTab())
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
@@ -415,11 +416,6 @@ class AccountsActivity : BaseDrawerActivity(),
          * Used to save the index of the last open tab and restore the pager to that index
          */
         const val LAST_OPEN_TAB_INDEX: String = "last_open_tab"
-
-        /**
-         * Key for putting argument for tab into bundle arguments
-         */
-        const val EXTRA_TAB_INDEX: String = BuildConfig.APPLICATION_ID + ".extra.TAB_INDEX"
 
         /**
          * Displays the dialog for exporting transactions
