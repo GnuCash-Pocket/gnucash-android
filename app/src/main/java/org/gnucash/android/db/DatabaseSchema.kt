@@ -38,7 +38,8 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 30
+    // version increased without a schema change, to trigger a migration clearing cached balances
+    const val DATABASE_VERSION: Int = 31
 
     abstract class CommonColumns : BaseColumns {
         companion object {
