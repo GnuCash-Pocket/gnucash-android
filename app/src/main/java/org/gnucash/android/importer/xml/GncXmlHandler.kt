@@ -303,6 +303,10 @@ class GncXmlHandler(
         // it will make insertion much faster.
         db.setForeignKeyConstraintsEnabled(false)
 
+        // Start a single global transaction to batch all inserts and avoid
+        // thousands of implicit disk commits during streaming import.
+        db.beginTransaction()
+
         book = booksDbAdapter.getRecordOrNull(bookUID) ?: book
 
         commoditiesDbAdapter = CommoditiesDbAdapter(holder, true)
@@ -331,6 +335,14 @@ class GncXmlHandler(
 
     private fun maybeInitDb(bookUIDOld: String?, bookUIDNew: String) {
         if (bookUIDOld != null && bookUIDOld != bookUIDNew) {
+            // Commit the previous book's transaction before switching databases
+            // to avoid rolling back its data when the database is closed.
+            val db = holder?.db
+            if (db != null && db.isOpen && db.inTransaction()) {
+                db.setTransactionSuccessful()
+                db.endTransaction()
+            }
+
             holder?.close()
             initDb(bookUIDNew)
         }
@@ -506,12 +518,27 @@ class GncXmlHandler(
      * We on purpose do not set the book active. Only import. Caller should handle activation
      */
     private fun saveToDatabase() {
-        holder!!.db.setForeignKeyConstraintsEnabled(true)
+        val db = holder!!.db
+        // Mark the transaction as successful and commit all batched inserts.
+        db.setTransactionSuccessful()
+        db.endTransaction()
+
+        db.setForeignKeyConstraintsEnabled(true)
         maybeClose() //close it after import
     }
 
     override fun close() {
-        holder!!.close()
+        val db = holder?.db
+        // Check isOpen to make this method idempotent and avoid IllegalStateException
+        // if maybeClose() has already closed the database on the success path.
+        if (db != null && db.isOpen) {
+            // If the import was canceled or failed before saveToDatabase() was reached,
+            // endTransaction() will roll back the uncommitted changes.
+            if (db.inTransaction()) {
+                db.endTransaction()
+            }
+            holder?.close()
+        }
     }
 
     private fun maybeClose() {
