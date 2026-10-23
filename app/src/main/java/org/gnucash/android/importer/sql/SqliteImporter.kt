@@ -95,7 +95,14 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         // 1. copy the stream to a cache file
         val file = copyToFile(inputStream)
         // 2. copy from the Desktop db to the Pocket db
-        return pipeBooks(file)
+        return try {
+            pipeBooks(file)
+        } finally {
+            // 3. cleanup the temporary cache file to prevent disk space leaks
+            if (!file.delete()) {
+                Timber.w("Failed to delete temporary cache file: ${file.absolutePath}")
+            }
+        }
     }
 
     @Throws(IOException::class)
@@ -105,16 +112,35 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         cacheDir.mkdirs()
         val name = UUID.randomUUID().toString() + ".db"
         val file = File(cacheDir, name)
-        val outputStream = FileOutputStream(file)
-        val size = FileUtils.copy(inputStream, outputStream)
-        if (size == 0L) throw EOFException()
-        if (size < available) throw EOFException()
-        return file
+
+        // Tracks whether the copy fully completed; the finally block below
+        // deletes the partial cache file otherwise.
+        var success = false
+
+        try {
+            // Closes the stream on both the success and the failure path.
+            FileOutputStream(file).use { outputStream ->
+                val size = FileUtils.copy(inputStream, outputStream)
+                if (size == 0L) throw EOFException("Copied 0 bytes")
+                if (size < available) throw EOFException("Incomplete copy: $size < $available")
+            }
+
+            // Only mark success after the stream has been closed successfully.
+            success = true
+            return file
+        } finally {
+            if (!success && file.exists() && !file.delete()) {
+                Timber.w("Failed to delete incomplete cache file: %s", file.absolutePath)
+            }
+        }
     }
 
     private fun pipeBooks(file: File): List<Book> {
-        val db = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
-        return pipeBooks(db)
+        // Use .use to ensure the read-only source database is always closed,
+        // preventing a pre-existing database connection leak.
+        return SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+            pipeBooks(db)
+        }
     }
 
     private fun pipeBooks(db: SQLiteDatabase): List<Book> {
@@ -137,13 +163,25 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
             book.displayName = displayName
             books.add(book)
 
-            initDb(book).use {
-                pipeCommodities(db)
-                pipePrices(db)
-                val accounts = pipeAccounts(db, book).associateBy { it.uid }
-                pipeTransactionsWithSplits(db, accounts)
-                pipeScheduledTransactions(db, accounts)
-                pipeBudgets(db, accounts)
+            // Named bookHolder to avoid shadowing the class property `holder`.
+            initDb(book).use { bookHolder ->
+                try {
+                    pipeCommodities(db)
+                    pipePrices(db)
+                    val accounts = pipeAccounts(db, book).associateBy { it.uid }
+                    pipeTransactionsWithSplits(db, accounts)
+                    pipeScheduledTransactions(db, accounts)
+                    pipeBudgets(db, accounts)
+
+                    // All records were piped successfully. Mark the transaction as successful
+                    // so that endTransaction() commits the changes instead of rolling them back.
+                    bookHolder.db.setTransactionSuccessful()
+                } finally {
+                    // Commit if setTransactionSuccessful() was called, otherwise roll back.
+                    if (bookHolder.db.inTransaction()) {
+                        bookHolder.db.endTransaction()
+                    }
+                }
             }
         }
 
@@ -166,8 +204,14 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
     private fun initDb(book: Book): DatabaseHolder {
         val dbHelper = DatabaseHelper(context, book.uid)
-        val holder = dbHelper.readableHolder
+        val holder = dbHelper.holder
         this.holder = holder
+        val db = holder.db
+
+        // Start a single global transaction to batch all inserts and avoid
+        // thousands of implicit disk commits during SQLite import.
+        db.beginTransaction()
+
         commoditiesDbAdapter = CommoditiesDbAdapter(holder)
         pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
         splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
@@ -191,9 +235,11 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
     private fun pipeAccounts(db: SQLiteDatabase, book: Book): List<Account> {
         cancellationSignal.throwIfCanceled()
-        val cursor = db.query("accounts", null, null, null, null, null, null)
-        cursor.moveToFirst()
-        listener?.onAccountCount(cursor.count.toLong())
+        // The cursor is only needed for the account count; close it immediately.
+        db.query("accounts", null, null, null, null, null, null).use { cursor ->
+            cursor.moveToFirst()
+            listener?.onAccountCount(cursor.count.toLong())
+        }
 
         val accounts = mutableListOf<Account>()
 

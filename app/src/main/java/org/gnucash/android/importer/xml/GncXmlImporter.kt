@@ -41,10 +41,13 @@ class GncXmlImporter(
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun parse(inputStream: InputStream): List<Book> {
-        val handler = GncXmlHandler(context, listener, cancellationSignal)
-        val reader = createXMLReader(handler)
-        reader.parse(InputSource(inputStream))
-        return handler.importedBooks
+        // GncXmlHandler is Closeable: use() guarantees close() (commit or rollback)
+        // on both the success and the failure path.
+        return GncXmlHandler(context, listener, cancellationSignal).use { handler ->
+            val reader = createXMLReader(handler)
+            reader.parse(InputSource(inputStream))
+            handler.importedBooks
+        }
     }
 
     companion object {
