@@ -794,8 +794,19 @@ class AccountsDbAdapter(
                 val childCommodity = child.commodity
                 val childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
                 if (childBalance.isAmountZero) continue
-                val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
-                balance += childBalance * price
+
+                val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: run {
+                    Timber.w("No price from ${childCommodity.currencyCode} to ${commodity.currencyCode} for child $childUID. Ignoring subtree.")
+                    continue
+                }
+
+                // Parity Check: The child's contribution to the parent's balance is added
+                // if they share the same normal balance type and subtracted if they differ.
+                if (account.type.hasDebitNormalBalance == child.type.hasDebitNormalBalance) {
+                    balance += childBalance * price
+                } else {
+                    balance -= childBalance * price
+                }
             }
         }
 

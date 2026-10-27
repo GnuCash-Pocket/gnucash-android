@@ -38,7 +38,10 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 30
+    //Version 31 clears the balance cache and adds the accounts insert
+    //trigger so that the corrected aggregation rules are applied
+    //immediately on upgrade
+    const val DATABASE_VERSION: Int = 31
 
     abstract class CommonColumns : BaseColumns {
         companion object {

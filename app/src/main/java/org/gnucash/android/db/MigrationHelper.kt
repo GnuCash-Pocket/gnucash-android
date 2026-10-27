@@ -103,6 +103,9 @@ object MigrationHelper {
         if (oldVersion < 30) {
             migrateTo30(db)
         }
+        if (oldVersion < 31) {
+            migrateTo31(db)
+        }
     }
 
     /**
@@ -371,6 +374,43 @@ object MigrationHelper {
         } finally {
             db.endTransaction()
         }
+    }
+
+    /**
+     * Upgrade the database to version 31.
+     * Clears the balance cache so that the new aggregation rules
+     * are applied immediately for existing users.
+     * Also creates the accounts insert trigger, which is missing in
+     * older installations and is required to keep the balance cache
+     * consistent on account inserts (bulk imports, REPLACE in addRecord).
+     *
+     * @param db the database.
+     */
+    private fun migrateTo31(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 31")
+
+        //the cached balances were computed with the old aggregation rules
+        //and will be lazily recomputed on first access
+        db.execSQL(
+            "UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                    + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL"
+        )
+
+        //account inserts bypass the splits triggers and REPLACE (addRecord)
+        //does not fire the DELETE trigger on Android, so reset the cache
+        //explicitly when accounts are inserted
+        db.execSQL(
+            "CREATE TRIGGER IF NOT EXISTS reset_balances_insert_" + AccountEntry.TABLE_NAME +
+                    " AFTER INSERT ON " + AccountEntry.TABLE_NAME +
+                    " BEGIN UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                    + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL; END;"
+        )
     }
 
     private class AccountCurrency(

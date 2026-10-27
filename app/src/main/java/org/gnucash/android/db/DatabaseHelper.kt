@@ -412,6 +412,15 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                         + " ON " + AccountEntry.TABLE_NAME
                         + " BEGIN " + sqlReset + "; END;")
             db.execSQL(sqlWhenUpdateAccount)
+
+            // Account inserts (e.g. bulk imports) bypass the splits triggers,
+            // and REPLACE (addRecord) does not fire the DELETE trigger on Android
+            // where PRAGMA recursive_triggers is disabled by default.
+            val sqlWhenInsertAccount =
+                ("CREATE TRIGGER reset_balances_insert_" + AccountEntry.TABLE_NAME
+                        + " AFTER INSERT ON " + AccountEntry.TABLE_NAME
+                        + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenInsertAccount)
         }
 
         fun hasTableColumn(db: SQLiteDatabase, tableName: String, columnName: String): Boolean {

@@ -26,6 +26,7 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter.UpdateMethod
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.SplitsDbAdapter
@@ -39,6 +40,7 @@ import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Price
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Split
@@ -569,6 +571,237 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(account4.isPlaceholder).isTrue()
         assertThat(account4.isFavorite).isFalse()
         assertThat(account4.color).isEqualTo(Color.YELLOW)
+    }
+
+    /**
+     * When parent and children have the same account type, the parent balance
+     * is the sum of all children balances.
+     *
+     * Test provided by @pnemonic78.
+     */
+    @Test
+    fun `calculate account balances for same types`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.EXPENSE
+        val child1 = Account("Child1", Commodity.USD)
+        child1.type = AccountType.EXPENSE
+        child1.parentUID = parent.uid
+        val child2 = Account("Child2", Commodity.USD)
+        child2.type = AccountType.EXPENSE
+        child2.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child1)
+        accountsDbAdapter.addRecord(child2)
+
+        val amount1 = Money("10", Commodity.USD)
+        val amount2 = Money("20", Commodity.USD)
+        addSplit(amount1, child1, TransactionType.DEBIT)
+        addSplit(amount2, child2, TransactionType.DEBIT)
+
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("30", Commodity.USD))
+    }
+
+    /**
+     * When a child account has a different normal balance nature than the
+     * parent (e.g. an INCOME child under an EXPENSE parent), its balance
+     * contributes with the opposite sign to the parent's total.
+     *
+     * Test provided by @pnemonic78.
+     */
+    @Test
+    fun `calculate account balances for different types`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.EXPENSE
+        val child1 = Account("Child1", Commodity.USD)
+        child1.type = AccountType.EXPENSE
+        child1.parentUID = parent.uid
+        val child2 = Account("Child2", Commodity.USD)
+        child2.type = AccountType.INCOME
+        child2.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child1)
+        accountsDbAdapter.addRecord(child2)
+
+        val amount1 = Money("10", Commodity.USD)
+        val amount2 = Money("20", Commodity.USD)
+        addSplit(amount1, child1, TransactionType.DEBIT)
+        addSplit(amount2, child2, TransactionType.CREDIT)
+
+        //the income child contributes with the opposite sign to the expense parent
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(amount1 - amount2)
+    }
+
+    /**
+     * The parity check is applied per parent-child edge: with an odd number of
+     * nature changes in the hierarchy (INCOME -> EXPENSE -> INCOME), the double
+     * negation keeps the leaf's contribution positive at the top of the tree.
+     */
+    @Test
+    fun `calculate account balances for different types in hierarchy`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.INCOME
+        val middle = Account("Middle", Commodity.USD)
+        middle.type = AccountType.EXPENSE
+        middle.parentUID = parent.uid
+        val leaf = Account("Leaf", Commodity.USD)
+        leaf.type = AccountType.INCOME
+        leaf.parentUID = middle.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(middle)
+        accountsDbAdapter.addRecord(leaf)
+
+        addSplit(Money("10", Commodity.USD), leaf, TransactionType.CREDIT)
+
+        //the leaf balance is a normalized income of +10, and the middle account
+        //(an expense under an income parent) carries the opposite sign
+        assertThat(accountsDbAdapter.getAccountBalance(middle))
+            .isEqualTo(Money("-10", Commodity.USD))
+        //the parent flips the sign back: a net income of 10
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("10", Commodity.USD))
+    }
+
+    /**
+     * Child balances are converted to the parent's commodity with the price
+     * from the prices table before the parity check is applied.
+     */
+    @Test
+    fun `calculate account balances with currency conversion`() {
+        val eur = commoditiesDbAdapter.getCurrency("EUR")!!
+        val usd = commoditiesDbAdapter.getCurrency("USD")!!
+
+        val parent = Account("Parent", usd)
+        parent.type = AccountType.INCOME
+        val child = Account("Child", eur)
+        child.type = AccountType.EXPENSE
+        child.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+
+        // 1 EUR = 1.5 USD
+        val price = Price(eur, usd, BigDecimal("1.5"))
+        accountsDbAdapter.pricesDbAdapter.addRecord(price)
+
+        addSplit(Money("100", eur), child, TransactionType.DEBIT)
+
+        //the expense child reduces the parent income: -100 EUR * 1.5 = -150 USD
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("-150", usd))
+    }
+
+    /**
+     * When no price exists between the child's commodity and the parent's
+     * commodity, the child subtree is skipped instead of corrupting the
+     * parent balance.
+     */
+    @Test
+    fun `ignore subtree when no exchange rate exists`() {
+        val eur = commoditiesDbAdapter.getCurrency("EUR")!!
+        val usd = commoditiesDbAdapter.getCurrency("USD")!!
+
+        val parent = Account("Parent", usd)
+        parent.type = AccountType.INCOME
+        val child = Account("Child", eur)
+        child.type = AccountType.EXPENSE
+        child.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+
+        addSplit(Money("100", eur), child, TransactionType.DEBIT)
+
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("0", usd))
+    }
+
+    /**
+     * The split type is the sign of the entry. An account can hold both CREDIT
+     * and DEBIT splits (e.g. a refund against an income) and the aggregation
+     * treats them algebraically, matching the raw (debit-positive) sum that
+     * desktop GnuCash would compute.
+     */
+    @Test
+    fun `calculate account balances with mixed split types`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.EXPENSE
+        val child = Account("Child", Commodity.USD)
+        child.type = AccountType.INCOME
+        child.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+
+        //an income of 30 and a refund (debit) of 10 in the income account
+        addSplit(Money("30", Commodity.USD), child, TransactionType.CREDIT)
+        addSplit(Money("10", Commodity.USD), child, TransactionType.DEBIT)
+
+        //net normalized income: +30 - 10 = +20
+        assertThat(accountsDbAdapter.getAccountBalance(child))
+            .isEqualTo(Money("20", Commodity.USD))
+        //the expense parent carries the opposite sign of the net income: -20
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("-20", Commodity.USD))
+    }
+
+    /**
+     * Changing an account's type recomputes the displayed balances of the
+     * account and of its ancestors without requiring an app restart. The
+     * account is saved with a plain UPDATE, which fires the
+     * reset_balances_update_accounts trigger.
+     *
+     * Note: saving with the default addRecord() would not work here - it
+     * uses REPLACE, which deletes the old row first, and with
+     * PRAGMA foreign_keys=ON the ON DELETE CASCADE on splits.account_uid
+     * deletes the account's splits.
+     */
+    @Test
+    fun `account type change should recompute balances`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.INCOME
+        val child = Account("Child", Commodity.USD)
+        child.type = AccountType.EXPENSE
+        child.parentUID = parent.uid
+
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+
+        addSplit(Money("100", Commodity.USD), child, TransactionType.DEBIT)
+
+        //the normalized expense of the child reduces the parent income
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("-100", Commodity.USD)) //the value is now cached
+
+        //flip the child's type and save with a plain UPDATE
+        child.type = AccountType.INCOME
+        accountsDbAdapter.addRecord(child, UpdateMethod.Update)
+
+        //the child's own balance flips sign ...
+        assertThat(accountsDbAdapter.getAccountBalance(child))
+            .isEqualTo(Money("-100", Commodity.USD))
+        //... while its contribution to the parent stays the same (double
+        //negation: both the normalized value and the parity check flip)
+        assertThat(accountsDbAdapter.getAccountBalance(parent))
+            .isEqualTo(Money("-100", Commodity.USD))
+    }
+
+    /**
+     * Creates a transaction with a single split of the given type on the
+     * account, following the same pattern as
+     * [AccountsDbAdapterTest.shouldComputeAccountBalanceCorrectly].
+     */
+    private fun addSplit(amount: Money, account: Account, type: TransactionType) {
+        val transaction = Transaction("Test transaction")
+        transactionsDbAdapter.addRecord(transaction)
+        val split = Split(amount, account)
+        split.transactionUID = transaction.uid
+        split.type = type
+        splitsDbAdapter.addRecord(split)
     }
 
     /**
