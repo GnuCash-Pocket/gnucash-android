@@ -38,7 +38,7 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 30
+    const val DATABASE_VERSION: Int = 31
 
     abstract class CommonColumns : BaseColumns {
         companion object {
@@ -271,6 +271,8 @@ object DatabaseSchema {
         const val COLUMN_SCHEDX_ACTION_ACCOUNT_UID: String = "sched_account_uid"
 
         const val INDEX_UID: String = "split_uid_index"
+        const val INDEX_TRANSACTION_UID: String = "split_transaction_uid_index"
+        const val INDEX_ACCOUNT_UID: String = "split_account_uid_index"
     }
 
     object ScheduledActionEntry : CommonColumns() {

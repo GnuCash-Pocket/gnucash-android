@@ -103,6 +103,9 @@ object MigrationHelper {
         if (oldVersion < 30) {
             migrateTo30(db)
         }
+        if (oldVersion < 31) {
+            migrateTo31(db)
+        }
     }
 
     /**
@@ -371,6 +374,42 @@ object MigrationHelper {
         } finally {
             db.endTransaction()
         }
+    }
+
+    /**
+     * Upgrade the database to version 31.
+     *
+     * Recreates the `update_time_trigger_*` triggers with the corrected WHERE clause (the old
+     * `WHERE OLD.uid = NEW.uid` condition always evaluated to true and rewrote `modified_at`
+     * on every row of the table on each firing), recreates the `reset_balances_*` triggers
+     * with account-scoped invalidation and adds the missing split indexes (issue #526).
+     *
+     * @param db the database.
+     */
+    private fun migrateTo31(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 31")
+
+        // Recreate the update-time triggers with the per-row WHERE clause.
+        for (tableName in DatabaseHelper.TRIGGERED_TABLES) {
+            db.execSQL("DROP TRIGGER IF EXISTS update_time_trigger_" + tableName)
+            db.execSQL(DatabaseHelper.createUpdatedAtTrigger(tableName))
+        }
+
+        // Recreate the reset-balances triggers, scoped to the affected account
+        // (and its ancestors) instead of every account in the book.
+        DatabaseHelper.dropResetBalancesTriggers(db)
+        DatabaseHelper.createResetBalancesTriggers(db)
+
+        // Add the split foreign-key indexes.
+        DatabaseHelper.createSplitIndexes(db)
+
+        // Invalidate any previously cached balances so that no stale value
+        // survives the upgrade.
+        db.execSQL(("UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL"))
     }
 
     private class AccountCurrency(

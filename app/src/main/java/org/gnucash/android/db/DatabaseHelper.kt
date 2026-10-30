@@ -75,15 +75,9 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(BUDGETS_TABLE_CREATE)
         db.execSQL(BUDGET_AMOUNTS_TABLE_CREATE)
 
-        db.execSQL(createUpdatedAtTrigger(AccountEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(TransactionEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(SplitEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(CommodityEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(PriceEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(BudgetEntry.TABLE_NAME))
-        db.execSQL(createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME))
+        for (tableName in TRIGGERED_TABLES) {
+            db.execSQL(createUpdatedAtTrigger(tableName))
+        }
 
         val createAccountUidIndex = ("CREATE UNIQUE INDEX '" + AccountEntry.INDEX_UID + "' ON "
                 + AccountEntry.TABLE_NAME + "(" + AccountEntry.COLUMN_UID + ")")
@@ -122,6 +116,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(createBudgetUidIndex)
         db.execSQL(createRecurrenceUidIndex)
         db.execSQL(createBudgetAmountUidIndex)
+        createSplitIndexes(db)
         createResetBalancesTriggers(db)
 
         try {
@@ -327,8 +322,28 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 )
 
         /**
-         * Creates an update trigger to update the updated_at column for all records in the database.
+         * Tables which have an `update_time_trigger_<table>` trigger attached
+         */
+        val TRIGGERED_TABLES = arrayOf(
+            AccountEntry.TABLE_NAME,
+            TransactionEntry.TABLE_NAME,
+            SplitEntry.TABLE_NAME,
+            ScheduledActionEntry.TABLE_NAME,
+            CommodityEntry.TABLE_NAME,
+            PriceEntry.TABLE_NAME,
+            RecurrenceEntry.TABLE_NAME,
+            BudgetEntry.TABLE_NAME,
+            BudgetAmountEntry.TABLE_NAME
+        )
+
+        /**
+         * Creates an update trigger to update the modified_at column of the updated record.
          * This has to be run per table, and is currently appended to the create table statement.
+         *
+         * The WHERE clause must reference the column of the table. Comparing the trigger's
+         * OLD/NEW values instead (`OLD.uid = NEW.uid`) is always true — the uid never changes
+         * during an UPDATE — so every firing would rewrite `modified_at` on every row of the
+         * table, chaining into the reset-balances triggers with quadratic cost (issue #526).
          *
          * @param tableName Name of table on which to create trigger
          * @return SQL statement for creating trigger
@@ -338,7 +353,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + "  AFTER UPDATE ON " + tableName + " FOR EACH ROW"
                     + "  BEGIN " + "UPDATE " + tableName
                     + "  SET " + CommonColumns.COLUMN_MODIFIED_AT + " = CURRENT_TIMESTAMP"
-                    + "  WHERE OLD." + CommonColumns.COLUMN_UID + " = NEW." + CommonColumns.COLUMN_UID + ";"
+                    + "  WHERE " + CommonColumns.COLUMN_UID + " = NEW." + CommonColumns.COLUMN_UID + ";"
                     + "  END;")
         }
 
@@ -366,41 +381,155 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
             return escaper.toString()
         }
 
-        fun createResetBalancesTriggers(db: SQLiteDatabase) {
-            val sqlReset = ("UPDATE " + AccountEntry.TABLE_NAME + " SET "
+        /**
+         * SQL which invalidates the cached balances of *all* accounts.
+         * Used on the rare paths (transaction/account deletes, account tree edits) where the
+         * affected accounts cannot be known from the trigger context.
+         */
+        private const val SQL_RESET_ALL_BALANCES = ("UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL")
+
+        /**
+         * SQL which invalidates the cached balances of the accounts referenced by
+         * `accountRefs` (e.g. `NEW.account_uid` in trigger context) and of all their
+         * ancestors. Called with a single reference on the insert/delete paths and with
+         * both the OLD and NEW references on the update path (a transaction move changes
+         * `account_uid`), always producing one UPDATE statement per trigger firing.
+         *
+         * Cached balances include the subtree totals (see AccountsDbAdapter.computeBalance),
+         * so when the splits of an account change, the cached balances of every ancestor are
+         * stale as well. Ancestors are matched by fully-qualified account name: an ancestor's
+         * name is a prefix of the descendant's name (the separator is `:`), e.g. `Expenses`
+         * for `Expenses:Groceries` (issue #526).
+         *
+         * Note the operand order of the LIKE: the descendant's (referenced account's) full
+         * name is the subject and the updated row's full name is the prefix. Swapping the
+         * operands would match the *descendants* instead — whose subtree totals do not
+         * include the referenced account — and leave the ancestors stale.
+         *
+         * The ROOT account is never matched: the fully-qualified name is built without the
+         * root (see AccountsDbAdapter — top-level accounts have full_name = name), so no
+         * account's full name starts with the root's. The root is a placeholder, excluded
+         * from all account listings, and its cached balance is never displayed.
+         *
+         * An account with a NULL full_name would never be matched as an ancestor
+         * (NULL LIKE ... evaluates to NULL, i.e. false); AccountsDbAdapter always binds
+         * full_name (falling back to the account name), so this cannot occur in practice.
+         *
+         * Account names containing `%` or `_` act as wildcards in the LIKE pattern and can
+         * cause over-invalidation of additional accounts (a harmless recompute); under-
+         * invalidation cannot occur, because the literal prefix always matches.
+         */
+        private fun sqlResetAccountBalances(vararg accountRefs: String): String {
+            var sql = ("UPDATE " + AccountEntry.TABLE_NAME + " SET "
                     + AccountEntry.COLUMN_BALANCE + " = NULL, "
                     + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
                     + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
-                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL")
+                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL"
+                    + " WHERE " + AccountEntry.COLUMN_UID
+                    + " IN (" + accountRefs.joinToString(", ") + ")")
+            for (accountRef in accountRefs) {
+                sql += (" OR (SELECT descendant." + AccountEntry.COLUMN_FULL_NAME
+                        + " FROM " + AccountEntry.TABLE_NAME + " AS descendant"
+                        + " WHERE descendant." + AccountEntry.COLUMN_UID + " = " + accountRef + ")"
+                        + " LIKE " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME
+                        + " || ':%'")
+            }
+            return sql
+        }
 
+        /**
+         * Drops all the reset-balances triggers (used by the migrations, see issue #526).
+         */
+        fun dropResetBalancesTriggers(db: SQLiteDatabase) {
+            for (trigger in arrayOf(
+                "reset_balances_delete_" + SplitEntry.TABLE_NAME,
+                "reset_balances_insert_" + SplitEntry.TABLE_NAME,
+                "reset_balances_update_" + SplitEntry.TABLE_NAME,
+                "reset_balances_delete_" + TransactionEntry.TABLE_NAME,
+                "reset_balances_delete_" + AccountEntry.TABLE_NAME,
+                "reset_balances_update_" + AccountEntry.TABLE_NAME
+            )) {
+                db.execSQL("DROP TRIGGER IF EXISTS " + trigger)
+            }
+        }
+
+        /**
+         * Creates the indexes on the split foreign keys, used by the frequent joins between
+         * splits, transactions and accounts (issue #526).
+         */
+        fun createSplitIndexes(db: SQLiteDatabase) {
+            db.execSQL("CREATE INDEX IF NOT EXISTS '" + SplitEntry.INDEX_TRANSACTION_UID
+                    + "' ON " + SplitEntry.TABLE_NAME
+                    + "(" + SplitEntry.COLUMN_TRANSACTION_UID + ")")
+            db.execSQL("CREATE INDEX IF NOT EXISTS '" + SplitEntry.INDEX_ACCOUNT_UID
+                    + "' ON " + SplitEntry.TABLE_NAME
+                    + "(" + SplitEntry.COLUMN_ACCOUNT_UID + ")")
+        }
+
+        fun createResetBalancesTriggers(db: SQLiteDatabase) {
+            // Hot paths (every split write, e.g. during import or a transaction move):
+            // invalidate only the affected account and its ancestors.
             val sqlWhenDelete = ("CREATE TRIGGER reset_balances_delete_" + SplitEntry.TABLE_NAME
                     + " AFTER DELETE ON " + SplitEntry.TABLE_NAME
-                    + " BEGIN " + sqlReset + "; END;")
+                    + " BEGIN " + sqlResetAccountBalances("OLD." + SplitEntry.COLUMN_ACCOUNT_UID)
+                    + "; END;")
             db.execSQL(sqlWhenDelete)
 
             val sqlWhenInsert = ("CREATE TRIGGER reset_balances_insert_" + SplitEntry.TABLE_NAME
                     + " AFTER INSERT ON " + SplitEntry.TABLE_NAME
-                    + " BEGIN " + sqlReset + "; END;")
+                    + " BEGIN " + sqlResetAccountBalances("NEW." + SplitEntry.COLUMN_ACCOUNT_UID)
+                    + "; END;")
             db.execSQL(sqlWhenInsert)
 
+            // A transaction move changes account_uid, so both the OLD and the NEW
+            // account subtrees must be invalidated — one UPDATE, one pass over accounts.
+            //
+            // The UPDATE OF clause lists every balance-affecting split column, so that
+            // the timestamp trigger's inner rewrite (SET modified_at, not in the list)
+            // and memo-only edits do not re-fire this trigger. reconcile_state must
+            // stay in the list: reconciling a split moves its amount between the
+            // cleared/reconciled/noclosing buckets of the account's cached balances.
+            //
+            // Known edge case, not reachable in practice: sched_account_uid is not in
+            // the list — SplitsDbAdapter.buildModelInstance uses it to pick the
+            // quantity commodity, but regular splits keep it NULL and template splits
+            // are excluded from balance computation (is_template = 0).
             val sqlWhenUpdate = ("CREATE TRIGGER reset_balances_update_" + SplitEntry.TABLE_NAME
-                    + " AFTER UPDATE ON " + SplitEntry.TABLE_NAME
-                    + " BEGIN " + sqlReset + "; END;")
+                    + " AFTER UPDATE OF "
+                    + SplitEntry.COLUMN_TYPE + ", "
+                    + SplitEntry.COLUMN_VALUE_NUM + ", "
+                    + SplitEntry.COLUMN_VALUE_DENOM + ", "
+                    + SplitEntry.COLUMN_QUANTITY_NUM + ", "
+                    + SplitEntry.COLUMN_QUANTITY_DENOM + ", "
+                    + SplitEntry.COLUMN_ACCOUNT_UID + ", "
+                    + SplitEntry.COLUMN_RECONCILE_STATE + ", "
+                    + SplitEntry.COLUMN_RECONCILE_DATE
+                    + " ON " + SplitEntry.TABLE_NAME
+                    + " BEGIN " + sqlResetAccountBalances(
+                "OLD." + SplitEntry.COLUMN_ACCOUNT_UID,
+                "NEW." + SplitEntry.COLUMN_ACCOUNT_UID)
+                    + "; END;")
             db.execSQL(sqlWhenUpdate)
 
+            // Rare paths: the affected accounts cannot be known from the trigger context.
+            //
             // Expect that `reset_balances_delete_splits` trigger would be called
             // *but*
             // 'Triggers are not activated by foreign key actions.'
             val sqlWhenDeleteTx =
                 ("CREATE TRIGGER reset_balances_delete_" + TransactionEntry.TABLE_NAME
                         + " AFTER DELETE ON " + TransactionEntry.TABLE_NAME
-                        + " BEGIN " + sqlReset + "; END;")
+                        + " BEGIN " + SQL_RESET_ALL_BALANCES + "; END;")
             db.execSQL(sqlWhenDeleteTx)
 
             val sqlWhenDeleteAccount =
                 ("CREATE TRIGGER reset_balances_delete_" + AccountEntry.TABLE_NAME
                         + " AFTER DELETE ON " + AccountEntry.TABLE_NAME
-                        + " BEGIN " + sqlReset + "; END;")
+                        + " BEGIN " + SQL_RESET_ALL_BALANCES + "; END;")
             db.execSQL(sqlWhenDeleteAccount)
 
             val sqlWhenUpdateAccount =
@@ -410,7 +539,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                         + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
                         + AccountEntry.COLUMN_TYPE
                         + " ON " + AccountEntry.TABLE_NAME
-                        + " BEGIN " + sqlReset + "; END;")
+                        + " BEGIN " + SQL_RESET_ALL_BALANCES + "; END;")
             db.execSQL(sqlWhenUpdateAccount)
         }
 

@@ -501,6 +501,9 @@ class TransactionsListFragment : MenuFragment(),
         if (transactionUID.isNullOrEmpty()) return
         val binding = binding ?: return
 
+        // Consume the request: scroll only once, on the first list delivery (#526).
+        scrollTransactionUID = null
+
         val position = findItemPosition(transactionUID)
         if (position >= 0) {
             binding.list.scrollToPosition(position)
