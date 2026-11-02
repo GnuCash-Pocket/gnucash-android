@@ -479,4 +479,9 @@
     <string name="export_only_modified">Export only modified transactions</string>
     <string name="price_list_empty">No prices to display</string>
     <string name="title_tab_labels">Show tabs with labels</string>
+
+    <!-- Running balance per transaction -->
+    <string name="key_show_running_balance">key_show_running_balance</string>
+    <string name="title_show_running_balance">Show running balance</string>
+    <string name="summary_show_running_balance">Show the account balance after each transaction. May slow down loading of very long transaction lists.</string>
 </resources>

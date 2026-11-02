@@ -46,6 +46,13 @@
         android:title="@string/title_absolute_date" />
 
     <SwitchPreference
+        android:defaultValue="true"
+        android:icon="@drawable/ic_balance"
+        android:key="@string/key_show_running_balance"
+        android:summary="@string/summary_show_running_balance"
+        android:title="@string/title_show_running_balance" />
+
+    <SwitchPreference
         android:defaultValue="false"
         android:icon="@drawable/ic_balance"
         android:key="@string/key_save_opening_balances"
