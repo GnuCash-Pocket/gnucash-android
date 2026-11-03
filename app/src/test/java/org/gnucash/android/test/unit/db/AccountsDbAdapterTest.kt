@@ -22,6 +22,7 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
@@ -45,6 +46,8 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.ui.transaction.applyNormalBalanceSign
+import org.gnucash.android.ui.transaction.EARLIEST_TIMESTAMP
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -569,6 +572,205 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(account4.isPlaceholder).isTrue()
         assertThat(account4.isFavorite).isFalse()
         assertThat(account4.color).isEqualTo(Color.YELLOW)
+    }
+
+    @Test
+    fun `cached COLUMN_BALANCE should match computed balance from splits`() {
+        val account = Account("CacheCheck", Commodity.USD)
+        account.type = AccountType.ASSET
+        val transferAcct = Account("CacheTransfer", Commodity.USD)
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(transferAcct)
+
+        val transaction = Transaction("Cache check transaction")
+        transactionsDbAdapter.addRecord(transaction)
+        var split = Split(Money("10.00", "USD"), account)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
+        split = Split(Money("4.99", "USD"), account)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
+        split = Split(Money("1.19", "USD"), account)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(split)
+        split = Split(Money("13.80", "USD"), transferAcct)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(split)
+
+        // Cached value (ALWAYS, ALWAYS reads COLUMN_BALANCE) must equal the value
+        // recomputed from splits. A mismatch means the cache went stale and the
+        // account header (which reads the cache) would disagree with the
+        // per-transaction running balance (which bypasses the cache).
+        val cached = accountsDbAdapter.getAccountBalance(account)
+        val computed = accountsDbAdapter.getAccountBalance(
+            account, EARLIEST_TIMESTAMP, ALWAYS, includeSubAccounts = false
+        )
+        assertThat(cached).isEqualTo(computed)
+        assertThat(computed).isEqualTo(Money("13.80", "USD"))
+    }
+
+    @Test
+    fun `cached balance of parent account should match computed balance including sub-accounts`() {
+        val parent = Account("Parent", Commodity.USD)
+        parent.type = AccountType.ASSET
+        val child = Account("Child", Commodity.USD)
+        child.type = AccountType.ASSET
+        child.parentUID = parent.uid
+        val other = Account("Other", Commodity.USD)
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+        accountsDbAdapter.addRecord(other)
+
+        val t1 = Transaction("to parent")
+        transactionsDbAdapter.addRecord(t1)
+        var s = Split(Money("100.00", "USD"), parent)
+        s.transactionUID = t1.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+        s = Split(Money("100.00", "USD"), other)
+        s.transactionUID = t1.uid
+        s.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(s)
+
+        val t2 = Transaction("to child")
+        transactionsDbAdapter.addRecord(t2)
+        s = Split(Money("40.00", "USD"), child)
+        s.transactionUID = t2.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+        s = Split(Money("40.00", "USD"), other)
+        s.transactionUID = t2.uid
+        s.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(s)
+
+        val cached = accountsDbAdapter.getAccountBalance(parent)
+        val computedWithChildren = accountsDbAdapter.getAccountBalance(
+            parent, EARLIEST_TIMESTAMP, ALWAYS, includeSubAccounts = true
+        )
+        assertThat(cached).isEqualTo(computedWithChildren)
+        assertThat(cached).isEqualTo(Money("140.00", "USD"))
+
+        // the running-balance anchor deliberately excludes sub-accounts
+        val computedOwnOnly = accountsDbAdapter.getAccountBalance(
+            parent, EARLIEST_TIMESTAMP, ALWAYS, includeSubAccounts = false
+        )
+        assertThat(computedOwnOnly).isEqualTo(Money("100.00", "USD"))
+    }
+
+    @Test
+    fun `signed quantities per transaction are consistent with account balance anchor`() {
+        val liability = Account("Card", Commodity.USD)
+        liability.type = AccountType.LIABILITY // credit-normal
+        val other = Account("Other", Commodity.USD)
+        accountsDbAdapter.addRecord(liability)
+        accountsDbAdapter.addRecord(other)
+
+        // Charge 100 (CREDIT on card), then pay 50 (DEBIT on card)
+        val t1 = Transaction("charge")
+        transactionsDbAdapter.addRecord(t1)
+        var s = Split(Money("100.00", "USD"), liability)
+        s.transactionUID = t1.uid
+        s.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(s)
+        s = Split(Money("100.00", "USD"), other)
+        s.transactionUID = t1.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+
+        val t2 = Transaction("payment")
+        transactionsDbAdapter.addRecord(t2)
+        s = Split(Money("50.00", "USD"), liability)
+        s.transactionUID = t2.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+        s = Split(Money("50.00", "USD"), other)
+        s.transactionUID = t2.uid
+        s.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(s)
+
+        val amounts = splitsDbAdapter.getSignedQuantitiesPerTransaction(liability.uid)
+
+        val anchor = accountsDbAdapter.getAccountBalance(
+            liability, EARLIEST_TIMESTAMP, ALWAYS, includeSubAccounts = false
+        )
+
+        // applyNormalBalanceSign must be applied to amounts to match the anchor's convention
+        val flippedAmounts = applyNormalBalanceSign(
+            amounts, liability.type.hasDebitNormalBalance
+        )
+
+        val sum = flippedAmounts.values.fold(createZeroInstance(liability.commodity)) { acc, m -> acc + m }
+        assertThat(anchor).isEqualTo(sum)
+    }
+
+    @Test
+    fun `getSignedQuantitiesPerTransaction excludes template transactions`() {
+        val account = Account("TemplateCheck", Commodity.USD)
+        accountsDbAdapter.addRecord(account)
+
+        // Create a template transaction
+        val templateTx = Transaction("Template")
+        templateTx.isTemplate = true
+        transactionsDbAdapter.addRecord(templateTx)
+
+        val split = Split(Money("10.00", "USD"), account)
+        split.transactionUID = templateTx.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
+
+        // The SQL query must ignore template transactions
+        val amounts = splitsDbAdapter.getSignedQuantitiesPerTransaction(account.uid)
+        assertThat(amounts).isEmpty()
+    }
+
+    @Test
+    fun `getSignedQuantitiesPerTransaction ignores splits of other accounts`() {
+        val account = Account("Mine", Commodity.USD)
+        val other = Account("Theirs", Commodity.USD)
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(other)
+
+        val t = Transaction("mixed")
+        transactionsDbAdapter.addRecord(t)
+
+        var s = Split(Money("10.00", Commodity.USD), account)
+        s.transactionUID = t.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+
+        s = Split(Money("99.00", Commodity.USD), other)
+        s.transactionUID = t.uid
+        s.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(s)
+
+        val amounts = splitsDbAdapter.getSignedQuantitiesPerTransaction(account.uid)
+        assertThat(amounts).containsOnlyKeys(t.uid)
+        assertThat(amounts[t.uid]).isEqualTo(Money("10.00", Commodity.USD))
+    }
+
+    @Test
+    fun `getSignedQuantitiesPerTransaction uses account currency (quantity) not transaction currency (value)`() {
+        val usdAccount = Account("USD Account", Commodity.USD)
+        accountsDbAdapter.addRecord(usdAccount)
+
+        val t = Transaction("Multi-currency")
+        t.commodity = Commodity.EUR // Transaction is in EUR
+        transactionsDbAdapter.addRecord(t)
+
+        // Split in USD account: value = 100 EUR, quantity = 110 USD
+        val s = Split(Money("100.00", Commodity.EUR), usdAccount)
+        s.transactionUID = t.uid
+        s.type = TransactionType.DEBIT
+        s.quantity = Money("110.00", Commodity.USD)
+        splitsDbAdapter.addRecord(s)
+
+        val amounts = splitsDbAdapter.getSignedQuantitiesPerTransaction(usdAccount.uid)
+        // Should take 110 (quantity), not 100 (value)
+        assertThat(amounts[t.uid]).isEqualTo(Money("110.00", Commodity.USD))
     }
 
     /**

@@ -51,8 +51,12 @@ import org.gnucash.android.app.isLandscape
 import org.gnucash.android.databinding.CardviewTransactionBinding
 import org.gnucash.android.databinding.FragmentTransactionsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.common.FormActivity
@@ -82,6 +86,7 @@ class TransactionsListFragment : MenuFragment(),
     private var useCompactView = false
     private var useDoubleEntry = true
     private var useAbsoluteDate = false
+    private var showRunningBalance = true
 
     private var transactionsAdapter: TransactionCursorAdapter? = null
 
@@ -100,6 +105,12 @@ class TransactionsListFragment : MenuFragment(),
             useCompactView
         )
         useAbsoluteDate = isAbsoluteDate(context)
+
+        // initial value from the global Settings preference; menu can override locally per screen
+        showRunningBalance = getBookPreferences(context).getBoolean(
+            getString(R.string.key_show_running_balance), true
+        )
+
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {
             useCompactView = savedInstanceState.getBoolean(
@@ -109,6 +120,10 @@ class TransactionsListFragment : MenuFragment(),
             useAbsoluteDate = savedInstanceState.getBoolean(
                 getString(R.string.key_absolute_date),
                 useAbsoluteDate
+            )
+            showRunningBalance = savedInstanceState.getBoolean(
+                getString(R.string.key_show_running_balance),
+                showRunningBalance
             )
         }
 
@@ -120,6 +135,7 @@ class TransactionsListFragment : MenuFragment(),
         super.onSaveInstanceState(outState)
         outState.putBoolean(getString(R.string.key_use_compact_list), useCompactView)
         outState.putBoolean(getString(R.string.key_absolute_date), useAbsoluteDate)
+        outState.putBoolean(getString(R.string.key_show_running_balance), showRunningBalance)
     }
 
     override fun onCreateView(
@@ -221,6 +237,9 @@ class TransactionsListFragment : MenuFragment(),
 
         val itemDate = menu.findItem(R.id.menu_toggle_date)
         itemDate.isChecked = useAbsoluteDate
+
+        val itemBalance = menu.findItem(R.id.menu_toggle_running_balance)
+        itemBalance.isChecked = showRunningBalance
     }
 
     @Deprecated("Deprecated in Java")
@@ -240,23 +259,38 @@ class TransactionsListFragment : MenuFragment(),
                 true
             }
 
+            R.id.menu_toggle_running_balance -> {
+                item.isChecked = !item.isChecked
+                showRunningBalance = item.isChecked
+                refresh()
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
         Timber.d("Creating transactions loader")
-        return TransactionsCursorLoader(requireContext(), accountUID!!)
+        return TransactionsCursorLoader(
+            requireContext().applicationContext,
+            accountUID!!,
+            showRunningBalance
+        )
     }
 
     override fun onLoadFinished(loader: Loader<Cursor>, cursor: Cursor?) {
         Timber.d("Transactions loader finished. Swapping in cursor")
+        if (loader is TransactionsCursorLoader) {
+            transactionsAdapter?.runningBalances = loader.runningBalances
+        }
         transactionsAdapter?.changeCursor(cursor)
         scrollToTransaction(cursor, scrollTransactionUID)
     }
 
     override fun onLoaderReset(loader: Loader<Cursor>) {
         Timber.d("Resetting transactions loader")
+        transactionsAdapter?.runningBalances = emptyMap()
         transactionsAdapter?.changeCursor(null)
     }
 
@@ -268,23 +302,75 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     /**
-     * [DatabaseCursorLoader] for loading transactions asynchronously from the database
-     *
-     * @author Ngewi Fet <ngewif@gmail.com>
+     * [DatabaseCursorLoader] that loads the account's transactions asynchronously
+     * and, when enabled, computes the per-transaction running balances in the same
+     * background pass.
      */
-    private class TransactionsCursorLoader(context: Context, private val accountUID: String) :
-        DatabaseCursorLoader<TransactionsDbAdapter>(context) {
+    private class TransactionsCursorLoader(
+        private val appContext: Context,
+        private val accountUID: String,
+        private val showRunningBalance: Boolean
+    ) : DatabaseCursorLoader<TransactionsDbAdapter>(appContext) {
+
+        var runningBalances: Map<String, Money> = emptyMap()
+
         override fun loadInBackground(): Cursor? {
             val databaseAdapter = TransactionsDbAdapter.instance
             this.databaseAdapter = databaseAdapter
             val c = databaseAdapter.fetchTransactionsForAccount(accountUID)
             registerContentObserver(c)
+
+            runningBalances = if (showRunningBalance) {
+                buildRunningBalances(c, accountUID)
+            } else emptyMap()
+
             return c
+        }
+
+        private fun buildRunningBalances(cursor: Cursor, accountUID: String): Map<String, Money> {
+            val accountsDbAdapter = AccountsDbAdapter.instance
+            val account = accountsDbAdapter.getRecord(accountUID)
+
+            // getAccountBalance already returns the balance in the normal-balance convention
+            val anchor = accountsDbAdapter.getAccountBalance(
+                account, EARLIEST_TIMESTAMP, ALWAYS, includeSubAccounts = false
+            )
+            val zero = createZeroInstance(account.commodity)
+
+            val amounts = applyNormalBalanceSign(
+                TransactionsDbAdapter.instance.splitsDbAdapter.getSignedQuantitiesPerTransaction(accountUID),
+                account.type.hasDebitNormalBalance
+            )
+
+            val uids = ArrayList<String>(cursor.count)
+            cursor.moveToPosition(-1)
+            while (cursor.moveToNext()) {
+                uids.add(cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID)))
+            }
+
+            return computeRunningBalances(
+                uids.map { uid ->
+                    val amount = amounts[uid]
+                    if (amount == null) {
+                        Timber.w("No splits for transaction %s in account %s", uid, accountUID)
+                    }
+                    uid to (amount ?: zero)
+                },
+                anchor
+            )
         }
     }
 
     private inner class TransactionCursorAdapter(cursor: Cursor?) :
         CursorRecyclerAdapter<TransactionViewHolder>(cursor) {
+
+        // Rebind visible rows when the loader delivers or clears the balance map.
+        var runningBalances: Map<String, Money> = emptyMap()
+            set(value) {
+                field = value
+                notifyItemRangeChanged(0, itemCount)
+            }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             val binding = CardviewTransactionBinding.inflate(inflater, parent, false)
@@ -306,6 +392,9 @@ class TransactionsListFragment : MenuFragment(),
         //these views are not used in the compact view, hence the nullability
         private val transactionDate: TextView = binding.transactionDate
         private val editTransaction: ImageView = binding.editTransaction
+
+        private val accountBalanceView: TextView = binding.accountBalance
+        private val balanceLabelView: TextView = binding.balanceLabel
 
         private var transaction: Transaction? = null
 
@@ -372,6 +461,16 @@ class TransactionsListFragment : MenuFragment(),
 
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
+
+            // Derived on every bind: holders are recycled, so visibility must be
+            // recomputed even when the balance map did not change.
+            val runningBalance = transactionsAdapter?.runningBalances?.get(transactionUID)
+            val showBalance = runningBalance != null
+            accountBalanceView.isVisible = showBalance
+            balanceLabelView.isVisible = showBalance
+            if (showBalance) {
+                accountBalanceView.displayBalance(runningBalance, colorBalanceZero)
+            }
 
             val dateText = if (useAbsoluteDate) {
                 formatMediumDate(transaction.datePosted)

@@ -243,6 +243,43 @@ class SplitsDbAdapter(
     }
 
     /**
+     * Signed quantity (account's own currency) per transaction for [accountUID],
+     * via one grouped query. DEBIT positive, CREDIT negative; caller applies the
+     * normal-balance convention (see applyNormalBalanceSign).
+     * Groups by (transaction, quantity_denom) and combines via toBigDecimal +
+     * Money(BigDecimal, commodity) — the same decimal path as computeSplitBalances,
+     * so anchor and per-row sums agree by construction for stored data.
+     * Assumes splits are created via Money, which normalizes the denominator to
+     * the commodity fraction (both constructors; Commodity.template is the only
+     * exception and is never stored). The GROUP BY on quantity_denom is defensive.
+     */
+    fun getSignedQuantitiesPerTransaction(accountUID: String): Map<String, Money> {
+        val commodity = getAccountCommodity(accountUID)
+        val sql = ("SELECT s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                ", s." + SplitEntry.COLUMN_QUANTITY_DENOM +
+                ", SUM(CASE WHEN s." + SplitEntry.COLUMN_TYPE + " = ? THEN -s." + SplitEntry.COLUMN_QUANTITY_NUM +
+                " ELSE s." + SplitEntry.COLUMN_QUANTITY_NUM + " END)" +
+                " FROM " + SplitEntry.TABLE_NAME + " s" +
+                " INNER JOIN " + TransactionEntry.TABLE_NAME + " t ON t." + TransactionEntry.COLUMN_UID +
+                " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                " WHERE s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?" +
+                " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0" +
+                " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0" +
+                " GROUP BY s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                ", s." + SplitEntry.COLUMN_QUANTITY_DENOM)
+
+        val perTxn = HashMap<String, MutableList<Money>>()
+        db.rawQuery(sql, arrayOf(credit, accountUID)).use { c ->
+            while (c.moveToNext()) {
+                // columns: 0=transaction_uid, 1=quantity_denom, 2=signed SUM(quantity_num)
+                perTxn.getOrPut(c.getString(0)) { mutableListOf() }
+                    .add(Money(toBigDecimal(c.getLong(2), c.getLong(1)), commodity))
+            }
+        }
+        return perTxn.mapValues { (_, monies) -> monies.reduce { acc, m -> acc + m } }
+    }
+
+    /**
      * Returns the list of splits for a transaction
      *
      * @param transactionUID String unique ID of transaction

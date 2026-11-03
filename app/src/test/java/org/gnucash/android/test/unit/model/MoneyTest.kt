@@ -317,6 +317,24 @@ class MoneyTest : GnuCashTest() {
         assertThat(money4).isEqualTo(money5)
     }
 
+    @Test
+    fun `denominator is normalized for both constructors except for template commodity`() {
+        val usd = Commodity.getInstance("USD")
+        // BigDecimal path
+        assertThat(Money(BigDecimal("20"), usd).denominator).isEqualTo(100L)
+        assertThat(Money(BigDecimal("20.00"), usd).denominator).isEqualTo(100L)
+
+        // Long path ALSO normalizes!
+        assertThat(Money(20L, 1L, usd).denominator).isEqualTo(100L)
+        assertThat(Money(1L, 3L, usd).denominator).isEqualTo(100L)
+
+        // arithmetic keeps it
+        assertThat((Money("10", usd) + Money("5", usd)).denominator).isEqualTo(100L)
+
+        // EXCEPTION: template commodity keeps the raw denominator
+        assertThat(Money(123456L, 1000L, Commodity.template).denominator).isEqualTo(1000L)
+    }
+
     companion object {
         private const val CURRENCY_EUR = "EUR"
     }
